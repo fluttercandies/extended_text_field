@@ -1428,6 +1428,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         widget.specialTextSpanBuilder?.build(text, textStyle: widget.style);
     if (specialTextSpan != null) {
       _createImageConfiguration(<TextSpan>[specialTextSpan], context);
+
+//      _lastKnownRemoteTextEditingValue =
+//          _value.copyWith(text: specialTextSpan.toPlainText());
       return specialTextSpan;
     }
     return TextSpan(style: widget.style, text: text);

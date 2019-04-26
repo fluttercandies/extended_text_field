@@ -1,4 +1,4 @@
-import 'package:extended_text/extended_text.dart';
+import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
 
 ///emoji/image text
@@ -19,7 +19,8 @@ class EmojiText extends SpecialText {
       ///fontSize 26 and text height =30.0
       //final double fontSize = 26.0;
 
-      return ImageSpan(AssetImage(EmojiUitl.instance.emojiMap[key]),
+      return TextFieldImageSpan(
+          AssetImage(EmojiUitl.instance.emojiMap[key]), key,
           imageWidth: size,
           imageHeight: size,
           margin: EdgeInsets.only(left: 2.0, bottom: 0.0, right: 2.0));
