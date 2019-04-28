@@ -739,6 +739,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   @override
   void updateEditingValue(TextEditingValue value) {
+    value = _handleSpecialTextSpan(value);
     if (value.text != _value.text) {
       _hideSelectionOverlayIfNeeded();
       _showCaretOnScreen();
@@ -754,6 +755,32 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     // cursor timer every time a new character is typed.
     _stopCursorTimer(resetCharTicks: false);
     _startCursorTimer();
+  }
+
+  TextSpan _specialTextSpan;
+
+  TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
+    final bool textChanged = _value?.text != value?.text;
+//    if (textChanged && widget.specialTextSpanBuilder != null && value != null) {
+//      var newText = widget.specialTextSpanBuilder.build(value.text);
+//      var text = newText.toPlainText();
+//      if (text != value.text) {
+//        _specialTextSpan = newText;
+//        var selection = value.selection;
+//        var offsetDelta = text.length - value.text.length;
+////        value = value.copyWith(
+////            text: text,
+////            selection: selection.copyWith(
+////                baseOffset: selection.baseOffset + offsetDelta,
+////                extentOffset: selection.extentOffset + offsetDelta));
+//        // _textInputConnection.setEditingState(value);
+//      } else {
+//        _specialTextSpan = null;
+//      }
+//    } else {
+//      _specialTextSpan = null;
+//    }
+    return value;
   }
 
   @override
@@ -1106,30 +1133,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _lastBottomViewInset = WidgetsBinding.instance.window.viewInsets.bottom;
   }
 
-  void _formatAndSetValue(TextEditingValue value) {
+  void _formatAndSetValue(TextEditingValue value, {bool set: false}) {
     final bool textChanged = _value?.text != value?.text;
-
-//    if (textChanged &&
-//        widget.specialTextSpanBuilder != null &&
-//        _value != null &&
-//        value != null &&
-//        _value.text.length > value.text.length) {
-//      var oldSpecialTextSpans = widget.specialTextSpanBuilder
-//          ?.build(_value?.text)
-//          ?.children
-//          .where((x) => x is SpecialTextSpan)
-//          ?.toList();
-//
-//      var newSpecialTextSpans = widget.specialTextSpanBuilder
-//          ?.build(value?.text)
-//          ?.children
-//          .where((x) => x is SpecialTextSpan)
-//          ?.toList();
-//
-//      if (oldSpecialTextSpans != null &&
-//          newSpecialTextSpans != null &&
-//          newSpecialTextSpans.length < oldSpecialTextSpans.length) {}
-//    }
 
     if (textChanged &&
         widget.inputFormatters != null &&
@@ -1285,6 +1290,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   @override
   set textEditingValue(TextEditingValue value) {
+    value = _handleSpecialTextSpan(value);
     _selectionOverlay?.update(value);
     _formatAndSetValue(value);
   }
@@ -1424,6 +1430,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         text = text.replaceRange(o, o + 1, _value.text.substring(o, o + 1));
     }
 
+//    if (_specialTextSpan != null) {
+//      _createImageConfiguration(<TextSpan>[_specialTextSpan], context);
+//      return _specialTextSpan;
+//    }
     var specialTextSpan =
         widget.specialTextSpanBuilder?.build(text, textStyle: widget.style);
     if (specialTextSpan != null) {

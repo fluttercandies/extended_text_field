@@ -18,6 +18,7 @@ class TextDemo extends StatelessWidget {
 //            onChanged: (String value) {
 //
 //            },
+            maxLines: 2,
           )),
     );
   }

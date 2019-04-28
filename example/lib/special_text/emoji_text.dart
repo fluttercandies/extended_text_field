@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 ///emoji/image text
 class EmojiText extends SpecialText {
   static const String flag = "[";
-
-  EmojiText(TextStyle textStyle) : super(EmojiText.flag, "]", textStyle);
+  final int start;
+  EmojiText(TextStyle textStyle, this.start)
+      : super(EmojiText.flag, "]", textStyle);
 
   @override
   TextSpan finishText() {
@@ -19,10 +20,11 @@ class EmojiText extends SpecialText {
       ///fontSize 26 and text height =30.0
       //final double fontSize = 26.0;
 
-      return TextFieldImageSpan(
-          AssetImage(EmojiUitl.instance.emojiMap[key]), key,
+      return TextFieldImageSpan(AssetImage(EmojiUitl.instance.emojiMap[key]),
+          actualText: key,
           imageWidth: size,
           imageHeight: size,
+          start: start,
           margin: EdgeInsets.only(left: 2.0, bottom: 0.0, right: 2.0));
     }
 

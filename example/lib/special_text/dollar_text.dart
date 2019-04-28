@@ -4,15 +4,19 @@ import 'package:flutter/material.dart';
 
 class DollarText extends SpecialText {
   static const String flag = "\$";
-  DollarText(TextStyle textStyle, SpecialTextGestureTapCallback onTap)
+  final int start;
+  DollarText(
+      TextStyle textStyle, SpecialTextGestureTapCallback onTap, this.start)
       : super(flag, flag, textStyle, onTap: onTap);
 
   @override
   TextSpan finishText() {
     // TODO: implement finishText
-    final String atText = toString();
+    final String atText = getContent();
     return SpecialTextSpan(
       text: atText,
+      actualText: toString(),
+      start: start,
       style: textStyle?.copyWith(color: Colors.orange),
     );
   }
