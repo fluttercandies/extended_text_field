@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui show TextBox, lerpDouble;
 
 import 'package:extended_text/extended_text.dart';
+import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -1022,10 +1023,21 @@ class ExtendedRenderEditable extends RenderBox {
 
   @override
   void detach() {
+    _disposeImageSpan(<TextSpan>[text]);
     _offset.removeListener(markNeedsPaint);
     _showCursor.removeListener(markNeedsPaint);
     if (_listenerAttached) RawKeyboard.instance.removeListener(_handleKeyEvent);
     super.detach();
+  }
+
+  void _disposeImageSpan(List<TextSpan> textSpan) {
+    textSpan.forEach((ts) {
+      if (ts is ImageSpan) {
+        ts.dispose();
+      } else if (ts.children != null) {
+        _disposeImageSpan(ts.children);
+      }
+    });
   }
 
   bool get _isMultiline => maxLines != 1;
@@ -1312,14 +1324,35 @@ class ExtendedRenderEditable extends RenderBox {
     assert(from != null);
     _layoutText(constraints.maxWidth);
     if (onSelectionChanged != null) {
-      final TextPosition fromPosition =
+      TextPosition fromPosition =
           _textPainter.getPositionForOffset(globalToLocal(from - _paintOffset));
-      final TextPosition toPosition = to == null
+      TextPosition toPosition = to == null
           ? null
           : _textPainter.getPositionForOffset(globalToLocal(to - _paintOffset));
+      //zmt
+      if (text != null && text.children != null) {
+        int fromPositionOffset = fromPosition.offset;
+        int toPositionOffset = toPosition?.offset;
+        for (TextSpan ts in text.children) {
+          if (ts is SpecialTextSpanBase) {
+            var length = (ts as SpecialTextSpanBase).actualText.length;
+            fromPositionOffset += (length - ts.toPlainText().length);
+            if (toPositionOffset != null) {
+              toPositionOffset += (length - ts.toPlainText().length);
+            }
+          }
+        }
+        fromPosition = TextPosition(
+            offset: fromPositionOffset, affinity: fromPosition.affinity);
+        if (toPositionOffset != null) {
+          toPosition = TextPosition(
+              offset: toPositionOffset, affinity: toPosition.affinity);
+        }
+      }
 
       int baseOffset = fromPosition.offset;
       int extentOffset = fromPosition.offset;
+
       if (toPosition != null) {
         baseOffset = math.min(fromPosition.offset, toPosition.offset);
         extentOffset = math.max(fromPosition.offset, toPosition.offset);
@@ -1490,13 +1523,31 @@ class ExtendedRenderEditable extends RenderBox {
       Canvas canvas, Offset effectiveOffset, TextPosition textPosition) {
     assert(_textLayoutLastWidth == constraints.maxWidth);
 
+    var temp = textPosition;
+
+    //zmt
+    var caretOffsetTextSpan = text.getSpanForPosition(textPosition);
+    if (text != null && text.children != null) {
+      int textOffset = 0;
+      int actualTextOffset = 0;
+      // int caretOffset;
+      int caretOffset = textPosition.offset;
+      for (TextSpan ts in text.children) {
+        if (ts is SpecialTextSpanBase) {
+          var length = (ts as SpecialTextSpanBase).actualText.length;
+          caretOffset -= (length - ts.toPlainText().length);
+        }
+        if (caretOffsetTextSpan == ts) break;
+      }
+      temp = TextPosition(offset: caretOffset, affinity: textPosition.affinity);
+    }
+
     // If the floating cursor is enabled, the text cursor's color is [backgroundCursorColor] while
     // the floating cursor's color is _cursorColor;
     final Paint paint = Paint()
       ..color = _floatingCursorOn ? backgroundCursorColor : _cursorColor;
     final Offset caretOffset =
-        _textPainter.getOffsetForCaret(textPosition, _caretPrototype) +
-            effectiveOffset;
+        _textPainter.getOffsetForCaret(temp, _caretPrototype) + effectiveOffset;
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
@@ -1504,8 +1555,7 @@ class ExtendedRenderEditable extends RenderBox {
     // when not on iOS. iOS has special handling that creates a taller caret.
     // TODO(garyq): See the TODO for _getCaretPrototype.
     if (defaultTargetPlatform != TargetPlatform.iOS &&
-        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
-            null) {
+        _textPainter.getFullHeightForCaret(temp, _caretPrototype) != null) {
       caretRect = Rect.fromLTWH(
         caretRect.left,
         // Offset by _kCaretHeightOffset to counteract the same value added in
@@ -1513,7 +1563,7 @@ class ExtendedRenderEditable extends RenderBox {
         // font sizes.
         caretRect.top - _kCaretHeightOffset,
         caretRect.width,
-        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
+        _textPainter.getFullHeightForCaret(temp, _caretPrototype),
       );
     }
 
@@ -1684,6 +1734,9 @@ class ExtendedRenderEditable extends RenderBox {
       _paintSelection(context.canvas, effectiveOffset);
     }
 
+    ///zmt
+    _paintSpecialText(context, effectiveOffset);
+
     // On iOS, the cursor is painted over the text, on Android, it's painted
     // under it.
     if (paintCursorAboveText)
@@ -1705,7 +1758,6 @@ class ExtendedRenderEditable extends RenderBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    _paintSpecialText(context, offset);
     _layoutText(constraints.maxWidth);
     if (_hasVisualOverflow)
       context.pushClipRect(

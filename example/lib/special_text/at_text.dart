@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 
 class AtText extends SpecialText {
   static const String flag = "@";
-  AtText(TextStyle textStyle, SpecialTextGestureTapCallback onTap)
+  final int start;
+  AtText(TextStyle textStyle, SpecialTextGestureTapCallback onTap, this.start)
       : super(flag, " ", textStyle, onTap: onTap);
 
   @override
@@ -14,6 +15,8 @@ class AtText extends SpecialText {
     final String atText = toString();
     return SpecialTextSpan(
       text: atText,
+      actualText: atText,
+      start: start,
       style: textStyle?.copyWith(color: Colors.blue, fontSize: 16.0),
     );
   }
