@@ -7,6 +7,7 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
+import 'dart:math';
 import 'dart:ui' as ui show TextBox, lerpDouble;
 
 import 'package:extended_text/extended_text.dart';
@@ -1324,31 +1325,11 @@ class ExtendedRenderEditable extends RenderBox {
     assert(from != null);
     _layoutText(constraints.maxWidth);
     if (onSelectionChanged != null) {
-      TextPosition fromPosition =
+      final TextPosition fromPosition =
           _textPainter.getPositionForOffset(globalToLocal(from - _paintOffset));
-      TextPosition toPosition = to == null
+      final TextPosition toPosition = to == null
           ? null
           : _textPainter.getPositionForOffset(globalToLocal(to - _paintOffset));
-      //zmt
-      if (text != null && text.children != null) {
-        int fromPositionOffset = fromPosition.offset;
-        int toPositionOffset = toPosition?.offset;
-        for (TextSpan ts in text.children) {
-          if (ts is SpecialTextSpanBase) {
-            var length = (ts as SpecialTextSpanBase).actualText.length;
-            fromPositionOffset += (length - ts.toPlainText().length);
-            if (toPositionOffset != null) {
-              toPositionOffset += (length - ts.toPlainText().length);
-            }
-          }
-        }
-        fromPosition = TextPosition(
-            offset: fromPositionOffset, affinity: fromPosition.affinity);
-        if (toPositionOffset != null) {
-          toPosition = TextPosition(
-              offset: toPositionOffset, affinity: toPosition.affinity);
-        }
-      }
 
       int baseOffset = fromPosition.offset;
       int extentOffset = fromPosition.offset;
@@ -1357,6 +1338,18 @@ class ExtendedRenderEditable extends RenderBox {
         baseOffset = math.min(fromPosition.offset, toPosition.offset);
         extentOffset = math.max(fromPosition.offset, toPosition.offset);
       }
+
+      //zmt
+      if (text != null && text.children != null) {
+        for (TextSpan ts in text.children) {
+          if (ts is SpecialTextSpanBase) {
+            var length = (ts as SpecialTextSpanBase).actualText.length;
+            baseOffset += (length - ts.toPlainText().length);
+            extentOffset += (length - ts.toPlainText().length);
+          }
+        }
+      }
+      print(baseOffset);
 
       final TextSelection newSelection = TextSelection(
         baseOffset: baseOffset,
@@ -1524,30 +1517,39 @@ class ExtendedRenderEditable extends RenderBox {
     assert(_textLayoutLastWidth == constraints.maxWidth);
 
     var temp = textPosition;
-
     //zmt
-    var caretOffsetTextSpan = text.getSpanForPosition(textPosition);
     if (text != null && text.children != null) {
-      int textOffset = 0;
-      int actualTextOffset = 0;
-      // int caretOffset;
       int caretOffset = textPosition.offset;
       for (TextSpan ts in text.children) {
         if (ts is SpecialTextSpanBase) {
           var length = (ts as SpecialTextSpanBase).actualText.length;
-          caretOffset -= (length - ts.toPlainText().length);
+          var delta = (length - ts.toPlainText().length);
+          if (caretOffset >= delta) {
+            caretOffset -= delta;
+          } else {
+            break;
+          }
         }
-        if (caretOffsetTextSpan == ts) break;
       }
-      temp = TextPosition(offset: caretOffset, affinity: textPosition.affinity);
+      print(caretOffset);
+      temp = TextPosition(
+          offset: max(0, caretOffset), affinity: textPosition.affinity);
     }
 
     // If the floating cursor is enabled, the text cursor's color is [backgroundCursorColor] while
     // the floating cursor's color is _cursorColor;
     final Paint paint = Paint()
       ..color = _floatingCursorOn ? backgroundCursorColor : _cursorColor;
+    var textSpan = _textPainter.text.getSpanForPosition(temp);
+    double imageTextSpanWidth = 0.0;
+    if (textSpan is ImageSpan) {
+      imageTextSpanWidth = textSpan.width / 2.0;
+    }
     final Offset caretOffset =
-        _textPainter.getOffsetForCaret(temp, _caretPrototype) + effectiveOffset;
+        _textPainter.getOffsetForCaret(temp, _caretPrototype) +
+            effectiveOffset +
+            Offset(imageTextSpanWidth, 0.0);
+
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
