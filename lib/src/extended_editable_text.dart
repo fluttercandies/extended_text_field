@@ -12,6 +12,7 @@ import 'dart:ui' as ui;
 
 import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/extended_render_editable.dart';
+import 'package:extended_text_field/src/extended_text_field_utils.dart';
 import 'package:extended_text_field/src/extended_text_selection.dart';
 import 'package:extended_text_field/src/text_span/special_text_span.dart';
 import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
@@ -762,30 +763,45 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   ///zmt
   TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
     final bool textChanged = _value?.text != value?.text;
-    if (textChanged && widget.specialTextSpanBuilder != null && value != null) {
+    if (textChanged &&
+        widget.specialTextSpanBuilder != null &&
+        value != null &&
+        value != "") {
       var newText = widget.specialTextSpanBuilder.build(value.text);
-      var text = newText.toPlainText();
-      if (text != value.text) {
-        if (value.selection.isCollapsed) {
-          int caretOffset = value.selection.baseOffset;
-          for (TextSpan ts in newText.children) {
-            if (ts is SpecialTextSpanBase) {
-              var length = (ts as SpecialTextSpanBase).actualText.length;
-              var delta = (length - ts.toPlainText().length);
-              if (caretOffset >= delta) {
-                caretOffset -= delta;
+      if (newText != null) {
+        var text = newText.toPlainText();
+        if (text != value.text) {
+          if (value.selection.isCollapsed) {
+            int caretOffset = value.selection.extentOffset;
+            int textOffset = 0;
+            for (TextSpan ts in newText.children) {
+              if (ts is SpecialTextSpanBase) {
+                if (ts is TextFieldImageSpan &&
+                    caretOffset > ts.start &&
+                    caretOffset < ts.end) {
+                  //move caretOffset to end
+                  caretOffset = ts.end;
+                  break;
+                }
+                var length = (ts as SpecialTextSpanBase).actualText.length;
+                textOffset += length;
               } else {
-                break;
+                textOffset += ts.toPlainText().length;
+                if (textOffset > caretOffset) {
+                  break;
+                }
               }
             }
+
+            ///tell textInput caretOffset is changed.
+            if (caretOffset != value.selection.baseOffset) {
+              value = value.copyWith(
+                  selection: value.selection.copyWith(
+                      baseOffset: caretOffset, extentOffset: caretOffset));
+              _lastKnownRemoteTextEditingValue = value;
+              _textInputConnection?.setEditingState(value);
+            }
           }
-          var textSpan = newText.getSpanForPosition(TextPosition(
-              offset: caretOffset, affinity: value.selection.affinity));
-          if (textSpan is TextFieldImageSpan)
-            value = value.copyWith(
-                selection: value.selection.copyWith(
-                    baseOffset: textSpan.end, extentOffset: textSpan.end));
-          _textInputConnection.setEditingState(value);
         }
       }
     }
@@ -844,6 +860,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         }
         final TextPosition currentTextPosition =
             TextPosition(offset: renderEditable.selection.baseOffset);
+
+        ///zmt
+//        final TextPosition currentTextPosition =
+//            convertTextInputPostionToTextPainterPostion(
+//                renderEditable.text, renderEditable.selection.base);
+
         _startCaretRect =
             renderEditable.getLocalRectForCaret(currentTextPosition);
         renderEditable.setFloatingCursor(
