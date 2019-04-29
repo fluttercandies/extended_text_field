@@ -14,7 +14,7 @@ class TextDemo extends StatelessWidget {
           padding: EdgeInsets.all(20.0),
           child: ExtendedTextField(
             specialTextSpanBuilder: MySpecialTextSpanBuilder(),
-            //controller: TextEditingController()..text = "[love]",
+            controller: TextEditingController()..text = "[love]",
             maxLines: 2,
           )),
     );
