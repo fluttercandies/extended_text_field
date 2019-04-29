@@ -1335,6 +1335,7 @@ class ExtendedRenderEditable extends RenderBox {
           ? null
           : _textPainter.getPositionForOffset(globalToLocal(to - _paintOffset));
 
+      //zmt
       fromPosition =
           convertTextPainterPostionToTextInputPostion(text, fromPosition);
       toPosition =
@@ -1353,7 +1354,6 @@ class ExtendedRenderEditable extends RenderBox {
         extentOffset: extentOffset,
         affinity: fromPosition.affinity,
       );
-      print(newSelection);
       // Call [onSelectionChanged] only when the selection actually changed.
       if (newSelection != _selection) {
         onSelectionChanged(newSelection, this, cause);
@@ -1713,27 +1713,36 @@ class ExtendedRenderEditable extends RenderBox {
     return adjustedOffset;
   }
 
-  void _paintSelection(Canvas canvas, Offset effectiveOffset) {
+  void _paintSelection(Canvas canvas, Offset effectiveOffset,
+      Map<Offset, TextFieldImageSpan> imageSpans) {
     assert(_textLayoutLastWidth == constraints.maxWidth);
     assert(_selectionRects != null);
     final Paint paint = Paint()..color = _selectionColor;
 
+    ///zmt
     for (int i = 0; i < _selectionRects.length; i++) {
       var box = _selectionRects[i];
-      var textPosition =
-          _textPainter.getPositionForOffset(Offset(box.left, box.top));
-      var textSpan = text.getSpanForPosition(textPosition);
+      TextFieldImageSpan textSpan = imageSpans[Offset(box.left, box.top)];
+
+//      var textPosition =
+//          _textPainter.getPositionForOffset(Offset(box.left, box.top));
+//      var textSpan = text.getSpanForPosition(textPosition);
+
+      var rect = box.toRect();
 
       ///fix image span position
       if (textSpan != null && textSpan is TextFieldImageSpan) {
-        canvas.drawRect(
-            box
-                .toRect()
-                .shift(effectiveOffset + Offset(-textSpan.width / 2.0, 0.0)),
-            paint);
-      } else {
-        canvas.drawRect(box.toRect().shift(effectiveOffset), paint);
+        ///move left only
+        if (textSpan.width < rect.width) {
+          rect = Rect.fromLTRB(rect.left - textSpan.width / 2.0, rect.top,
+              rect.right, rect.bottom);
+        }
+        //move all rect
+        else {
+          rect.shift(Offset(-textSpan.width / 2.0, 0.0));
+        }
       }
+      canvas.drawRect(rect.shift(effectiveOffset), paint);
     }
   }
 
@@ -1761,7 +1770,30 @@ class ExtendedRenderEditable extends RenderBox {
     if (showSelection) {
       ///zmt
       _selectionRects ??= _textPainter.getBoxesForSelection(actualSelection);
-      _paintSelection(context.canvas, effectiveOffset);
+
+      int textOffset = 0;
+      Map<Offset, TextFieldImageSpan> imageSpans =
+          Map<Offset, TextFieldImageSpan>();
+
+      ///find all image span in selection
+      for (TextSpan ts in text.children) {
+        if (textOffset >= actualSelection.start &&
+            textOffset <= actualSelection.end) {
+          if (ts is TextFieldImageSpan) {
+            var offset = _textPainter.getOffsetForCaret(
+              TextPosition(offset: textOffset),
+              effectiveOffset & size,
+            );
+            imageSpans[offset] = ts;
+          }
+        }
+        textOffset += ts.toPlainText().length;
+        if (textOffset > actualSelection.end) {
+          break;
+        }
+      }
+
+      _paintSelection(context.canvas, effectiveOffset, imageSpans);
     }
 
     ///zmt

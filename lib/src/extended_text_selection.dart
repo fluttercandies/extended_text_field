@@ -9,6 +9,7 @@
 import 'dart:async';
 
 import 'package:extended_text_field/src/extended_render_editable.dart';
+import 'package:extended_text_field/src/extended_text_field_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show kDoubleTapTimeout, kDoubleTapSlop;
 import 'package:flutter/gestures.dart';
@@ -385,8 +386,12 @@ class _TextSelectionHandleOverlayState
 
   void _handleDragUpdate(DragUpdateDetails details) {
     _dragPosition += details.delta;
-    final TextPosition position =
+    TextPosition position =
         widget.renderObject.getPositionForPoint(_dragPosition);
+
+    ///zmt
+    position = convertTextPainterPostionToTextInputPostion(
+        widget.renderObject.text, position);
 
     if (widget.selection.isCollapsed) {
       widget.onSelectionHandleChanged(TextSelection.fromPosition(position));
