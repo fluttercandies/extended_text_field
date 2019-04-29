@@ -90,3 +90,38 @@ TextPosition convertTextPainterPostionToTextInputPostion(
   }
   return textPosition;
 }
+
+TextSelection convertTextPainterSelectionToTextInputSelection(
+    TextSpan text, TextSelection selection) {
+  if (selection.isValid) {
+    if (selection.isCollapsed) {
+      var extent =
+          convertTextPainterPostionToTextInputPostion(text, selection.extent);
+      if (selection.extent != extent) {
+        selection = selection.copyWith(
+            baseOffset: extent.offset,
+            extentOffset: extent.offset,
+            affinity: selection.affinity,
+            isDirectional: selection.isDirectional);
+        return selection;
+      }
+    } else {
+      var extent =
+          convertTextPainterPostionToTextInputPostion(text, selection.extent);
+
+      var base =
+          convertTextPainterPostionToTextInputPostion(text, selection.base);
+
+      if (selection.extent != extent || selection.base != base) {
+        selection = selection.copyWith(
+            baseOffset: base.offset,
+            extentOffset: extent.offset,
+            affinity: selection.affinity,
+            isDirectional: selection.isDirectional);
+        return selection;
+      }
+    }
+  }
+
+  return selection;
+}

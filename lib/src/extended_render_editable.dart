@@ -1414,17 +1414,26 @@ class ExtendedRenderEditable extends RenderBox {
           globalToLocal(_lastTapDownPosition - _paintOffset));
 
       final TextRange word = _textPainter.getWordBoundary(position);
+
+      ///zmt
       if (position.offset - word.start <= 1) {
+        var temp = convertTextPainterSelectionToTextInputSelection(
+            text,
+            TextSelection.collapsed(
+                offset: word.start, affinity: TextAffinity.downstream));
+
         onSelectionChanged(
-          TextSelection.collapsed(
-              offset: word.start, affinity: TextAffinity.downstream),
+          temp,
           this,
           cause,
         );
       } else {
+        var temp = convertTextPainterSelectionToTextInputSelection(
+            text,
+            TextSelection.collapsed(
+                offset: word.end, affinity: TextAffinity.upstream));
         onSelectionChanged(
-          TextSelection.collapsed(
-              offset: word.end, affinity: TextAffinity.upstream),
+          temp,
           this,
           cause,
         );
@@ -1436,12 +1445,20 @@ class ExtendedRenderEditable extends RenderBox {
     assert(_textLayoutLastWidth == constraints.maxWidth);
 
     ///zmt
-    var temp = convertTextPainterPostionToTextInputPostion(text, position);
+    //var temp = convertTextPainterPostionToTextInputPostion(text, position);
 
-    final TextRange word = _textPainter.getWordBoundary(temp);
+    final TextRange word = _textPainter.getWordBoundary(position);
+    TextSelection selection;
     // When long-pressing past the end of the text, we want a collapsed cursor.
-    if (temp.offset >= word.end) return TextSelection.fromPosition(temp);
-    return TextSelection(baseOffset: word.start, extentOffset: word.end);
+    if (position.offset >= word.end) {
+      selection = TextSelection.fromPosition(position);
+    } else {
+      selection = TextSelection(baseOffset: word.start, extentOffset: word.end);
+    }
+    return convertTextPainterSelectionToTextInputSelection(text, selection);
+//    if (position.offset >= word.end)
+//      return TextSelection.fromPosition(position);
+//    return TextSelection(baseOffset: word.start, extentOffset: word.end);
   }
 
   Rect _caretPrototype;
@@ -1733,15 +1750,17 @@ class ExtendedRenderEditable extends RenderBox {
       ///fix image span position
       if (textSpan != null && textSpan is TextFieldImageSpan) {
         ///move left only
-        if (textSpan.width < rect.width) {
-          rect = Rect.fromLTRB(rect.left - textSpan.width / 2.0, rect.top,
-              rect.right, rect.bottom);
-        }
-        //move all rect
-        else {
-          rect.shift(Offset(-textSpan.width / 2.0, 0.0));
+//        if (textSpan.width < rect.width) {
+//          rect = Rect.fromLTRB(rect.left - textSpan.width / 2.0, rect.top,
+//              rect.right, rect.bottom);
+//        }
+//        //move all rect
+//        else
+        {
+          rect = rect.shift(Offset(-textSpan.width / 2.0, 0.0));
         }
       }
+
       canvas.drawRect(rect.shift(effectiveOffset), paint);
     }
   }
@@ -1776,20 +1795,22 @@ class ExtendedRenderEditable extends RenderBox {
           Map<Offset, TextFieldImageSpan>();
 
       ///find all image span in selection
-      for (TextSpan ts in text.children) {
-        if (textOffset >= actualSelection.start &&
-            textOffset <= actualSelection.end) {
-          if (ts is TextFieldImageSpan) {
-            var offset = _textPainter.getOffsetForCaret(
-              TextPosition(offset: textOffset),
-              effectiveOffset & size,
-            );
-            imageSpans[offset] = ts;
+      if (text != null && text.children != null) {
+        for (TextSpan ts in text.children) {
+          if (textOffset >= actualSelection.start &&
+              textOffset <= actualSelection.end) {
+            if (ts is TextFieldImageSpan) {
+              var offset = _textPainter.getOffsetForCaret(
+                TextPosition(offset: textOffset),
+                effectiveOffset & size,
+              );
+              imageSpans[offset] = ts;
+            }
           }
-        }
-        textOffset += ts.toPlainText().length;
-        if (textOffset > actualSelection.end) {
-          break;
+          textOffset += ts.toPlainText().length;
+          if (textOffset > actualSelection.end) {
+            break;
+          }
         }
       }
 
