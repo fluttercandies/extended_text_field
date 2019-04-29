@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
 import 'package:flutter/material.dart';
 
@@ -9,19 +11,22 @@ TextPosition convertTextInputPostionToTextPainterPostion(
     TextSpan text, TextPosition textPosition) {
   if (text != null && text.children != null) {
     int caretOffset = textPosition.offset;
+    int textOffset = 0;
     for (TextSpan ts in text.children) {
       if (ts is SpecialTextSpanBase) {
         var length = (ts as SpecialTextSpanBase).actualText.length;
-        var delta = (length - ts.toPlainText().length);
-        if (caretOffset >= delta) {
-          caretOffset -= delta;
-        } else {
-          break;
-        }
+        caretOffset -= (length - ts.toPlainText().length);
+        textOffset += length;
+      } else {
+        textOffset += ts.toPlainText().length;
+      }
+      if (textOffset >= textPosition.offset) {
+        break;
       }
     }
     if (caretOffset != textPosition.offset) {
-      return TextPosition(offset: caretOffset, affinity: textPosition.affinity);
+      return TextPosition(
+          offset: max(0, caretOffset), affinity: textPosition.affinity);
     }
   }
   return textPosition;
