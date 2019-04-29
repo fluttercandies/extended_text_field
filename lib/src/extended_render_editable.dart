@@ -1414,30 +1414,25 @@ class ExtendedRenderEditable extends RenderBox {
           globalToLocal(_lastTapDownPosition - _paintOffset));
 
       final TextRange word = _textPainter.getWordBoundary(position);
+      TextSelection selection;
 
       ///zmt
       if (position.offset - word.start <= 1) {
-        var temp = convertTextPainterSelectionToTextInputSelection(
+        selection = convertTextPainterSelectionToTextInputSelection(
             text,
             TextSelection.collapsed(
                 offset: word.start, affinity: TextAffinity.downstream));
-
-        onSelectionChanged(
-          temp,
-          this,
-          cause,
-        );
       } else {
-        var temp = convertTextPainterSelectionToTextInputSelection(
+        selection = convertTextPainterSelectionToTextInputSelection(
             text,
             TextSelection.collapsed(
                 offset: word.end, affinity: TextAffinity.upstream));
-        onSelectionChanged(
-          temp,
-          this,
-          cause,
-        );
       }
+      onSelectionChanged(
+        selection,
+        this,
+        cause,
+      );
     }
   }
 
@@ -1445,8 +1440,6 @@ class ExtendedRenderEditable extends RenderBox {
     assert(_textLayoutLastWidth == constraints.maxWidth);
 
     ///zmt
-    //var temp = convertTextPainterPostionToTextInputPostion(text, position);
-
     final TextRange word = _textPainter.getWordBoundary(position);
     TextSelection selection;
     // When long-pressing past the end of the text, we want a collapsed cursor.
