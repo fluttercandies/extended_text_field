@@ -8,9 +8,9 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   @override
   TextSpan build(String data, {TextStyle textStyle, onTap}) {
     // TODO: implement build
-    if (data == null || data == "") return null;
+    if (data == null) return null;
     List<TextSpan> inlineList = new List<TextSpan>();
-    if (data != null && data.length > 0) {
+    if (data.length > 0) {
       SpecialText specialText;
       String textStack = "";
       //String text
@@ -47,6 +47,8 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
       } else if (textStack.length > 0) {
         inlineList.add(TextSpan(text: textStack, style: textStyle));
       }
+    } else {
+      inlineList.add(TextSpan(text: data, style: textStyle));
     }
 
     // TODO: implement build
