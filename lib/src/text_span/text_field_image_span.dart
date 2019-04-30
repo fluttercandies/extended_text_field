@@ -1,7 +1,6 @@
 import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/painting/image_provider.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/4/26
