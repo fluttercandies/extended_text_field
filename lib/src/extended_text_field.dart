@@ -1,6 +1,6 @@
-import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/extended_editable_text.dart';
 import 'package:extended_text_field/src/extended_render_editable.dart';
+import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 

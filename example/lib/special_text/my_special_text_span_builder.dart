@@ -1,7 +1,7 @@
 import 'package:example/special_text/at_text.dart';
 import 'package:example/special_text/dollar_text.dart';
 import 'package:example/special_text/emoji_text.dart';
-import 'package:extended_text/extended_text.dart';
+import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/material.dart';
 
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {

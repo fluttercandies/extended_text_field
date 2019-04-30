@@ -50,13 +50,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.1.2"
-  extended_text:
-    dependency: transitive
-    description:
-      name: extended_text
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.3.4"
   extended_text_field:
     dependency: "direct main"
     description:
@@ -64,6 +57,13 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  extended_text_library:
+    dependency: transitive
+    description:
+      name: extended_text_library
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.1"
   flutter:
     dependency: "direct main"
     description: flutter

@@ -1,8 +1,5 @@
 import 'dart:math';
-
-import 'package:extended_text/extended_text.dart';
-import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
-import 'package:extended_text_field/src/text_span/text_field_image_span.dart';
+import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -16,8 +13,8 @@ TextPosition convertTextInputPostionToTextPainterPostion(
     int caretOffset = textPosition.offset;
     int textOffset = 0;
     for (TextSpan ts in text.children) {
-      if (ts is SpecialTextSpanBase) {
-        var length = (ts as SpecialTextSpanBase).actualText.length;
+      if (ts is SpecialTextSpan) {
+        var length = ts.actualText.length;
         caretOffset -= (length - ts.toPlainText().length);
         textOffset += length;
       } else {
@@ -78,8 +75,8 @@ TextPosition convertTextPainterPostionToTextInputPostion(
 
     int textOffset = 0;
     for (TextSpan ts in text.children) {
-      if (ts is SpecialTextSpanBase) {
-        var length = (ts as SpecialTextSpanBase).actualText.length;
+      if (ts is SpecialTextSpan) {
+        var length = ts.actualText.length;
         caretOffset += (length - ts.toPlainText().length);
       }
       textOffset += ts.toPlainText().length;
@@ -136,31 +133,81 @@ double getImageSpanCorrectPosition(ImageSpan image, TextDirection direction) {
   return correctPosition;
 }
 
-TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan newText,
+///correct caret Offset
+///make sure caret is not in image span
+TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan textSpan,
     TextInputConnection textInputConnection) {
-  var text = newText.toPlainText();
-  if (text != value.text) {
-    if (value.selection.isValid && value.selection.isCollapsed) {
-      int caretOffset = value.selection.extentOffset;
-      //correct caret Offset
-      //make sure caret is not in image span
-      var images = newText.children.where((x) => x is TextFieldImageSpan);
-      for (TextFieldImageSpan ts in images) {
-        if (caretOffset > ts.start && caretOffset < ts.end) {
-          //move caretOffset to end
-          caretOffset = ts.end;
+  if (value.selection.isValid && value.selection.isCollapsed) {
+    int caretOffset = value.selection.extentOffset;
+    var imageSpans = textSpan.children.where((x) => x is ImageSpan);
+    //correct caret Offset
+    //make sure caret is not in image span
+    for (ImageSpan ts in imageSpans) {
+      if (caretOffset > ts.start && caretOffset < ts.end) {
+        //move caretOffset to end
+        caretOffset = ts.end;
+        break;
+      }
+    }
+
+    ///tell textInput caretOffset is changed.
+    if (caretOffset != value.selection.baseOffset) {
+      value = value.copyWith(
+          selection: value.selection
+              .copyWith(baseOffset: caretOffset, extentOffset: caretOffset));
+      textInputConnection?.setEditingState(value);
+    }
+  }
+  return value;
+}
+
+TextEditingValue handleSpecialTextSpanDelete(
+    TextEditingValue value,
+    TextEditingValue oldValue,
+    TextSpan oldTextSpan,
+    TextInputConnection textInputConnection) {
+  var oldText = oldValue?.text;
+  var newText = value?.text;
+  if (oldTextSpan != null) {
+    var imageSpans = oldTextSpan.children
+        .where((x) => (x is SpecialTextSpan && x.deleteAll));
+
+    ///take care of image span
+    if (imageSpans.length > 0 &&
+        oldText != null &&
+        newText != null &&
+        oldText.length > newText.length) {
+      int difStart = 0;
+      //int difEnd = oldText.length - 1;
+      for (; difStart < newText.length; difStart++) {
+        if (oldText[difStart] != newText[difStart]) {
           break;
         }
       }
 
-      ///tell textInput caretOffset is changed.
-      if (caretOffset != value.selection.baseOffset) {
-        value = value.copyWith(
-            selection: value.selection
-                .copyWith(baseOffset: caretOffset, extentOffset: caretOffset));
-        textInputConnection?.setEditingState(value);
+      int caretOffset = value.selection.extentOffset;
+      if (difStart > 0) {
+        for (SpecialTextSpan ts in imageSpans) {
+          if (difStart > ts.start && difStart < ts.end) {
+            //difStart = ts.start;
+            newText = newText.replaceRange(ts.start, difStart, "");
+            caretOffset -= (difStart - ts.start);
+            break;
+          }
+        }
+        if (newText != value.text) {
+          value = TextEditingValue(
+              text: newText,
+              selection: value.selection.copyWith(
+                  baseOffset: caretOffset,
+                  extentOffset: caretOffset,
+                  affinity: value.selection.affinity,
+                  isDirectional: value.selection.isDirectional));
+          textInputConnection?.setEditingState(value);
+        }
       }
     }
   }
+
   return value;
 }

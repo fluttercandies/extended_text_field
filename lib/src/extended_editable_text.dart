@@ -10,11 +10,10 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/extended_render_editable.dart';
 import 'package:extended_text_field/src/extended_text_field_utils.dart';
 import 'package:extended_text_field/src/extended_text_selection.dart';
-import 'package:extended_text_field/src/text_span/text_field_image_span.dart';
+import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
@@ -758,25 +757,23 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _startCursorTimer();
   }
 
-  TextSpan _preTextSpan;
-
   ///zmt
   TextEditingValue _handleSpecialTextSpan(TextEditingValue value,
       {bool userInput: false}) {
     final bool textChanged = _value?.text != value?.text;
     if (textChanged && widget.specialTextSpanBuilder != null && value != null) {
-      var newText = widget.specialTextSpanBuilder.build(value.text);
-      if (newText != null) {
-        var hasImageSpan = newText.children
-            .firstWhere((x) => x is TextFieldImageSpan, orElse: () => null);
-        if (hasImageSpan != null) {
-          _preTextSpan = newText;
-          value = correctCaretOffset(value, newText, _textInputConnection);
-        } else {
-          _preTextSpan = null;
+      var oldTextSpan = widget.specialTextSpanBuilder.build(_value?.text);
+      value = handleSpecialTextSpanDelete(
+          value, _value, oldTextSpan, _textInputConnection);
+
+      //correct caret Offset
+      //make sure caret is not in image span
+      var newTextSpan = widget.specialTextSpanBuilder.build(value.text);
+      if (newTextSpan != null) {
+        var text = newTextSpan.toPlainText();
+        if (text != value.text) {
+          value = correctCaretOffset(value, newTextSpan, _textInputConnection);
         }
-      } else {
-        _preTextSpan = null;
       }
     }
     return value;
@@ -832,13 +829,13 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           _floatingCursorResetController.stop();
           _onFloatingCursorResetTick();
         }
-        final TextPosition currentTextPosition =
-            TextPosition(offset: renderEditable.selection.baseOffset);
-
-        ///zmt
 //        final TextPosition currentTextPosition =
-//            convertTextInputPostionToTextPainterPostion(
-//                renderEditable.text, renderEditable.selection.base);
+//            TextPosition(offset: renderEditable.selection.baseOffset);
+
+        //zmt
+        final TextPosition currentTextPosition =
+            convertTextInputPostionToTextPainterPostion(
+                renderEditable.text, renderEditable.selection.base);
 
         _startCaretRect =
             renderEditable.getLocalRectForCaret(currentTextPosition);

@@ -1,4 +1,3 @@
-import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +16,7 @@ class AtText extends SpecialText {
       text: atText,
       actualText: atText,
       start: start,
+      deleteAll: false,
       style: textStyle?.copyWith(color: Colors.blue, fontSize: 16.0),
     );
   }

@@ -43,13 +43,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.6"
-  extended_text:
+  extended_text_library:
     dependency: "direct main"
     description:
-      name: extended_text
+      name: extended_text_library
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.3.4"
+    version: "0.1.1"
   flutter:
     dependency: "direct main"
     description: flutter

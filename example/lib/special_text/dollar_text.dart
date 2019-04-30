@@ -1,4 +1,3 @@
-import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +16,7 @@ class DollarText extends SpecialText {
       text: atText,
       actualText: toString(),
       start: start,
+      deleteAll: true,
       style: textStyle?.copyWith(color: Colors.orange),
     );
   }
