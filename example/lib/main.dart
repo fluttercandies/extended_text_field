@@ -2,7 +2,9 @@ import 'package:example/common/tu_chong_repository.dart';
 import 'package:example/text_demo.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -39,12 +41,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     // TODO: implement initState
-    pages.add(Page(PageType.Text, "quickly build special text"));
-    pages.add(Page(PageType.CustomImage, "custom inline-image in text"));
-    pages.add(Page(PageType.BackgroundText,
-        "workaround for issue 24335/24337 about background"));
-    pages.add(Page(PageType.CustomTextOverflow,
-        "workaround for issue 26748. how to custom text overflow"));
+    pages.add(Page(PageType.text, "quickly build special text"));
+    pages.add(Page(PageType.Insert, "custom inline-image in text"));
 
     listSourceRepository = new TuChongRepository();
     listSourceRepository.loadData().then((result) {
@@ -87,17 +85,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             onTap: () {
               switch (page.type) {
-                case PageType.Text:
+                case PageType.text:
                   pageWidget = new TextDemo();
                   break;
-                case PageType.CustomImage:
+                case PageType.Insert:
                   //pageWidget = new CustomImageDemo();
-                  break;
-                case PageType.BackgroundText:
-                  //pageWidget = new BackgroundTextDemo();
-                  break;
-                case PageType.CustomTextOverflow:
-                  //pageWidget = new CustomTextOverflowDemo();
                   break;
                 default:
                   break;
@@ -125,7 +117,7 @@ class Page {
   Page(this.type, this.description);
 }
 
-enum PageType { Text, CustomImage, BackgroundText, CustomTextOverflow }
+enum PageType { text, Insert }
 
 List<String> _imageTestUrls;
 List<String> get imageTestUrls =>
