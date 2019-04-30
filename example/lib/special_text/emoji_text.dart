@@ -20,11 +20,12 @@ class EmojiText extends SpecialText {
       ///fontSize 26 and text height =30.0
       //final double fontSize = 26.0;
 
-      return TextFieldImageSpan(AssetImage(EmojiUitl.instance.emojiMap[key]),
+      return ImageSpan(AssetImage(EmojiUitl.instance.emojiMap[key]),
           actualText: key,
           imageWidth: size,
           imageHeight: size,
           start: start,
+          deleteAll: true,
           margin: EdgeInsets.only(left: 2.0, bottom: 0.0, right: 2.0));
     }
 

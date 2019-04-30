@@ -11,9 +11,8 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui show TextBox, lerpDouble;
 
-import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/extended_text_field_utils.dart';
-import 'package:extended_text_field/src/text_span/text_field_image_span.dart';
+import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -1538,7 +1537,7 @@ class ExtendedRenderEditable extends RenderBox {
     var textSpan = text.getSpanForPosition(textPosition);
     double imageTextSpanWidth = 0.0;
     if (textSpan != null) {
-      if (textSpan is TextFieldImageSpan) {
+      if (textSpan is ImageSpan) {
         if (textInputPosition.offset == textSpan.start) {
           imageTextSpanWidth -=
               getImageSpanCorrectPosition(textSpan, textDirection);
@@ -1558,7 +1557,7 @@ class ExtendedRenderEditable extends RenderBox {
       //handle image text span is last one, textPainter will get wrong offset
       //last one
       textSpan = text.children?.last;
-      if (textSpan is TextFieldImageSpan) {
+      if (textSpan is ImageSpan) {
         imageTextSpanWidth -=
             getImageSpanCorrectPosition(textSpan, textDirection);
       }
@@ -1728,7 +1727,7 @@ class ExtendedRenderEditable extends RenderBox {
   }
 
   void _paintSelection(Canvas canvas, Offset effectiveOffset,
-      Map<Offset, TextFieldImageSpan> imageSpans) {
+      Map<Offset, ImageSpan> imageSpans) {
     assert(_textLayoutLastWidth == constraints.maxWidth);
     assert(_selectionRects != null);
     final Paint paint = Paint()..color = _selectionColor;
@@ -1736,7 +1735,7 @@ class ExtendedRenderEditable extends RenderBox {
     ///zmt
     for (int i = 0; i < _selectionRects.length; i++) {
       var box = _selectionRects[i];
-      TextFieldImageSpan textSpan = imageSpans[Offset(box.left, box.top)];
+      ImageSpan textSpan = imageSpans[Offset(box.left, box.top)];
 
 //      var textPosition =
 //          _textPainter.getPositionForOffset(Offset(box.left, box.top));
@@ -1745,15 +1744,14 @@ class ExtendedRenderEditable extends RenderBox {
       var rect = box.toRect();
 
       ///fix image span position
-      if (textSpan != null && textSpan is TextFieldImageSpan) {
+      if (textSpan != null) {
         ///move left only
-//        if (textSpan.width < rect.width) {
-//          rect = Rect.fromLTRB(rect.left - textSpan.width / 2.0, rect.top,
-//              rect.right, rect.bottom);
-//        }
-//        //move all rect
-//        else
-        {
+        if (textSpan.width < rect.width) {
+          rect = Rect.fromLTRB(rect.left - textSpan.width / 2.0, rect.top,
+              rect.right, rect.bottom);
+        }
+        //move all rect
+        else {
           rect = rect.shift(Offset(
               -getImageSpanCorrectPosition(textSpan, textDirection), 0.0));
         }
@@ -1791,15 +1789,14 @@ class ExtendedRenderEditable extends RenderBox {
       _selectionRects ??= _textPainter.getBoxesForSelection(actualSelection);
 
       int textOffset = 0;
-      Map<Offset, TextFieldImageSpan> imageSpans =
-          Map<Offset, TextFieldImageSpan>();
+      Map<Offset, ImageSpan> imageSpans = Map<Offset, ImageSpan>();
 
       ///find all image span in selection
       if (text != null && text.children != null) {
         for (TextSpan ts in text.children) {
           if (textOffset >= actualSelection.start &&
               textOffset <= actualSelection.end) {
-            if (ts is TextFieldImageSpan) {
+            if (ts is ImageSpan) {
               var offset = _textPainter.getOffsetForCaret(
                 TextPosition(offset: textOffset),
                 effectiveOffset & size,

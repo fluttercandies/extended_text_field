@@ -1,14 +1,5 @@
 # extended_text_field
 
-A new Flutter package.
+[![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field)
 
-## Getting Started
-
-This project is a starting point for a Dart
-[package](https://flutter.io/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+extended official text field to quickly build special text like inline image or @somebody etc.
