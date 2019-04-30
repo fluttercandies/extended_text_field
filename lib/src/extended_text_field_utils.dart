@@ -1,7 +1,10 @@
 import 'dart:math';
 
+import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
+import 'package:extended_text_field/src/text_span/text_field_image_span.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/4/29
@@ -124,4 +127,40 @@ TextSelection convertTextPainterSelectionToTextInputSelection(
   }
 
   return selection;
+}
+
+double getImageSpanCorrectPosition(ImageSpan image, TextDirection direction) {
+  var correctPosition = image.width / 2.0;
+  //if (direction == TextDirection.rtl) correctPosition = -correctPosition;
+
+  return correctPosition;
+}
+
+TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan newText,
+    TextInputConnection textInputConnection) {
+  var text = newText.toPlainText();
+  if (text != value.text) {
+    if (value.selection.isValid && value.selection.isCollapsed) {
+      int caretOffset = value.selection.extentOffset;
+      //correct caret Offset
+      //make sure caret is not in image span
+      var images = newText.children.where((x) => x is TextFieldImageSpan);
+      for (TextFieldImageSpan ts in images) {
+        if (caretOffset > ts.start && caretOffset < ts.end) {
+          //move caretOffset to end
+          caretOffset = ts.end;
+          break;
+        }
+      }
+
+      ///tell textInput caretOffset is changed.
+      if (caretOffset != value.selection.baseOffset) {
+        value = value.copyWith(
+            selection: value.selection
+                .copyWith(baseOffset: caretOffset, extentOffset: caretOffset));
+        textInputConnection?.setEditingState(value);
+      }
+    }
+  }
+  return value;
 }

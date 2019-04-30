@@ -14,8 +14,6 @@ import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/extended_render_editable.dart';
 import 'package:extended_text_field/src/extended_text_field_utils.dart';
 import 'package:extended_text_field/src/extended_text_selection.dart';
-import 'package:extended_text_field/src/text_span/special_text_span.dart';
-import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
 import 'package:extended_text_field/src/text_span/text_field_image_span.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -742,7 +740,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   @override
   void updateEditingValue(TextEditingValue value) {
-    value = _handleSpecialTextSpan(value);
+    value = _handleSpecialTextSpan(value, userInput: true);
     if (value.text != _value.text) {
       _hideSelectionOverlayIfNeeded();
       _showCaretOnScreen();
@@ -760,49 +758,25 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _startCursorTimer();
   }
 
+  TextSpan _preTextSpan;
+
   ///zmt
-  TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
+  TextEditingValue _handleSpecialTextSpan(TextEditingValue value,
+      {bool userInput: false}) {
     final bool textChanged = _value?.text != value?.text;
-    if (textChanged &&
-        widget.specialTextSpanBuilder != null &&
-        value != null &&
-        value != "") {
+    if (textChanged && widget.specialTextSpanBuilder != null && value != null) {
       var newText = widget.specialTextSpanBuilder.build(value.text);
       if (newText != null) {
-        var text = newText.toPlainText();
-        if (text != value.text) {
-          if (value.selection.isCollapsed) {
-            int caretOffset = value.selection.extentOffset;
-            int textOffset = 0;
-            for (TextSpan ts in newText.children) {
-              if (ts is SpecialTextSpanBase) {
-                if (ts is TextFieldImageSpan &&
-                    caretOffset > ts.start &&
-                    caretOffset < ts.end) {
-                  //move caretOffset to end
-                  caretOffset = ts.end;
-                  break;
-                }
-                var length = (ts as SpecialTextSpanBase).actualText.length;
-                textOffset += length;
-              } else {
-                textOffset += ts.toPlainText().length;
-                if (textOffset > caretOffset) {
-                  break;
-                }
-              }
-            }
-
-            ///tell textInput caretOffset is changed.
-            if (caretOffset != value.selection.baseOffset) {
-              value = value.copyWith(
-                  selection: value.selection.copyWith(
-                      baseOffset: caretOffset, extentOffset: caretOffset));
-              _lastKnownRemoteTextEditingValue = value;
-              _textInputConnection?.setEditingState(value);
-            }
-          }
+        var hasImageSpan = newText.children
+            .firstWhere((x) => x is TextFieldImageSpan, orElse: () => null);
+        if (hasImageSpan != null) {
+          _preTextSpan = newText;
+          value = correctCaretOffset(value, newText, _textInputConnection);
+        } else {
+          _preTextSpan = null;
         }
+      } else {
+        _preTextSpan = null;
       }
     }
     return value;

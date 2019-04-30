@@ -1,3 +1,5 @@
+import 'dart:async';
+
 ///
 ///  create by zhoumaotuo on 2019/4/25
 ///
@@ -7,12 +9,10 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
-import 'dart:math';
 import 'dart:ui' as ui show TextBox, lerpDouble;
 
 import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/src/extended_text_field_utils.dart';
-import 'package:extended_text_field/src/text_span/special_text_span_base.dart';
 import 'package:extended_text_field/src/text_span/text_field_image_span.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -1540,15 +1540,18 @@ class ExtendedRenderEditable extends RenderBox {
     if (textSpan != null) {
       if (textSpan is TextFieldImageSpan) {
         if (textInputPosition.offset == textSpan.start) {
-          imageTextSpanWidth -= textSpan.width / 2.0;
+          imageTextSpanWidth -=
+              getImageSpanCorrectPosition(textSpan, textDirection);
         } else if (textInputPosition.offset < textSpan.end) {
-          imageTextSpanWidth += textSpan.width / 2.0;
+          imageTextSpanWidth +=
+              getImageSpanCorrectPosition(textSpan, textDirection);
         }
         //handle image text span is last one, textPainter will get wrong offset
         //last one
         else if (textInputPosition.offset == textSpan.end &&
             textSpan == text.children?.last) {
-          imageTextSpanWidth -= textSpan.width / 2.0;
+          imageTextSpanWidth -=
+              getImageSpanCorrectPosition(textSpan, textDirection);
         }
       }
     } else {
@@ -1556,7 +1559,8 @@ class ExtendedRenderEditable extends RenderBox {
       //last one
       textSpan = text.children?.last;
       if (textSpan is TextFieldImageSpan) {
-        imageTextSpanWidth -= textSpan.width / 2.0;
+        imageTextSpanWidth -=
+            getImageSpanCorrectPosition(textSpan, textDirection);
       }
     }
 
@@ -1750,7 +1754,8 @@ class ExtendedRenderEditable extends RenderBox {
 //        //move all rect
 //        else
         {
-          rect = rect.shift(Offset(-textSpan.width / 2.0, 0.0));
+          rect = rect.shift(Offset(
+              -getImageSpanCorrectPosition(textSpan, textDirection), 0.0));
         }
       }
 
@@ -1780,6 +1785,8 @@ class ExtendedRenderEditable extends RenderBox {
     }
 
     if (showSelection) {
+      print(_selection);
+
       ///zmt
       _selectionRects ??= _textPainter.getBoxesForSelection(actualSelection);
 
@@ -1879,7 +1886,8 @@ class ExtendedRenderEditable extends RenderBox {
       if (ts is ImageSpan) {
         ///imageSpanTransparentPlaceholder \u200B has no width, and we define image width by
         ///use letterSpacing,so the actual top-left offset of image should be subtract letterSpacing(width)/2.0
-        Offset imageSpanOffset = topLeftOffset - Offset(ts.width / 2.0, 0.0);
+        Offset imageSpanOffset = topLeftOffset -
+            Offset(getImageSpanCorrectPosition(ts, textDirection), 0.0);
 
         if (!ts.paint(canvas, imageSpanOffset)) {
           //image not ready

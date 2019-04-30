@@ -12,10 +12,13 @@ class TextDemo extends StatelessWidget {
       ),
       body: Container(
           padding: EdgeInsets.all(20.0),
-          child: ExtendedTextField(
+          child:
+              //  TextField()
+              ExtendedTextField(
             specialTextSpanBuilder: MySpecialTextSpanBuilder(),
             controller: TextEditingController()..text = "[love]",
             maxLines: 2,
+            //textDirection: TextDirection.rtl,
           )),
     );
   }
