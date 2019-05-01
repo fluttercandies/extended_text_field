@@ -1571,22 +1571,24 @@ class ExtendedRenderEditable extends RenderBox {
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
+    ///zmt
+    ///under flutter low version, getFullHeightForCaret is not support
     // Override the height to take the full height of the glyph at the TextPosition
     // when not on iOS. iOS has special handling that creates a taller caret.
     // TODO(garyq): See the TODO for _getCaretPrototype.
-    if (defaultTargetPlatform != TargetPlatform.iOS &&
-        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
-            null) {
-      caretRect = Rect.fromLTWH(
-        caretRect.left,
-        // Offset by _kCaretHeightOffset to counteract the same value added in
-        // _getCaretPrototype. This prevents this from scaling poorly for small
-        // font sizes.
-        caretRect.top - _kCaretHeightOffset,
-        caretRect.width,
-        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
-      );
-    }
+//    if (defaultTargetPlatform != TargetPlatform.iOS &&
+//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
+//            null) {
+//      caretRect = Rect.fromLTWH(
+//        caretRect.left,
+//        // Offset by _kCaretHeightOffset to counteract the same value added in
+//        // _getCaretPrototype. This prevents this from scaling poorly for small
+//        // font sizes.
+//        caretRect.top - _kCaretHeightOffset,
+//        caretRect.width,
+//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
+//      );
+//    }
 
     caretRect = caretRect.shift(_getPixelPerfectCursorOffset(caretRect));
 
