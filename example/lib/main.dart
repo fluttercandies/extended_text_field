@@ -1,4 +1,3 @@
-import 'package:example/common/tu_chong_repository.dart';
 import 'package:example/text_demo.dart';
 import 'package:flutter/material.dart';
 
@@ -37,21 +36,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Page> pages = new List<Page>();
-  TuChongRepository listSourceRepository;
+
   @override
   void initState() {
     // TODO: implement initState
     pages.add(Page(
         PageType.text, "build special text amd inline image in text field"));
 
-    listSourceRepository = new TuChongRepository();
-    listSourceRepository.loadData().then((result) {
-      if (listSourceRepository.length > 0) {
-        // _imageTestUrl = listSourceRepository.first.imageUrl;
-        _imageTestUrls =
-            listSourceRepository.map<String>((f) => f.imageUrl).toList();
-      }
-    });
     super.initState();
   }
 
@@ -115,8 +106,3 @@ class Page {
 }
 
 enum PageType { text }
-
-List<String> _imageTestUrls;
-List<String> get imageTestUrls =>
-    _imageTestUrls ??
-    <String>["https://photo.tuchong.com/4870004/f/298584322.jpg"];
