@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   /// whether show background for @somebody
   final bool showAtBackground;
-  MySpecialTextSpanBuilder({this.showAtBackground: false});
+  final BuilderType type;
+  MySpecialTextSpanBuilder(
+      {this.showAtBackground: false, this.type: BuilderType.extendedText});
   @override
   TextSpan build(String data, {TextStyle textStyle, onTap}) {
     // TODO: implement build
@@ -66,12 +68,14 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
 
     if (isStart(flag, AtText.flag)) {
       return AtText(textStyle, onTap, start,
-          showAtBackground: showAtBackground);
+          showAtBackground: showAtBackground, type: type);
     } else if (isStart(flag, EmojiText.flag)) {
       return EmojiText(textStyle, start);
     } else if (isStart(flag, DollarText.flag)) {
-      return DollarText(textStyle, onTap, start);
+      return DollarText(textStyle, onTap, start, type: type);
     }
     return null;
   }
 }
+
+enum BuilderType { extendedText, extendedTextField }
