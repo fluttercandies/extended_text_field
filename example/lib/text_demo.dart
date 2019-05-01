@@ -116,7 +116,11 @@ class _TextDemoState extends State<TextDemo> {
                   onTap: () {
                     setState(() {
                       sessions.insert(0, _textEditingController.text);
-                      _textEditingController.clear();
+                      _textEditingController.value =
+                          _textEditingController.value.copyWith(
+                              text: "",
+                              selection: TextSelection.collapsed(offset: 0),
+                              composing: TextRange.empty);
                     });
                   },
                   child: Icon(Icons.send),
