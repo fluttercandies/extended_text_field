@@ -29,7 +29,7 @@ class _TextDemoState extends State<TextDemo> {
     "yes, you are right [36].",
     "大家好，我是拉面，很萌很新 [12].",
     "\$Flutter\$. CN dev best dev",
-    "\$Dota2 Ti9\$. Shanghai I'm coming",
+    "\$Dota2 Ti9\$. Shanghai,I'm coming.",
     "error 0 [45] warning 0",
     "error 0 [45] warning 0",
     "error 0 [45] warning 0",
