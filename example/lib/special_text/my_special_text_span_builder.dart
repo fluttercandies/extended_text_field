@@ -5,6 +5,9 @@ import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/material.dart';
 
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
+  /// whether show background for @somebody
+  final bool showAtBackground;
+  MySpecialTextSpanBuilder({this.showAtBackground: false});
   @override
   TextSpan build(String data, {TextStyle textStyle, onTap}) {
     // TODO: implement build
@@ -62,7 +65,8 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
     // TODO: implement createSpecialText
 
     if (isStart(flag, AtText.flag)) {
-      return AtText(textStyle, onTap, start);
+      return AtText(textStyle, onTap, start,
+          showAtBackground: showAtBackground);
     } else if (isStart(flag, EmojiText.flag)) {
       return EmojiText(textStyle, start);
     } else if (isStart(flag, DollarText.flag)) {
