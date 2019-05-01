@@ -41,8 +41,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     // TODO: implement initState
-    pages.add(Page(PageType.text, "quickly build special text"));
-    pages.add(Page(PageType.Insert, "custom inline-image in text"));
+    pages.add(Page(
+        PageType.text, "build special text amd inline image in text field"));
 
     listSourceRepository = new TuChongRepository();
     listSourceRepository.loadData().then((result) {
@@ -88,9 +88,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 case PageType.text:
                   pageWidget = new TextDemo();
                   break;
-                case PageType.Insert:
-                  //pageWidget = new CustomImageDemo();
-                  break;
                 default:
                   break;
               }
@@ -117,7 +114,7 @@ class Page {
   Page(this.type, this.description);
 }
 
-enum PageType { text, Insert }
+enum PageType { text }
 
 List<String> _imageTestUrls;
 List<String> get imageTestUrls =>

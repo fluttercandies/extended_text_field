@@ -26,7 +26,8 @@ class EmojiText extends SpecialText {
           imageHeight: size,
           start: start,
           deleteAll: true,
-          margin: EdgeInsets.only(left: 2.0, bottom: 0.0, right: 2.0));
+          fit: BoxFit.fill,
+          margin: EdgeInsets.only(left: 2.0, top: 2.0, right: 2.0));
     }
 
     return TextSpan(text: toString(), style: textStyle);
@@ -47,7 +48,8 @@ class EmojiUitl {
   }
 
   EmojiUitl._() {
-    _emojiMap["[love]"] = "$_emojiFilePath/love.png";
-    _emojiMap["[sun_glasses]"] = "$_emojiFilePath/sun_glasses.png";
+    for (int i = 1; i < 49; i++) {
+      _emojiMap["[$i]"] = "$_emojiFilePath/$i.png";
+    }
   }
 }
