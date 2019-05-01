@@ -4,6 +4,8 @@
 
 extended official text field to quickly build special text like inline image or @somebody etc.
 
+base on flutter version 1.5.7
+
 ## limitation
 1.Not support: TextDirection.rtl.
 Image position calculated by TextPainter is strange.
