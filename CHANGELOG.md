@@ -1,3 +1,3 @@
-## [0.1.0]
+## [0.1.1]
 
 * support special text amd inline image

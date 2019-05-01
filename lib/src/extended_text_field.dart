@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/4/22
-///  update baso on flutter version 1.5.7
+///  base on flutter version 1.5.7
 ///
 import 'dart:collection';
 import 'package:flutter/cupertino.dart';
