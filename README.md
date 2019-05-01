@@ -5,14 +5,16 @@
 extended official text field to quickly build special text like inline image or @somebody etc.
 
 ## limitation
-1.Not support TextDirection.rtl.
+1.Not support: TextDirection.rtl.
 Image position calculated by TextPainter is strange.
 
-2.Not support for obscureText.
+2.Not support: obscureText is true.
+
+3.Not support: TextEditingValue is composed.
+
+##  How to use it.
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
-
-how to use it.
 
 ### 1. just to extend SpecialText and define your rule.
 
