@@ -761,16 +761,18 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   TextEditingValue _handleSpecialTextSpan(TextEditingValue value,
       {bool userInput: false}) {
     final bool textChanged = _value?.text != value?.text;
-    if (textChanged && widget.specialTextSpanBuilder != null && value != null) {
+    if (textChanged && widget.specialTextSpanBuilder != null) {
+      var newTextSpan = widget.specialTextSpanBuilder.build(value?.text);
+      if (newTextSpan == null) return value;
+
       var oldTextSpan = widget.specialTextSpanBuilder.build(_value?.text);
       value = handleSpecialTextSpanDelete(
           value, _value, oldTextSpan, _textInputConnection);
 
-      //correct caret Offset
-      //make sure caret is not in image span
-      var newTextSpan = widget.specialTextSpanBuilder.build(value.text);
       if (newTextSpan != null) {
         var text = newTextSpan.toPlainText();
+        //correct caret Offset
+        //make sure caret is not in image span
         if (text != value.text) {
           value = correctCaretOffset(value, newTextSpan, _textInputConnection);
         }

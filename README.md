@@ -7,12 +7,16 @@ extended official text field to quickly build special text like inline image or 
 base on flutter version 1.5.7
 
 ## limitation
+
 1.Not support: TextDirection.rtl.
 Image position calculated by TextPainter is strange.
 
 2.Not support: obscureText is true.
 
 3.Not support: TextEditingValue is composed.
+
+4.codes are base on flutter 1.5.7, if any one find some codes are broken,
+please fix them base on your flutter version, we can't maintain codes for every version.
 
 ##  How to use it.
 

@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     // TODO: implement initState
     pages.add(Page(
-        PageType.text, "build special text amd inline image in text field"));
+        PageType.text, "build special text and inline image in text field"));
 
     super.initState();
   }

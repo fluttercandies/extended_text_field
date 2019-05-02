@@ -12,8 +12,8 @@ class AtText extends SpecialText {
   final bool showAtBackground;
 
   final BuilderType type;
-  AtText(TextStyle textStyle, SpecialTextGestureTapCallback onTap, this.start,
-      {this.showAtBackground: false, this.type})
+  AtText(TextStyle textStyle, SpecialTextGestureTapCallback onTap,
+      {this.showAtBackground: false, this.type, this.start})
       : super(flag, " ", textStyle, onTap: onTap);
 
   @override

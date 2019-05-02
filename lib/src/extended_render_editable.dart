@@ -1572,7 +1572,9 @@ class ExtendedRenderEditable extends RenderBox {
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
     ///zmt
-    ///under flutter low version, getFullHeightForCaret is not support
+    ///1.5.7
+    ///under low version of flutter, getFullHeightForCaret is not support
+    ///
     // Override the height to take the full height of the glyph at the TextPosition
     // when not on iOS. iOS has special handling that creates a taller caret.
     // TODO(garyq): See the TODO for _getCaretPrototype.

@@ -11,68 +11,22 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   MySpecialTextSpanBuilder(
       {this.showAtBackground: false, this.type: BuilderType.extendedText});
   @override
-  TextSpan build(String data, {TextStyle textStyle, onTap}) {
-    // TODO: implement build
-    if (data == null) return null;
-    List<TextSpan> inlineList = new List<TextSpan>();
-    if (data.length > 0) {
-      SpecialText specialText;
-      String textStack = "";
-      //String text
-      for (int i = 0; i < data.length; i++) {
-        String char = data[i];
-        if (specialText != null) {
-          if (!specialText.isEnd(char)) {
-            specialText.appendContent(char);
-          } else {
-            inlineList.add(specialText.finishText());
-            specialText = null;
-          }
-        } else {
-          textStack += char;
-          specialText = createSpecialText(textStack,
-              textStyle: textStyle, onTap: onTap, start: i);
-          if (specialText != null) {
-            if (textStack.length - specialText.startFlag.length >= 0) {
-              textStack = textStack.substring(
-                  0, textStack.length - specialText.startFlag.length);
-              if (textStack.length > 0) {
-                inlineList.add(TextSpan(text: textStack, style: textStyle));
-              }
-            }
-            textStack = "";
-          }
-        }
-      }
-
-      if (specialText != null) {
-        inlineList.add(TextSpan(
-            text: specialText.startFlag + specialText.getContent(),
-            style: textStyle));
-      } else if (textStack.length > 0) {
-        inlineList.add(TextSpan(text: textStack, style: textStyle));
-      }
-    } else {
-      inlineList.add(TextSpan(text: data, style: textStyle));
-    }
-
-    // TODO: implement build
-    return TextSpan(children: inlineList, style: textStyle);
-  }
-
-  @override
   SpecialText createSpecialText(String flag,
-      {TextStyle textStyle, SpecialTextGestureTapCallback onTap, int start}) {
+      {TextStyle textStyle, SpecialTextGestureTapCallback onTap, int index}) {
     if (flag == null || flag == "") return null;
     // TODO: implement createSpecialText
 
+    ///index is end index of start flag, so text start index should be index-(flag.length-1)
     if (isStart(flag, AtText.flag)) {
-      return AtText(textStyle, onTap, start,
-          showAtBackground: showAtBackground, type: type);
+      return AtText(textStyle, onTap,
+          start: index - (AtText.flag.length - 1),
+          showAtBackground: showAtBackground,
+          type: type);
     } else if (isStart(flag, EmojiText.flag)) {
-      return EmojiText(textStyle, start);
+      return EmojiText(textStyle, start: index - (EmojiText.flag.length - 1));
     } else if (isStart(flag, DollarText.flag)) {
-      return DollarText(textStyle, onTap, start, type: type);
+      return DollarText(textStyle, onTap,
+          start: index - (DollarText.flag.length - 1), type: type);
     }
     return null;
   }
