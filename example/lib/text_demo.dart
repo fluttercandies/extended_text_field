@@ -17,7 +17,9 @@ class TextDemo extends StatefulWidget {
 }
 
 class _TextDemoState extends State<TextDemo> {
-  TextEditingController _textEditingController = new TextEditingController();
+  TextEditingController _textEditingController = TextEditingController();
+  MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
+      MySpecialTextSpanBuilder(type: BuilderType.extendedText);
   FocusNode _focusNode = FocusNode();
   double _keyboardHeight = 267.0;
   bool get showCustomKeyBoard => active1 || active2 || active3;
@@ -48,7 +50,6 @@ class _TextDemoState extends State<TextDemo> {
   Widget build(BuildContext context) {
     FocusScope.of(context).autofocus(_focusNode);
     var keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    print(keyboardHeight);
     if (keyboardHeight > 0) {
       active1 = active2 = active3 = false;
     }
@@ -57,7 +58,7 @@ class _TextDemoState extends State<TextDemo> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("special text amd inline image"),
+        title: Text("special text and inline image"),
       ),
       body: Column(
         children: <Widget>[
@@ -70,11 +71,11 @@ class _TextDemoState extends State<TextDemo> {
                 width: 30.0,
                 height: 30.0,
               );
-              var text = ExtendedText(
+              //print(sessions[index]);
+              Widget text = ExtendedText(
                 sessions[index],
                 textAlign: left ? TextAlign.left : TextAlign.right,
-                specialTextSpanBuilder:
-                    MySpecialTextSpanBuilder(type: BuilderType.extendedText),
+                specialTextSpanBuilder: _mySpecialTextSpanBuilder,
                 onSpecialTextTap: (value) {
                   if (value.startsWith("\$")) {
                     launch("https://github.com/fluttercandies");
@@ -83,6 +84,11 @@ class _TextDemoState extends State<TextDemo> {
                   }
                 },
               );
+//              text = Image.asset(
+//                EmojiUitl.instance.emojiMap[sessions[index]],
+//                height: 20.0,
+//                width: 20.0,
+//              );
 
               var list = <Widget>[
                 logo,
