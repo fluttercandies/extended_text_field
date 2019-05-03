@@ -10,6 +10,16 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   final BuilderType type;
   MySpecialTextSpanBuilder(
       {this.showAtBackground: false, this.type: BuilderType.extendedText});
+
+  @override
+  TextSpan build(String data, {TextStyle textStyle, onTap}) {
+    // TODO: implement build
+    var textSpan = super.build(data, textStyle: textStyle, onTap: onTap);
+    //for performance, make sure your all SpecialTextSpan are only in textSpan.children
+    //extended_text_field will only check textSpan.children
+    return textSpan;
+  }
+
   @override
   SpecialText createSpecialText(String flag,
       {TextStyle textStyle, SpecialTextGestureTapCallback onTap, int index}) {

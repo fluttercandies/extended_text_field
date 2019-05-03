@@ -158,7 +158,7 @@ class ExtendedRenderEditable extends RenderBox {
         _floatingCursorAddedMargin = floatingCursorAddedMargin,
         _enableInteractiveSelection = enableInteractiveSelection,
         _devicePixelRatio = devicePixelRatio,
-        _handleSpecialText = hasSpecialText(<TextSpan>[text]),
+        _handleSpecialText = hasSpecialText(text),
         _obscureText = obscureText {
     assert(_showCursor != null);
     assert(!_showCursor.value || cursorColor != null);
@@ -559,7 +559,7 @@ class ExtendedRenderEditable extends RenderBox {
   set text(TextSpan value) {
     if (_textPainter.text == value) return;
     _textPainter.text = value;
-    _handleSpecialText = hasSpecialText(<TextSpan>[value]);
+    _handleSpecialText = hasSpecialText(value);
     markNeedsTextLayout();
     markNeedsSemanticsUpdate();
   }

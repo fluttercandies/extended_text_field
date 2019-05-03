@@ -212,14 +212,24 @@ TextEditingValue handleSpecialTextSpanDelete(
   return value;
 }
 
-bool hasSpecialText(List<TextSpan> value) {
-  if (value == null) return false;
+//bool hasSpecialText(List<TextSpan> value) {
+//  if (value == null) return false;
+//
+//  for (var textSpan in value) {
+//    if (textSpan is SpecialTextSpan) return true;
+//    if (hasSpecialText(textSpan.children)) {
+//      return true;
+//    }
+//  }
+//  return false;
+//}
 
-  for (var textSpan in value) {
-    if (textSpan is SpecialTextSpan) return true;
-    if (hasSpecialText(textSpan.children)) {
-      return true;
-    }
-  }
-  return false;
+bool hasSpecialText(TextSpan textSpan) {
+  if (textSpan == null || textSpan.children == null) return false;
+
+  //for performance, make sure your all SpecialTextSpan are only in textSpan.children
+  //extended_text_field will only check textSpan.children
+  return textSpan.children
+          .firstWhere((x) => x is SpecialTextSpan, orElse: () => null) !=
+      null;
 }
