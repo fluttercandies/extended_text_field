@@ -14,8 +14,9 @@ Image position calculated by TextPainter is strange.
 2.Not support: obscureText is true.
 
 3.codes are base on flutter 1.5.7, if any one find some codes are broken,
-please fix them base on your flutter version, would't maintain codes for every version.
-and would update codes for stable flutter version as soon as possible.
+please fix them base on your flutter version.
+it has not time to maintain codes for every version,sorry for that,
+and will update codes for stable flutter version as soon as possible.
 
 ##  How to use it.
 
