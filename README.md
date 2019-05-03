@@ -22,6 +22,8 @@ please fix them base on your flutter version, we can't maintain codes for every 
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
+![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_input.gif)
+
 ### 1. just to extend SpecialText and define your rule.
 
 code for @xxx
