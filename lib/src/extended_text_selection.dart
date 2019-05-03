@@ -390,8 +390,10 @@ class _TextSelectionHandleOverlayState
         widget.renderObject.getPositionForPoint(_dragPosition);
 
     ///zmt
-    position = convertTextPainterPostionToTextInputPostion(
-        widget.renderObject.text, position);
+    if (widget.renderObject.handleSpecialText) {
+      position = convertTextPainterPostionToTextInputPostion(
+          widget.renderObject.text, position);
+    }
 
     if (widget.selection.isCollapsed) {
       widget.onSelectionHandleChanged(TextSelection.fromPosition(position));

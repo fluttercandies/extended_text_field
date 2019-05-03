@@ -81,37 +81,38 @@ class ExtendedRenderEditable extends RenderBox {
   ///
   /// The [offset] is required and must not be null. You can use [new
   /// ViewportOffset.zero] if you have no need for scrolling.
-  ExtendedRenderEditable({
-    TextSpan text,
-    @required TextDirection textDirection,
-    TextAlign textAlign = TextAlign.start,
-    Color cursorColor,
-    Color backgroundCursorColor,
-    ValueNotifier<bool> showCursor,
-    bool hasFocus,
-    int maxLines = 1,
-    int minLines,
-    bool expands = false,
-    StrutStyle strutStyle,
-    Color selectionColor,
-    double textScaleFactor = 1.0,
-    TextSelection selection,
-    @required ViewportOffset offset,
-    this.onSelectionChanged,
-    this.onCaretChanged,
-    this.ignorePointer = false,
-    bool obscureText = false,
-    Locale locale,
-    double cursorWidth = 1.0,
-    Radius cursorRadius,
-    bool paintCursorAboveText = false,
-    Offset cursorOffset,
-    double devicePixelRatio = 1.0,
-    bool enableInteractiveSelection,
-    EdgeInsets floatingCursorAddedMargin =
-        const EdgeInsets.fromLTRB(4, 4, 4, 5),
-    @required this.textSelectionDelegate,
-  })  : assert(textAlign != null),
+  ExtendedRenderEditable(
+      {TextSpan text,
+      @required TextDirection textDirection,
+      TextAlign textAlign = TextAlign.start,
+      Color cursorColor,
+      Color backgroundCursorColor,
+      ValueNotifier<bool> showCursor,
+      bool hasFocus,
+      int maxLines = 1,
+      int minLines,
+      bool expands = false,
+      StrutStyle strutStyle,
+      Color selectionColor,
+      double textScaleFactor = 1.0,
+      TextSelection selection,
+      @required ViewportOffset offset,
+      this.onSelectionChanged,
+      this.onCaretChanged,
+      this.ignorePointer = false,
+      bool obscureText = false,
+      Locale locale,
+      double cursorWidth = 1.0,
+      Radius cursorRadius,
+      bool paintCursorAboveText = false,
+      Offset cursorOffset,
+      double devicePixelRatio = 1.0,
+      bool enableInteractiveSelection,
+      EdgeInsets floatingCursorAddedMargin =
+          const EdgeInsets.fromLTRB(4, 4, 4, 5),
+      @required this.textSelectionDelegate,
+      this.supportSpecialText})
+      : assert(textAlign != null),
         assert(textDirection != null,
             'RenderEditable created without a textDirection.'),
         assert(maxLines == null || maxLines > 0),
@@ -157,6 +158,7 @@ class ExtendedRenderEditable extends RenderBox {
         _floatingCursorAddedMargin = floatingCursorAddedMargin,
         _enableInteractiveSelection = enableInteractiveSelection,
         _devicePixelRatio = devicePixelRatio,
+        _handleSpecialText = hasSpecialText(<TextSpan>[text]),
         _obscureText = obscureText {
     assert(_showCursor != null);
     assert(!_showCursor.value || cursorColor != null);
@@ -167,6 +169,12 @@ class ExtendedRenderEditable extends RenderBox {
     _longPress = LongPressGestureRecognizer(debugOwner: this)
       ..onLongPress = _handleLongPress;
   }
+
+  ///whether to support build SpecialText
+
+  bool supportSpecialText = false;
+  bool _handleSpecialText = false;
+  bool get handleSpecialText => supportSpecialText && _handleSpecialText;
 
   /// Character used to obscure text if [obscureText] is true.
   static const String obscuringCharacter = '•';
@@ -551,6 +559,7 @@ class ExtendedRenderEditable extends RenderBox {
   set text(TextSpan value) {
     if (_textPainter.text == value) return;
     _textPainter.text = value;
+    _handleSpecialText = hasSpecialText(<TextSpan>[value]);
     markNeedsTextLayout();
     markNeedsSemanticsUpdate();
   }
@@ -1335,10 +1344,12 @@ class ExtendedRenderEditable extends RenderBox {
           : _textPainter.getPositionForOffset(globalToLocal(to - _paintOffset));
 
       //zmt
-      fromPosition =
-          convertTextPainterPostionToTextInputPostion(text, fromPosition);
-      toPosition =
-          convertTextPainterPostionToTextInputPostion(text, toPosition);
+      if (handleSpecialText) {
+        fromPosition =
+            convertTextPainterPostionToTextInputPostion(text, fromPosition);
+        toPosition =
+            convertTextPainterPostionToTextInputPostion(text, toPosition);
+      }
 
       int baseOffset = fromPosition.offset;
       int extentOffset = fromPosition.offset;
@@ -1417,15 +1428,21 @@ class ExtendedRenderEditable extends RenderBox {
 
       ///zmt
       if (position.offset - word.start <= 1) {
-        selection = convertTextPainterSelectionToTextInputSelection(
-            text,
-            TextSelection.collapsed(
-                offset: word.start, affinity: TextAffinity.downstream));
+        selection = handleSpecialText
+            ? convertTextPainterSelectionToTextInputSelection(
+                text,
+                TextSelection.collapsed(
+                    offset: word.start, affinity: TextAffinity.downstream))
+            : TextSelection.collapsed(
+                offset: word.start, affinity: TextAffinity.downstream);
       } else {
-        selection = convertTextPainterSelectionToTextInputSelection(
-            text,
-            TextSelection.collapsed(
-                offset: word.end, affinity: TextAffinity.upstream));
+        selection = handleSpecialText
+            ? convertTextPainterSelectionToTextInputSelection(
+                text,
+                TextSelection.collapsed(
+                    offset: word.end, affinity: TextAffinity.upstream))
+            : TextSelection.collapsed(
+                offset: word.end, affinity: TextAffinity.upstream);
       }
       onSelectionChanged(
         selection,
@@ -1447,7 +1464,9 @@ class ExtendedRenderEditable extends RenderBox {
     } else {
       selection = TextSelection(baseOffset: word.start, extentOffset: word.end);
     }
-    return convertTextPainterSelectionToTextInputSelection(text, selection);
+    return handleSpecialText
+        ? convertTextPainterSelectionToTextInputSelection(text, selection)
+        : selection;
 //    if (position.offset >= word.end)
 //      return TextSelection.fromPosition(position);
 //    return TextSelection(baseOffset: word.start, extentOffset: word.end);
@@ -1536,30 +1555,32 @@ class ExtendedRenderEditable extends RenderBox {
     // zmt
     var textSpan = text.getSpanForPosition(textPosition);
     double imageTextSpanWidth = 0.0;
-    if (textSpan != null) {
-      if (textSpan is ImageSpan) {
-        if (textInputPosition.offset == textSpan.start) {
-          imageTextSpanWidth -=
-              getImageSpanCorrectPosition(textSpan, textDirection);
-        } else if (textInputPosition.offset < textSpan.end) {
-          imageTextSpanWidth +=
-              getImageSpanCorrectPosition(textSpan, textDirection);
+    if (handleSpecialText) {
+      if (textSpan != null) {
+        if (textSpan is ImageSpan) {
+          if (textInputPosition.offset == textSpan.start) {
+            imageTextSpanWidth -=
+                getImageSpanCorrectPosition(textSpan, textDirection);
+          } else if (textInputPosition.offset < textSpan.end) {
+            imageTextSpanWidth +=
+                getImageSpanCorrectPosition(textSpan, textDirection);
+          }
+          //handle image text span is last one, textPainter will get wrong offset
+          //last one
+          else if (textInputPosition.offset == textSpan.end &&
+              textSpan == text.children?.last) {
+            imageTextSpanWidth -=
+                getImageSpanCorrectPosition(textSpan, textDirection);
+          }
         }
+      } else {
         //handle image text span is last one, textPainter will get wrong offset
         //last one
-        else if (textInputPosition.offset == textSpan.end &&
-            textSpan == text.children?.last) {
+        textSpan = text.children?.last;
+        if (textSpan is ImageSpan) {
           imageTextSpanWidth -=
               getImageSpanCorrectPosition(textSpan, textDirection);
         }
-      }
-    } else {
-      //handle image text span is last one, textPainter will get wrong offset
-      //last one
-      textSpan = text.children?.last;
-      if (textSpan is ImageSpan) {
-        imageTextSpanWidth -=
-            getImageSpanCorrectPosition(textSpan, textDirection);
       }
     }
 
@@ -1739,25 +1760,27 @@ class ExtendedRenderEditable extends RenderBox {
     ///zmt
     for (int i = 0; i < _selectionRects.length; i++) {
       var box = _selectionRects[i];
-      ImageSpan textSpan = imageSpans[Offset(box.left, box.top)];
+      var rect = box.toRect();
+      if (handleSpecialText) {
+        ImageSpan textSpan = imageSpans[Offset(box.left, box.top)];
 
 //      var textPosition =
 //          _textPainter.getPositionForOffset(Offset(box.left, box.top));
 //      var textSpan = text.getSpanForPosition(textPosition);
 
-      var rect = box.toRect();
-
-      ///fix image span position
-      if (textSpan != null) {
-        ///move left only
-        if (textSpan.width < rect.width) {
-          rect = Rect.fromLTRB(rect.left - textSpan.width / 2.0, rect.top,
-              rect.right, rect.bottom);
-        }
-        //move all rect
-        else {
-          rect = rect.shift(Offset(
-              -getImageSpanCorrectPosition(textSpan, textDirection), 0.0));
+        ///fix image span position
+        if (textSpan != null) {
+          ///move left only
+//        if (textSpan.width < rect.width) {
+//          rect = Rect.fromLTRB(rect.left - textSpan.width / 2.0, rect.top,
+//              rect.right, rect.bottom);
+//        }
+//        //move all rect
+//        else
+          {
+            rect = rect.shift(Offset(
+                -getImageSpanCorrectPosition(textSpan, textDirection), 0.0));
+          }
         }
       }
 
@@ -1773,8 +1796,9 @@ class ExtendedRenderEditable extends RenderBox {
     bool showCaret = false;
 
     ///zmt
-    var actualSelection =
-        convertTextInputSelectionToTextPainterSelection(text, _selection);
+    var actualSelection = handleSpecialText
+        ? convertTextInputSelectionToTextPainterSelection(text, _selection)
+        : _selection;
 
     if (actualSelection != null && !_floatingCursorOn) {
       if (actualSelection.isCollapsed &&
@@ -1787,30 +1811,30 @@ class ExtendedRenderEditable extends RenderBox {
     }
 
     if (showSelection) {
-      print(_selection);
-
-      ///zmt
       _selectionRects ??= _textPainter.getBoxesForSelection(actualSelection);
 
       int textOffset = 0;
       Map<Offset, ImageSpan> imageSpans = Map<Offset, ImageSpan>();
 
+      ///zmt
       ///find all image span in selection
-      if (text != null && text.children != null) {
-        for (TextSpan ts in text.children) {
-          if (textOffset >= actualSelection.start &&
-              textOffset <= actualSelection.end) {
-            if (ts is ImageSpan) {
-              var offset = _textPainter.getOffsetForCaret(
-                TextPosition(offset: textOffset),
-                effectiveOffset & size,
-              );
-              imageSpans[offset] = ts;
+      if (handleSpecialText) {
+        if (text != null && text.children != null) {
+          for (TextSpan ts in text.children) {
+            if (textOffset >= actualSelection.start &&
+                textOffset <= actualSelection.end) {
+              if (ts is ImageSpan) {
+                var offset = _textPainter.getOffsetForCaret(
+                  TextPosition(offset: textOffset),
+                  effectiveOffset & size,
+                );
+                imageSpans[offset] = ts;
+              }
             }
-          }
-          textOffset += ts.toPlainText().length;
-          if (textOffset > actualSelection.end) {
-            break;
+            textOffset += ts.toPlainText().length;
+            if (textOffset > actualSelection.end) {
+              break;
+            }
           }
         }
       }
@@ -1857,6 +1881,8 @@ class ExtendedRenderEditable extends RenderBox {
   }
 
   void _paintSpecialText(PaintingContext context, Offset offset) {
+    if (!handleSpecialText) return;
+
     final Canvas canvas = context.canvas;
 
     canvas.save();
