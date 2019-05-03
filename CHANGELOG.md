@@ -1,3 +1,13 @@
+## [0.1.5]
+
+* override compareTo method in SpecialTextSpan and ImageSpan to
+  fix issue that image span or special text span was error rendering
+
+## [0.1.4]
+
+* update limitation
+* improve codes
+
 ## [0.1.3]
 
 * update limitation
