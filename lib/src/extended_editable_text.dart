@@ -1427,14 +1427,51 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       final TextStyle composingStyle = widget.style.merge(
         const TextStyle(decoration: TextDecoration.underline),
       );
+      var beforeText = _value.composing.textBefore(_value.text);
+      var insideText = _value.composing.textInside(_value.text);
+      var afterText = _value.composing.textAfter(_value.text);
+
+      if (supportSpecialText) {
+        var before = widget.specialTextSpanBuilder
+            .build(beforeText, textStyle: widget.style);
+        var after = widget.specialTextSpanBuilder
+            .build(afterText, textStyle: widget.style);
+
+        List<TextSpan> children = List<TextSpan>();
+
+        if (before != null && before.children != null) {
+          _createImageConfiguration(<TextSpan>[before], context);
+          before.children.forEach((sp) {
+            children.add(sp);
+          });
+        } else {
+          children.add(TextSpan(text: beforeText));
+        }
+
+        children.add(TextSpan(
+          style: composingStyle,
+          text: insideText,
+        ));
+
+        if (after != null && after.children != null) {
+          _createImageConfiguration(<TextSpan>[after], context);
+          after.children.forEach((sp) {
+            children.add(sp);
+          });
+        } else {
+          children.add(TextSpan(text: afterText));
+        }
+
+        return TextSpan(style: widget.style, children: children);
+      }
 
       return TextSpan(style: widget.style, children: <TextSpan>[
-        TextSpan(text: _value.composing.textBefore(_value.text)),
+        TextSpan(text: beforeText),
         TextSpan(
           style: composingStyle,
-          text: _value.composing.textInside(_value.text),
+          text: insideText,
         ),
-        TextSpan(text: _value.composing.textAfter(_value.text)),
+        TextSpan(text: afterText),
       ]);
     }
 
