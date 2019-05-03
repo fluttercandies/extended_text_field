@@ -18,11 +18,13 @@ please fix them base on your flutter version.
 it has not time to maintain codes for every version,sorry for that,
 and will update codes for stable flutter version as soon as possible.
 
-##  How to use it.
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_input.gif)
+
+
+##  How to use it.
 
 ### 1. just to extend SpecialText and define your rule.
 
