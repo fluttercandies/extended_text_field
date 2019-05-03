@@ -1,3 +1,7 @@
+## [0.1.7]
+
+* handle TextEditingValue's composing
+
 ## [0.1.6]
 
 * improve codes to avoid unnecessary computation
