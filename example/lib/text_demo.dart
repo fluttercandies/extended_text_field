@@ -113,7 +113,7 @@ class _TextDemoState extends State<TextDemo> {
           ),
           ExtendedTextField(
             specialTextSpanBuilder: MySpecialTextSpanBuilder(
-                showAtBackground: false, type: BuilderType.extendedTextField),
+                showAtBackground: true, type: BuilderType.extendedTextField),
             controller: _textEditingController,
             maxLines: null,
             focusNode: _focusNode,

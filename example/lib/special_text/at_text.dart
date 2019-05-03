@@ -19,11 +19,8 @@ class AtText extends SpecialText {
   @override
   TextSpan finishText() {
     // TODO: implement finishText
-    TextStyle textStyle = showAtBackground
-        ? this.textStyle?.copyWith(
-            fontSize: 16.0,
-            background: Paint()..color = Colors.blue.withOpacity(0.5))
-        : this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
+    TextStyle textStyle =
+        this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
 
     final String atText = toString();
 
@@ -36,13 +33,32 @@ class AtText extends SpecialText {
               if (onTap != null) onTap(atText);
             });
 
-    return SpecialTextSpan(
-      text: atText,
-      actualText: atText,
-      start: start,
-      deleteAll: false,
-      style: textStyle,
-    );
+    return showAtBackground
+        ? BackgroundTextSpan(
+            background: Paint()..color = Colors.blue.withOpacity(0.15),
+            text: atText,
+            actualText: atText,
+            start: start,
+            deleteAll: false,
+            style: textStyle,
+            recognizer: type == BuilderType.extendedText
+                ? (TapGestureRecognizer()
+                  ..onTap = () {
+                    if (onTap != null) onTap(atText);
+                  })
+                : null)
+        : SpecialTextSpan(
+            text: atText,
+            actualText: atText,
+            start: start,
+            deleteAll: false,
+            style: textStyle,
+            recognizer: type == BuilderType.extendedText
+                ? (TapGestureRecognizer()
+                  ..onTap = () {
+                    if (onTap != null) onTap(atText);
+                  })
+                : null);
   }
 }
 

@@ -1929,12 +1929,35 @@ class ExtendedRenderEditable extends RenderBox {
             }
           });
         }
+      } else if (ts is BackgroundTextSpan) {
+        var painter = ts.layout(_textPainter);
+        Rect textRect = topLeftOffset & painter.size;
+        Offset endOffset;
+        if (textRect.right > rect.right) {
+          int endTextOffset = textOffset + ts.toPlainText().length;
+          endOffset = _findEndOffset(rect, endTextOffset);
+        }
+
+        ts.paint(canvas, topLeftOffset, rect,
+            endOffset: endOffset, wholeTextPainter: _textPainter);
       } else if (ts.children != null) {
         _paintSpecialTextChildren(ts.children, canvas, rect,
             textOffset: textOffset);
       }
       textOffset += ts.toPlainText().length;
     }
+  }
+
+  Offset _findEndOffset(Rect rect, int endTextOffset) {
+    Offset endOffset = getOffsetForCaret(
+      TextPosition(offset: endTextOffset, affinity: TextAffinity.upstream),
+      rect,
+    );
+    //overflow
+    if (endOffset == null || (endTextOffset != 0 && endOffset == Offset.zero)) {
+      return _findEndOffset(rect, endTextOffset - 1);
+    }
+    return endOffset;
   }
 
   Offset getOffsetForCaret(TextPosition position, Rect caretPrototype) {

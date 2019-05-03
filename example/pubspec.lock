@@ -56,21 +56,21 @@ packages:
       name: extended_text
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.3.9"
+    version: "0.4.0"
   extended_text_field:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.1.6"
+    version: "0.1.9"
   extended_text_library:
     dependency: transitive
     description:
       name: extended_text_library
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.1.6"
+    version: "0.2.0"
   flutter:
     dependency: "direct main"
     description: flutter

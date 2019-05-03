@@ -21,9 +21,6 @@ and will update codes for stable flutter version as soon as possible.
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
-![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_input.gif)
-
-
 ##  How to use it.
 
 ### 1. just to extend SpecialText and define your rule.
@@ -45,11 +42,8 @@ class AtText extends SpecialText {
   @override
   TextSpan finishText() {
     // TODO: implement finishText
-    TextStyle textStyle = showAtBackground
-        ? this.textStyle?.copyWith(
-            fontSize: 16.0,
-            background: Paint()..color = Colors.blue.withOpacity(0.5))
-        : this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
+    TextStyle textStyle =
+        this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
 
     final String atText = toString();
 
@@ -62,13 +56,32 @@ class AtText extends SpecialText {
               if (onTap != null) onTap(atText);
             });
 
-    return SpecialTextSpan(
-      text: atText,
-      actualText: atText,
-      start: start,
-      deleteAll: false,
-      style: textStyle,
-    );
+    return showAtBackground
+        ? BackgroundTextSpan(
+            background: Paint()..color = Colors.blue.withOpacity(0.15),
+            text: atText,
+            actualText: atText,
+            start: start,
+            deleteAll: false,
+            style: textStyle,
+            recognizer: type == BuilderType.extendedText
+                ? (TapGestureRecognizer()
+                  ..onTap = () {
+                    if (onTap != null) onTap(atText);
+                  })
+                : null)
+        : SpecialTextSpan(
+            text: atText,
+            actualText: atText,
+            start: start,
+            deleteAll: false,
+            style: textStyle,
+            recognizer: type == BuilderType.extendedText
+                ? (TapGestureRecognizer()
+                  ..onTap = () {
+                    if (onTap != null) onTap(atText);
+                  })
+                : null);
   }
 }
 ```
@@ -116,6 +129,16 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   final BuilderType type;
   MySpecialTextSpanBuilder(
       {this.showAtBackground: false, this.type: BuilderType.extendedText});
+
+  @override
+  TextSpan build(String data, {TextStyle textStyle, onTap}) {
+    // TODO: implement build
+    var textSpan = super.build(data, textStyle: textStyle, onTap: onTap);
+    //for performance, make sure your all SpecialTextSpan are only in textSpan.children
+    //extended_text_field will only check textSpan.children
+    return textSpan;
+  }
+
   @override
   SpecialText createSpecialText(String flag,
       {TextStyle textStyle, SpecialTextGestureTapCallback onTap, int index}) {
@@ -139,7 +162,6 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
 }
 
 enum BuilderType { extendedText, extendedTextField }
-
 ```
 
 ### 3.enjoy your nice text field
@@ -147,7 +169,7 @@ input text will auto change to SpecialTextSpan and show in text field
 ``` dart
  ExtendedTextField(
             specialTextSpanBuilder: MySpecialTextSpanBuilder(
-                showAtBackground: false, type: BuilderType.extendedTextField),
+                showAtBackground: true, type: BuilderType.extendedTextField),
             controller: _textEditingController,
             maxLines: null,
             focusNode: _focusNode,
