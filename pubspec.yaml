@@ -1,5 +1,5 @@
 name: extended_text_field
-description: extended official text field to quickly build special text like inline image or @somebody,custom background etc.
+description: extended official text field to quickly build special text like inline image, @somebody, custom background etc.
 version: 0.1.9
 author: zmtzapxh <zmtzapxhlp@live.com>
 homepage: https://github.com/fluttercandies/extended_text_field
