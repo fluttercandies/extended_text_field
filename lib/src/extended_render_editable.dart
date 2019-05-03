@@ -1892,13 +1892,15 @@ class ExtendedRenderEditable extends RenderBox {
 
     ///we have move the canvas, so rect top left should be (0,0)
     final Rect rect = Offset(0.0, 0.0) & size;
-    _paintSpecialTextChildren(<TextSpan>[text], canvas, rect);
+    _paintSpecialTextChildren(text.children, canvas, rect);
     canvas.restore();
   }
 
   void _paintSpecialTextChildren(
       List<TextSpan> textSpans, Canvas canvas, Rect rect,
       {int textOffset: 0}) {
+    if (textSpans == null) return;
+
     for (TextSpan ts in textSpans) {
       Offset topLeftOffset = getOffsetForCaret(
         TextPosition(offset: textOffset),
@@ -1940,10 +1942,11 @@ class ExtendedRenderEditable extends RenderBox {
 
         ts.paint(canvas, topLeftOffset, rect,
             endOffset: endOffset, wholeTextPainter: _textPainter);
-      } else if (ts.children != null) {
-        _paintSpecialTextChildren(ts.children, canvas, rect,
-            textOffset: textOffset);
       }
+//      else if (ts.children != null) {
+//        _paintSpecialTextChildren(ts.children, canvas, rect,
+//            textOffset: textOffset);
+//      }
       textOffset += ts.toPlainText().length;
     }
   }
