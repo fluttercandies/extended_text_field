@@ -1,3 +1,7 @@
+## [0.2.0]
+
+* only iterate textSpan.children to find SpecialTextSpan
+
 ## [0.1.9]
 
 * add BackgroundTextSpan, support to paint custom background
