@@ -1,3 +1,7 @@
+## [0.1.9]
+
+* add BackgroundTextSpan, support to paint custom background
+
 ## [0.1.8]
 
 * handle TextEditingValue's composing
