@@ -679,7 +679,6 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
             editableContext.findRenderObject();
     final Offset position = referenceBox.globalToLocal(globalPosition);
 
-    ///zmt
     final Color color = themeData.splashColor;
 
     InteractiveInkFeature splash;

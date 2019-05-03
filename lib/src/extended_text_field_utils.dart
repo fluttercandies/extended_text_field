@@ -211,3 +211,15 @@ TextEditingValue handleSpecialTextSpanDelete(
 
   return value;
 }
+
+bool hasSpecialText(List<TextSpan> value) {
+  if (value == null) return false;
+
+  for (var textSpan in value) {
+    if (textSpan is SpecialTextSpan) return true;
+    if (hasSpecialText(textSpan.children)) {
+      return true;
+    }
+  }
+  return false;
+}

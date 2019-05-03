@@ -661,6 +661,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   final LayerLink _layerLink = LayerLink();
   bool _didAutoFocus = false;
 
+  ///whether to support build SpecialText
+  bool get supportSpecialText =>
+      widget.specialTextSpanBuilder != null &&
+      !widget.obscureText &&
+      _textDirection == TextDirection.ltr;
+
   // This value is an eyeball estimation of the time it takes for the iOS cursor
   // to ease in and out.
   static const Duration _fadeDuration = Duration(milliseconds: 250);
@@ -760,24 +766,28 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   ///zmt
   TextEditingValue _handleSpecialTextSpan(TextEditingValue value,
       {bool userInput: false}) {
-    final bool textChanged = _value?.text != value?.text;
-    if (textChanged && widget.specialTextSpanBuilder != null) {
-      var newTextSpan = widget.specialTextSpanBuilder.build(value?.text);
-      if (newTextSpan == null) return value;
+    if (supportSpecialText) {
+      final bool textChanged = _value?.text != value?.text;
+      if (textChanged) {
+        var newTextSpan = widget.specialTextSpanBuilder.build(value?.text);
+        if (newTextSpan == null) return value;
 
-      var oldTextSpan = widget.specialTextSpanBuilder.build(_value?.text);
-      value = handleSpecialTextSpanDelete(
-          value, _value, oldTextSpan, _textInputConnection);
+        var oldTextSpan = widget.specialTextSpanBuilder.build(_value?.text);
+        value = handleSpecialTextSpanDelete(
+            value, _value, oldTextSpan, _textInputConnection);
 
-      if (newTextSpan != null) {
-        var text = newTextSpan.toPlainText();
-        //correct caret Offset
-        //make sure caret is not in image span
-        if (text != value.text) {
-          value = correctCaretOffset(value, newTextSpan, _textInputConnection);
+        if (newTextSpan != null) {
+          var text = newTextSpan.toPlainText();
+          //correct caret Offset
+          //make sure caret is not in image span
+          if (text != value.text) {
+            value =
+                correctCaretOffset(value, newTextSpan, _textInputConnection);
+          }
         }
       }
     }
+
     return value;
   }
 
@@ -831,13 +841,15 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           _floatingCursorResetController.stop();
           _onFloatingCursorResetTick();
         }
-//        final TextPosition currentTextPosition =
-//            TextPosition(offset: renderEditable.selection.baseOffset);
-
+        TextPosition currentTextPosition;
         //zmt
-        final TextPosition currentTextPosition =
-            convertTextInputPostionToTextPainterPostion(
-                renderEditable.text, renderEditable.selection.base);
+        if (supportSpecialText) {
+          currentTextPosition = convertTextInputPostionToTextPainterPostion(
+              renderEditable.text, renderEditable.selection.base);
+        } else {
+          currentTextPosition =
+              TextPosition(offset: renderEditable.selection.baseOffset);
+        }
 
         _startCaretRect =
             renderEditable.getLocalRectForCaret(currentTextPosition);
@@ -1398,6 +1410,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               enableInteractiveSelection: widget.enableInteractiveSelection,
               textSelectionDelegate: this,
               devicePixelRatio: _devicePixelRatio,
+              supportSpecialText: supportSpecialText,
             ),
           ),
         );
@@ -1434,19 +1447,15 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         text = text.replaceRange(o, o + 1, _value.text.substring(o, o + 1));
     }
 
-//    if (_specialTextSpan != null) {
-//      _createImageConfiguration(<TextSpan>[_specialTextSpan], context);
-//      return _specialTextSpan;
-//    }
-    var specialTextSpan =
-        widget.specialTextSpanBuilder?.build(text, textStyle: widget.style);
-    if (specialTextSpan != null) {
-      _createImageConfiguration(<TextSpan>[specialTextSpan], context);
-
-//      _lastKnownRemoteTextEditingValue =
-//          _value.copyWith(text: specialTextSpan.toPlainText());
-      return specialTextSpan;
+    if (supportSpecialText) {
+      var specialTextSpan =
+          widget.specialTextSpanBuilder?.build(text, textStyle: widget.style);
+      if (specialTextSpan != null) {
+        _createImageConfiguration(<TextSpan>[specialTextSpan], context);
+        return specialTextSpan;
+      }
     }
+
     return TextSpan(style: widget.style, text: text);
   }
 
@@ -1493,6 +1502,7 @@ class _Editable extends LeafRenderObjectWidget {
     this.textSelectionDelegate,
     this.paintCursorAboveText,
     this.devicePixelRatio,
+    this.supportSpecialText,
   })  : assert(textDirection != null),
         assert(rendererIgnoresPointer != null),
         super(key: key);
@@ -1525,10 +1535,12 @@ class _Editable extends LeafRenderObjectWidget {
   final TextSelectionDelegate textSelectionDelegate;
   final double devicePixelRatio;
   final bool paintCursorAboveText;
+  final bool supportSpecialText;
 
   @override
   ExtendedRenderEditable createRenderObject(BuildContext context) {
     return ExtendedRenderEditable(
+      supportSpecialText: supportSpecialText,
       text: textSpan,
       cursorColor: cursorColor,
       backgroundCursorColor: backgroundCursorColor,
@@ -1563,6 +1575,7 @@ class _Editable extends LeafRenderObjectWidget {
   void updateRenderObject(
       BuildContext context, ExtendedRenderEditable renderObject) {
     renderObject
+      ..supportSpecialText = supportSpecialText
       ..text = textSpan
       ..cursorColor = cursorColor
       ..showCursor = showCursor

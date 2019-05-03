@@ -1,3 +1,7 @@
+## [0.1.6]
+
+* improve codes to avoid unnecessary computation
+
 ## [0.1.5]
 
 * override compareTo method in SpecialTextSpan and ImageSpan to
