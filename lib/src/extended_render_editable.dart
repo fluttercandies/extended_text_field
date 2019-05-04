@@ -1568,7 +1568,7 @@ class ExtendedRenderEditable extends RenderBox {
         //handle image text span is last one, textPainter will get wrong offset
         //last one
         textSpan = text.children?.last;
-        if (textSpan is ImageSpan) {
+        if (textSpan != null && textSpan is ImageSpan) {
           imageTextSpanWidth -=
               getImageSpanCorrectPosition(textSpan, textDirection);
         }
