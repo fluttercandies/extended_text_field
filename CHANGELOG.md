@@ -1,3 +1,7 @@
+## [0.2.1]
+
+* fix caret position for image span
+
 ## [0.2.0]
 
 * only iterate textSpan.children to find SpecialTextSpan

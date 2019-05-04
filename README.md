@@ -8,16 +8,42 @@ base on flutter version 1.5.7
 
 ## limitation
 
-1.Not support: TextDirection.rtl.
-Image position calculated by TextPainter is strange.
+- Not support: it won't handle special text when TextDirection.rtl.
 
-2.Not support: obscureText is true.
+  Image position calculated by TextPainter is strange.
 
-3.codes are base on flutter 1.5.7, if any one find some codes are broken,
+- Not support:it won't handle special text when obscureText is true.
+
+- codes are base on flutter 1.5.7, if any one find some codes are broken,
 please fix them base on your flutter version.
 it has not time to maintain codes for every version,sorry for that,
 and will update codes for stable flutter version as soon as possible.
 
+- TextPainter.getFullHeightForCaret api is not support under lower flutter version,
+  I have to comment out them. if you think the caret height is not comfortable,
+  you can uncomment them base on your flutter version.
+```dart
+    ///zmt
+    ///1.5.7
+    ///under lower version of flutter, getFullHeightForCaret is not support
+    ///
+    // Override the height to take the full height of the glyph at the TextPosition
+    // when not on iOS. iOS has special handling that creates a taller caret.
+    // TODO(garyq): See the TODO for _getCaretPrototype.
+//    if (defaultTargetPlatform != TargetPlatform.iOS &&
+//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
+//            null) {
+//      caretRect = Rect.fromLTWH(
+//        caretRect.left,
+//        // Offset by _kCaretHeightOffset to counteract the same value added in
+//        // _getCaretPrototype. This prevents this from scaling poorly for small
+//        // font sizes.
+//        caretRect.top - _kCaretHeightOffset,
+//        caretRect.width,
+//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
+//      );
+//    }
+```
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 

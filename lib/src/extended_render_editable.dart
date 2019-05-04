@@ -1553,22 +1553,13 @@ class ExtendedRenderEditable extends RenderBox {
       ..color = _floatingCursorOn ? backgroundCursorColor : _cursorColor;
 
     // zmt
-    var textSpan = text.getSpanForPosition(textPosition);
     double imageTextSpanWidth = 0.0;
     if (handleSpecialText) {
+      var textSpan = text.getSpanForPosition(textPosition);
       if (textSpan != null) {
         if (textSpan is ImageSpan) {
-          if (textInputPosition.offset == textSpan.start) {
-            imageTextSpanWidth -=
-                getImageSpanCorrectPosition(textSpan, textDirection);
-          } else if (textInputPosition.offset < textSpan.end) {
-            imageTextSpanWidth +=
-                getImageSpanCorrectPosition(textSpan, textDirection);
-          }
-          //handle image text span is last one, textPainter will get wrong offset
-          //last one
-          else if (textInputPosition.offset == textSpan.end &&
-              textSpan == text.children?.last) {
+          if (textInputPosition.offset >= textSpan.start &&
+              textInputPosition.offset <= textSpan.end) {
             imageTextSpanWidth -=
                 getImageSpanCorrectPosition(textSpan, textDirection);
           }
@@ -1594,7 +1585,7 @@ class ExtendedRenderEditable extends RenderBox {
 
     ///zmt
     ///1.5.7
-    ///under low version of flutter, getFullHeightForCaret is not support
+    ///under lower version of flutter, getFullHeightForCaret is not support
     ///
     // Override the height to take the full height of the glyph at the TextPosition
     // when not on iOS. iOS has special handling that creates a taller caret.
