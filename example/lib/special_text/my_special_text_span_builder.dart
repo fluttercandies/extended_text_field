@@ -1,6 +1,7 @@
 import 'package:example/special_text/at_text.dart';
 import 'package:example/special_text/dollar_text.dart';
 import 'package:example/special_text/emoji_text.dart';
+import 'package:example/special_text/image_text.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/material.dart';
 
@@ -37,6 +38,8 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
     } else if (isStart(flag, DollarText.flag)) {
       return DollarText(textStyle, onTap,
           start: index - (DollarText.flag.length - 1), type: type);
+    } else if (isStart(flag, ImageText.flag)) {
+      return ImageText(textStyle, start: index - (ImageText.flag.length - 1));
     }
     return null;
   }
