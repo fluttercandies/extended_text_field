@@ -6,10 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
 
+import 'common/tu_chong_repository.dart';
+import 'common/tu_chong_source.dart';
 import 'special_text/at_text.dart';
 import 'special_text/dollar_text.dart';
 import 'special_text/my_special_text_span_builder.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:extended_image/extended_image.dart';
+import 'package:loading_more_list/loading_more_list.dart';
 
 class TextDemo extends StatefulWidget {
   @override
@@ -18,14 +22,18 @@ class TextDemo extends StatefulWidget {
 
 class _TextDemoState extends State<TextDemo> {
   TextEditingController _textEditingController = TextEditingController();
+  TuChongRepository _listSourceRepository = TuChongRepository();
+
   MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder(type: BuilderType.extendedText);
   FocusNode _focusNode = FocusNode();
   double _keyboardHeight = 267.0;
-  bool get showCustomKeyBoard => active1 || active2 || active3;
-  bool active1 = false;
-  bool active2 = false;
-  bool active3 = false;
+  bool get showCustomKeyBoard =>
+      activeEmojiGird || activeAtGrid || activeDollarGrid || activeImageGrid;
+  bool activeEmojiGird = false;
+  bool activeAtGrid = false;
+  bool activeDollarGrid = false;
+  bool activeImageGrid = false;
   List<String> sessions = <String>[
     "[44] @Dota2 CN dota best dota",
     "yes, you are right [36].",
@@ -47,11 +55,19 @@ class _TextDemoState extends State<TextDemo> {
   ];
 
   @override
+  void dispose() {
+    _listSourceRepository.dispose();
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     FocusScope.of(context).autofocus(_focusNode);
     var keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     if (keyboardHeight > 0) {
-      active1 = active2 = active3 = false;
+      activeEmojiGird =
+          activeAtGrid = activeDollarGrid = activeImageGrid = false;
     }
 
     _keyboardHeight = max(_keyboardHeight, keyboardHeight);
@@ -84,12 +100,6 @@ class _TextDemoState extends State<TextDemo> {
                   }
                 },
               );
-//              text = Image.asset(
-//                EmojiUitl.instance.emojiMap[sessions[index]],
-//                height: 20.0,
-//                width: 20.0,
-//              );
-
               var list = <Widget>[
                 logo,
                 Expanded(child: text),
@@ -150,15 +160,16 @@ class _TextDemoState extends State<TextDemo> {
                         Function change = () {
                           setState(() {
                             if (active) {
-                              active2 = active3 = false;
+                              activeAtGrid =
+                                  activeDollarGrid = activeImageGrid = false;
                               FocusScope.of(context).requestFocus(_focusNode);
                             }
-                            active1 = active;
+                            activeEmojiGird = active;
                           });
                         };
                         update(change);
                       },
-                      active: active1,
+                      active: activeEmojiGird,
                     ),
                     ToggleButton(
                         activeWidget: Padding(
@@ -184,15 +195,16 @@ class _TextDemoState extends State<TextDemo> {
                           Function change = () {
                             setState(() {
                               if (active) {
-                                active1 = active3 = false;
+                                activeEmojiGird =
+                                    activeDollarGrid = activeImageGrid = false;
                                 FocusScope.of(context).requestFocus(_focusNode);
                               }
-                              active2 = active;
+                              activeAtGrid = active;
                             });
                           };
                           update(change);
                         },
-                        active: active2),
+                        active: activeAtGrid),
                     ToggleButton(
                         activeWidget: Icon(
                           Icons.attach_money,
@@ -203,15 +215,36 @@ class _TextDemoState extends State<TextDemo> {
                           Function change = () {
                             setState(() {
                               if (active) {
-                                active1 = active2 = false;
+                                activeEmojiGird =
+                                    activeAtGrid = activeImageGrid = false;
                                 FocusScope.of(context).requestFocus(_focusNode);
                               }
-                              active3 = active;
+                              activeDollarGrid = active;
                             });
                           };
                           update(change);
                         },
-                        active: active3),
+                        active: activeDollarGrid),
+                    ToggleButton(
+                        activeWidget: Icon(
+                          Icons.picture_in_picture,
+                          color: Colors.orange,
+                        ),
+                        unActiveWidget: Icon(Icons.picture_in_picture),
+                        activeChanged: (bool active) {
+                          Function change = () {
+                            setState(() {
+                              if (active) {
+                                activeEmojiGird =
+                                    activeAtGrid = activeDollarGrid = false;
+                                FocusScope.of(context).requestFocus(_focusNode);
+                              }
+                              activeImageGrid = active;
+                            });
+                          };
+                          update(change);
+                        },
+                        active: activeImageGrid),
                     Container(
                       width: 20.0,
                     )
@@ -249,9 +282,10 @@ class _TextDemoState extends State<TextDemo> {
 
   Widget buildCustomKeyBoard() {
     if (!showCustomKeyBoard) return Container();
-    if (active1) return buildEmojiGird();
-    if (active2) return buildAtGrid();
-    if (active3) return buildDollarGrid();
+    if (activeEmojiGird) return buildEmojiGird();
+    if (activeAtGrid) return buildAtGrid();
+    if (activeDollarGrid) return buildDollarGrid();
+    if (activeImageGrid) return buildImageGrid();
     return Container();
   }
 
@@ -313,6 +347,31 @@ class _TextDemoState extends State<TextDemo> {
       itemCount: dollarList.length,
       padding: EdgeInsets.all(5.0),
     );
+  }
+
+  Widget buildImageGrid() {
+    return LoadingMoreList(ListConfig<TuChongItem>(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, crossAxisSpacing: 2.0, mainAxisSpacing: 2.0),
+        itemBuilder: (BuildContext context, TuChongItem item, int index) {
+          print(index);
+          var url = item.imageUrl;
+
+          ///<img src="http://pic2016.5442.com:82/2016/0513/12/3.jpg!960.jpg"/>
+          return GestureDetector(
+            child: ExtendedImage.network(
+              url,
+              fit: BoxFit.scaleDown,
+            ),
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              insertText("<img src='$url'/>");
+            },
+          );
+        },
+        //itemCount: _listSourceRepository.length,
+        padding: EdgeInsets.all(5.0),
+        sourceList: _listSourceRepository));
   }
 
   void insertText(String text) {
