@@ -225,26 +225,26 @@ class _TextDemoState extends State<TextDemo> {
                           update(change);
                         },
                         active: activeDollarGrid),
-                    ToggleButton(
-                        activeWidget: Icon(
-                          Icons.picture_in_picture,
-                          color: Colors.orange,
-                        ),
-                        unActiveWidget: Icon(Icons.picture_in_picture),
-                        activeChanged: (bool active) {
-                          Function change = () {
-                            setState(() {
-                              if (active) {
-                                activeEmojiGird =
-                                    activeAtGrid = activeDollarGrid = false;
-                                FocusScope.of(context).requestFocus(_focusNode);
-                              }
-                              activeImageGrid = active;
-                            });
-                          };
-                          update(change);
-                        },
-                        active: activeImageGrid),
+//                    ToggleButton(
+//                        activeWidget: Icon(
+//                          Icons.picture_in_picture,
+//                          color: Colors.orange,
+//                        ),
+//                        unActiveWidget: Icon(Icons.picture_in_picture),
+//                        activeChanged: (bool active) {
+//                          Function change = () {
+//                            setState(() {
+//                              if (active) {
+//                                activeEmojiGird =
+//                                    activeAtGrid = activeDollarGrid = false;
+//                                FocusScope.of(context).requestFocus(_focusNode);
+//                              }
+//                              activeImageGrid = active;
+//                            });
+//                          };
+//                          update(change);
+//                        },
+//                        active: activeImageGrid),
                     Container(
                       width: 20.0,
                     )
@@ -354,7 +354,6 @@ class _TextDemoState extends State<TextDemo> {
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3, crossAxisSpacing: 2.0, mainAxisSpacing: 2.0),
         itemBuilder: (BuildContext context, TuChongItem item, int index) {
-          print(index);
           var url = item.imageUrl;
 
           ///<img src="http://pic2016.5442.com:82/2016/0513/12/3.jpg!960.jpg"/>
