@@ -6,6 +6,8 @@ extended official text field to quickly build special text like inline image or 
 
 base on flutter version 1.5.7
 
+[Chinese blog](https://juejin.im/post/5ccc25156fb9a0320f7df543)
+
 ## limitation
 
 - Not support: it won't handle special text when TextDirection.rtl.
