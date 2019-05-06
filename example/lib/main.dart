@@ -1,6 +1,8 @@
 import 'package:example/text_demo.dart';
 import 'package:flutter/material.dart';
 
+import 'common/tu_chong_repository.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -36,7 +38,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Page> pages = new List<Page>();
-
+  TuChongRepository _listSourceRepository = TuChongRepository();
   @override
   void initState() {
     // TODO: implement initState
@@ -44,6 +46,13 @@ class _MyHomePageState extends State<MyHomePage> {
         PageType.text, "build special text and inline image in text field"));
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _listSourceRepository.dispose();
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
@@ -77,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: () {
               switch (page.type) {
                 case PageType.text:
-                  pageWidget = new TextDemo();
+                  pageWidget = new TextDemo(_listSourceRepository);
                   break;
                 default:
                   break;

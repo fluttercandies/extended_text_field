@@ -57,27 +57,34 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.3.1"
+  extended_image_library:
+    dependency: transitive
+    description:
+      name: extended_image_library
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.0"
   extended_text:
     dependency: "direct main"
     description:
       name: extended_text
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.4.2"
+    version: "0.4.3"
   extended_text_field:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.2.1"
+    version: "0.2.2"
   extended_text_library:
     dependency: transitive
     description:
       name: extended_text_library
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.2.2"
+    version: "0.2.5"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -115,7 +122,7 @@ packages:
       name: loading_more_list
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.3.4"
+    version: "0.3.5"
   matcher:
     dependency: transitive
     description:

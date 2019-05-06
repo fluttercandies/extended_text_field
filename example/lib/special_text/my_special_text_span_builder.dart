@@ -39,7 +39,8 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
       return DollarText(textStyle, onTap,
           start: index - (DollarText.flag.length - 1), type: type);
     } else if (isStart(flag, ImageText.flag)) {
-      return ImageText(textStyle, start: index - (ImageText.flag.length - 1));
+      return ImageText(textStyle,
+          start: index - (ImageText.flag.length - 1), type: type);
     }
     return null;
   }
