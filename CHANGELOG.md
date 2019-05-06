@@ -1,3 +1,9 @@
+## [0.2.2]
+
+* fix caret position for last one image span
+* add image text demo
+* fix position for specialTex
+
 ## [0.2.1]
 
 * fix caret position for image span

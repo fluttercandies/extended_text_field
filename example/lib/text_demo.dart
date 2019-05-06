@@ -16,13 +16,14 @@ import 'package:extended_image/extended_image.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 
 class TextDemo extends StatefulWidget {
+  final TuChongRepository tuChongRepository;
+  TextDemo(this.tuChongRepository);
   @override
   _TextDemoState createState() => _TextDemoState();
 }
 
 class _TextDemoState extends State<TextDemo> {
   TextEditingController _textEditingController = TextEditingController();
-  TuChongRepository _listSourceRepository = TuChongRepository();
 
   MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder(type: BuilderType.extendedText);
@@ -53,13 +54,6 @@ class _TextDemoState extends State<TextDemo> {
     "error 0 [45] warning 0",
     "error 0 [45] warning 0",
   ];
-
-  @override
-  void dispose() {
-    _listSourceRepository.dispose();
-    // TODO: implement dispose
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +106,7 @@ class _TextDemoState extends State<TextDemo> {
                 children: list,
               );
             },
-            padding: EdgeInsets.all(0.0),
+            padding: EdgeInsets.only(bottom: 10.0),
             reverse: true,
             itemCount: sessions.length,
           )),
@@ -225,26 +219,26 @@ class _TextDemoState extends State<TextDemo> {
                           update(change);
                         },
                         active: activeDollarGrid),
-//                    ToggleButton(
-//                        activeWidget: Icon(
-//                          Icons.picture_in_picture,
-//                          color: Colors.orange,
-//                        ),
-//                        unActiveWidget: Icon(Icons.picture_in_picture),
-//                        activeChanged: (bool active) {
-//                          Function change = () {
-//                            setState(() {
-//                              if (active) {
-//                                activeEmojiGird =
-//                                    activeAtGrid = activeDollarGrid = false;
-//                                FocusScope.of(context).requestFocus(_focusNode);
-//                              }
-//                              activeImageGrid = active;
-//                            });
-//                          };
-//                          update(change);
-//                        },
-//                        active: activeImageGrid),
+                    ToggleButton(
+                        activeWidget: Icon(
+                          Icons.picture_in_picture,
+                          color: Colors.orange,
+                        ),
+                        unActiveWidget: Icon(Icons.picture_in_picture),
+                        activeChanged: (bool active) {
+                          Function change = () {
+                            setState(() {
+                              if (active) {
+                                activeEmojiGird =
+                                    activeAtGrid = activeDollarGrid = false;
+                                FocusScope.of(context).requestFocus(_focusNode);
+                              }
+                              activeImageGrid = active;
+                            });
+                          };
+                          update(change);
+                        },
+                        active: activeImageGrid),
                     Container(
                       width: 20.0,
                     )
@@ -285,7 +279,10 @@ class _TextDemoState extends State<TextDemo> {
     if (activeEmojiGird) return buildEmojiGird();
     if (activeAtGrid) return buildAtGrid();
     if (activeDollarGrid) return buildDollarGrid();
-    if (activeImageGrid) return buildImageGrid();
+    if (activeImageGrid)
+      return ImageGrid((text) {
+        insertText(text);
+      }, widget.tuChongRepository);
     return Container();
   }
 
@@ -349,30 +346,6 @@ class _TextDemoState extends State<TextDemo> {
     );
   }
 
-  Widget buildImageGrid() {
-    return LoadingMoreList(ListConfig<TuChongItem>(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, crossAxisSpacing: 2.0, mainAxisSpacing: 2.0),
-        itemBuilder: (BuildContext context, TuChongItem item, int index) {
-          var url = item.imageUrl;
-
-          ///<img src="http://pic2016.5442.com:82/2016/0513/12/3.jpg!960.jpg"/>
-          return GestureDetector(
-            child: ExtendedImage.network(
-              url,
-              fit: BoxFit.scaleDown,
-            ),
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              insertText("<img src='$url'/>");
-            },
-          );
-        },
-        //itemCount: _listSourceRepository.length,
-        padding: EdgeInsets.all(5.0),
-        sourceList: _listSourceRepository));
-  }
-
   void insertText(String text) {
     var value = _textEditingController.value;
     var start = value.selection.baseOffset;
@@ -400,4 +373,45 @@ class _TextDemoState extends State<TextDemo> {
       });
     }
   }
+}
+
+class ImageGrid extends StatefulWidget {
+  final ValueChanged<String> insertText;
+  final TuChongRepository tuChongRepository;
+  ImageGrid(this.insertText, this.tuChongRepository);
+  @override
+  _ImageGridState createState() => _ImageGridState();
+}
+
+class _ImageGridState extends State<ImageGrid>
+    with AutomaticKeepAliveClientMixin<ImageGrid> {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return LoadingMoreList(ListConfig<TuChongItem>(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, crossAxisSpacing: 2.0, mainAxisSpacing: 2.0),
+        itemBuilder: (BuildContext context, TuChongItem item, int index) {
+          var url = item.imageUrl;
+
+          ///<img src=‘http://pic2016.5442.com:82/2016/0513/12/3.jpg!960.jpg’/>
+          return GestureDetector(
+            child: ExtendedImage.network(
+              url,
+              fit: BoxFit.scaleDown,
+            ),
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              widget.insertText?.call("<img src='$url'/>");
+            },
+          );
+        },
+        padding: EdgeInsets.all(5.0),
+        sourceList: widget.tuChongRepository));
+  }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

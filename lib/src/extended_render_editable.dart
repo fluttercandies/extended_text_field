@@ -134,14 +134,17 @@ class ExtendedRenderEditable extends RenderBox {
         assert(textSelectionDelegate != null),
         assert(cursorWidth != null && cursorWidth >= 0.0),
         assert(devicePixelRatio != null),
+        _handleSpecialText = hasSpecialText(text),
         _textPainter = TextPainter(
           text: text,
           textAlign: textAlign,
           textDirection: textDirection,
           textScaleFactor: textScaleFactor,
           locale: locale,
-          strutStyle: strutStyle,
+          strutStyle:
+              supportSpecialText && hasSpecialText(text) ? null : strutStyle,
         ),
+        _strutStyle = strutStyle,
         _cursorColor = cursorColor,
         _backgroundCursorColor = backgroundCursorColor,
         _showCursor = showCursor ?? ValueNotifier<bool>(false),
@@ -158,7 +161,6 @@ class ExtendedRenderEditable extends RenderBox {
         _floatingCursorAddedMargin = floatingCursorAddedMargin,
         _enableInteractiveSelection = enableInteractiveSelection,
         _devicePixelRatio = devicePixelRatio,
-        _handleSpecialText = hasSpecialText(text),
         _obscureText = obscureText {
     assert(_showCursor != null);
     assert(!_showCursor.value || cursorColor != null);
@@ -560,6 +562,11 @@ class ExtendedRenderEditable extends RenderBox {
     if (_textPainter.text == value) return;
     _textPainter.text = value;
     _handleSpecialText = hasSpecialText(value);
+    if (handleSpecialText) {
+      _textPainter.strutStyle = null;
+    } else {
+      _textPainter.strutStyle = _strutStyle;
+    }
     markNeedsTextLayout();
     markNeedsSemanticsUpdate();
   }
@@ -617,9 +624,15 @@ class ExtendedRenderEditable extends RenderBox {
   /// The [StrutStyle] used by the renderer's internal [TextPainter] to
   /// determine the strut to use.
   StrutStyle get strutStyle => _textPainter.strutStyle;
+  StrutStyle _strutStyle;
   set strutStyle(StrutStyle value) {
     if (_textPainter.strutStyle == value) return;
-    _textPainter.strutStyle = value;
+    if (handleSpecialText) {
+      _textPainter.strutStyle = null;
+    } else {
+      _textPainter.strutStyle = value;
+    }
+    _strutStyle = value;
     markNeedsTextLayout();
   }
 
@@ -1554,14 +1567,25 @@ class ExtendedRenderEditable extends RenderBox {
 
     // zmt
     double imageTextSpanWidth = 0.0;
+    Offset imageSpanEndCaretOffset;
     if (handleSpecialText) {
       var textSpan = text.getSpanForPosition(textPosition);
       if (textSpan != null) {
         if (textSpan is ImageSpan) {
           if (textInputPosition.offset >= textSpan.start &&
-              textInputPosition.offset <= textSpan.end) {
+              textInputPosition.offset < textSpan.end) {
             imageTextSpanWidth -=
                 getImageSpanCorrectPosition(textSpan, textDirection);
+          } else if (textInputPosition.offset == textSpan.end) {
+            ///_textPainter.getOffsetForCaret is not right.
+            imageSpanEndCaretOffset = _textPainter.getOffsetForCaret(
+                  TextPosition(
+                      offset: textPosition.offset - 1,
+                      affinity: textPosition.affinity),
+                  effectiveOffset & size,
+                ) +
+                Offset(
+                    getImageSpanCorrectPosition(textSpan, textDirection), 0.0);
           }
         }
       } else {
@@ -1569,16 +1593,21 @@ class ExtendedRenderEditable extends RenderBox {
         //last one
         textSpan = text.children?.last;
         if (textSpan != null && textSpan is ImageSpan) {
-          imageTextSpanWidth -=
-              getImageSpanCorrectPosition(textSpan, textDirection);
+          imageSpanEndCaretOffset = _textPainter.getOffsetForCaret(
+                TextPosition(
+                    offset: textPosition.offset - 1,
+                    affinity: textPosition.affinity),
+                effectiveOffset & size,
+              ) +
+              Offset(getImageSpanCorrectPosition(textSpan, textDirection), 0.0);
         }
       }
     }
 
-    final Offset caretOffset =
-        _textPainter.getOffsetForCaret(textPosition, _caretPrototype) +
-            effectiveOffset +
-            Offset(imageTextSpanWidth, 0.0);
+    final Offset caretOffset = (imageSpanEndCaretOffset ??
+            _textPainter.getOffsetForCaret(textPosition, _caretPrototype) +
+                Offset(imageTextSpanWidth, 0.0)) +
+        effectiveOffset;
 
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
@@ -1590,19 +1619,19 @@ class ExtendedRenderEditable extends RenderBox {
     // Override the height to take the full height of the glyph at the TextPosition
     // when not on iOS. iOS has special handling that creates a taller caret.
     // TODO(garyq): See the TODO for _getCaretPrototype.
-//    if (defaultTargetPlatform != TargetPlatform.iOS &&
-//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
-//            null) {
-//      caretRect = Rect.fromLTWH(
-//        caretRect.left,
-//        // Offset by _kCaretHeightOffset to counteract the same value added in
-//        // _getCaretPrototype. This prevents this from scaling poorly for small
-//        // font sizes.
-//        caretRect.top - _kCaretHeightOffset,
-//        caretRect.width,
-//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
-//      );
-//    }
+    if (defaultTargetPlatform != TargetPlatform.iOS &&
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
+            null) {
+      caretRect = Rect.fromLTWH(
+        caretRect.left,
+        // Offset by _kCaretHeightOffset to counteract the same value added in
+        // _getCaretPrototype. This prevents this from scaling poorly for small
+        // font sizes.
+        caretRect.top - _kCaretHeightOffset,
+        caretRect.width,
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
+      );
+    }
 
     caretRect = caretRect.shift(_getPixelPerfectCursorOffset(caretRect));
 
