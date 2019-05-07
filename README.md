@@ -8,6 +8,13 @@ base on flutter version 1.5.7
 
 [Chinese blog](https://juejin.im/post/5ccc25156fb9a0320f7df543)
 
+
+![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
+
+
+![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_image.gif)
+
+
 ## limitation
 
 - Not support: it won't handle special text when TextDirection.rtl.
@@ -46,8 +53,6 @@ and will update codes for stable flutter version as soon as possible.
 //      );
 //    }
 ```
-
-![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
 ##  How to use it.
 
