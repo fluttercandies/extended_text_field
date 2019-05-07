@@ -1,5 +1,6 @@
 import 'package:example/text_demo.dart';
 import 'package:flutter/material.dart';
+import 'package:oktoast/oktoast.dart';
 
 import 'common/tu_chong_repository.dart';
 
@@ -11,7 +12,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return OKToast(
+        child: MaterialApp(
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -25,7 +27,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(),
-    );
+    ));
   }
 }
 

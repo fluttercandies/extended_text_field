@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
 
+import 'common/pic_swiper.dart';
 import 'common/tu_chong_repository.dart';
 import 'common/tu_chong_source.dart';
 import 'special_text/at_text.dart';
@@ -27,6 +28,9 @@ class _TextDemoState extends State<TextDemo> {
 
   MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder(type: BuilderType.extendedText);
+
+  List<TuChongItem> images = List<TuChongItem>();
+
   FocusNode _focusNode = FocusNode();
   double _keyboardHeight = 267.0;
   bool get showCustomKeyBoard =>
@@ -91,6 +95,19 @@ class _TextDemoState extends State<TextDemo> {
                     launch("https://github.com/fluttercandies");
                   } else if (value.startsWith("@")) {
                     launch("mailto:zmtzawqlp@live.com");
+                  }
+                  //image
+                  else {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) {
+                      return PicSwiper(
+                        images.indexOf(images
+                            .firstWhere((x) => x.imageUrl == value.toString())),
+                        images
+                            .map<PicSwiperItem>(
+                                (f) => PicSwiperItem(f.imageUrl, des: f.title))
+                            .toList(),
+                      );
+                    }));
                   }
                 },
               );
@@ -280,7 +297,8 @@ class _TextDemoState extends State<TextDemo> {
     if (activeAtGrid) return buildAtGrid();
     if (activeDollarGrid) return buildDollarGrid();
     if (activeImageGrid)
-      return ImageGrid((text) {
+      return ImageGrid((item, text) {
+        images.add(item);
         insertText(text);
       }, widget.tuChongRepository);
     return Container();
@@ -363,6 +381,7 @@ class _TextDemoState extends State<TextDemo> {
       } else {
         newText = value.text.replaceRange(start, end, text);
       }
+
       setState(() {
         //FocusScope.of(context).requestFocus(_focusNode);
         _textEditingController.value = value.copyWith(
@@ -376,7 +395,7 @@ class _TextDemoState extends State<TextDemo> {
 }
 
 class ImageGrid extends StatefulWidget {
-  final ValueChanged<String> insertText;
+  final Function(TuChongItem item, String text) insertText;
   final TuChongRepository tuChongRepository;
   ImageGrid(this.insertText, this.tuChongRepository);
   @override
@@ -403,7 +422,8 @@ class _ImageGridState extends State<ImageGrid>
             ),
             behavior: HitTestBehavior.translucent,
             onTap: () {
-              widget.insertText?.call("<img src='$url'/>");
+              widget.insertText?.call(item,
+                  "<img src='$url' width='${item.imageSize.width}' height='${item.imageSize.height}'/>");
             },
           );
         },
