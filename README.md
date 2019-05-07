@@ -168,7 +168,7 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
     // TODO: implement build
     var textSpan = super.build(data, textStyle: textStyle, onTap: onTap);
     //for performance, make sure your all SpecialTextSpan are only in textSpan.children
-    //extended_text_field will only check textSpan.children
+    //extended_text_field will only check SpecialTextSpan in textSpan.children
     return textSpan;
   }
 
@@ -189,6 +189,9 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
     } else if (isStart(flag, DollarText.flag)) {
       return DollarText(textStyle, onTap,
           start: index - (DollarText.flag.length - 1), type: type);
+    } else if (isStart(flag, ImageText.flag)) {
+      return ImageText(textStyle,
+          start: index - (ImageText.flag.length - 1), type: type, onTap: onTap);
     }
     return null;
   }
@@ -211,12 +214,17 @@ input text will auto change to SpecialTextSpan and show in text field
                   onTap: () {
                     setState(() {
                       sessions.insert(0, _textEditingController.text);
-                      _textEditingController.clear();
+                      _textEditingController.value =
+                          _textEditingController.value.copyWith(
+                              text: "",
+                              selection: TextSelection.collapsed(offset: 0),
+                              composing: TextRange.empty);
                     });
                   },
                   child: Icon(Icons.send),
                 ),
                 contentPadding: EdgeInsets.all(12.0)),
+            //textDirection: TextDirection.rtl,
           ),
 ```
 
