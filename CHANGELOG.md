@@ -1,3 +1,7 @@
+## [0.2.3]
+
+* disabled informationCollector to keep backwards compatibility for now (ExtendedNetworkImageProvider)
+
 ## [0.2.2]
 
 * fix caret position for last one image span
