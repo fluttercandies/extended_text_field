@@ -63,35 +63,35 @@ packages:
       name: extended_image
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.3.2"
+    version: "0.3.3"
   extended_image_library:
     dependency: transitive
     description:
       name: extended_image_library
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.1.0"
+    version: "0.1.1"
   extended_text:
     dependency: "direct main"
     description:
       name: extended_text
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.4.5"
+    version: "0.4.7"
   extended_text_field:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.2.2"
+    version: "0.2.3"
   extended_text_library:
     dependency: transitive
     description:
       name: extended_text_library
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.2.6"
+    version: "0.3.0"
   flutter:
     dependency: "direct main"
     description: flutter

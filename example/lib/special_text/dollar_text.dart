@@ -31,6 +31,9 @@ class DollarText extends SpecialText {
       actualText: toString(),
       start: start,
       deleteAll: true,
+
+      ///caret can move into special text
+      caretIn: true,
       style: textStyle?.copyWith(color: Colors.orange),
     );
   }

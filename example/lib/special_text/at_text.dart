@@ -39,7 +39,10 @@ class AtText extends SpecialText {
             text: atText,
             actualText: atText,
             start: start,
-            deleteAll: false,
+            deleteAll: true,
+
+            ///caret can't move into special text
+            caretIn: false,
             style: textStyle,
             recognizer: type == BuilderType.extendedText
                 ? (TapGestureRecognizer()
@@ -51,7 +54,6 @@ class AtText extends SpecialText {
             text: atText,
             actualText: atText,
             start: start,
-            deleteAll: false,
             style: textStyle,
             recognizer: type == BuilderType.extendedText
                 ? (TapGestureRecognizer()
