@@ -1577,22 +1577,31 @@ class ExtendedRenderEditable extends RenderBox {
             imageTextSpanWidth -=
                 getImageSpanCorrectPosition(textSpan, textDirection);
           } else if (textInputPosition.offset == textSpan.end) {
-            ///_textPainter.getOffsetForCaret is not right.
-            imageSpanEndCaretOffset = _textPainter.getOffsetForCaret(
-                  TextPosition(
-                      offset: textPosition.offset - 1,
-                      affinity: textPosition.affinity),
-                  effectiveOffset & size,
-                ) +
-                Offset(
-                    getImageSpanCorrectPosition(textSpan, textDirection), 0.0);
+            var preTextPosition = TextPosition(
+                offset: textPosition.offset - 1,
+                affinity: textPosition.affinity);
+            var preTextSpan = text.getSpanForPosition(preTextPosition);
+            if (preTextSpan != null && preTextSpan is ImageSpan) {
+              ///_textPainter.getOffsetForCaret is not right.
+              imageSpanEndCaretOffset = _textPainter.getOffsetForCaret(
+                    preTextPosition,
+                    effectiveOffset & size,
+                  ) +
+                  Offset(getImageSpanCorrectPosition(textSpan, textDirection),
+                      0.0);
+            } else {
+              imageTextSpanWidth -=
+                  getImageSpanCorrectPosition(textSpan, textDirection);
+            }
           }
         }
       } else {
         //handle image text span is last one, textPainter will get wrong offset
         //last one
         textSpan = text.children?.last;
-        if (textSpan != null && textSpan is ImageSpan) {
+        if (textSpan != null &&
+            textSpan is ImageSpan &&
+            textInputPosition.offset >= textSpan.start) {
           imageSpanEndCaretOffset = _textPainter.getOffsetForCaret(
                 TextPosition(
                     offset: textPosition.offset - 1,

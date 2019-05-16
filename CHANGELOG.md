@@ -1,3 +1,8 @@
+## [0.2.3]
+
+* fix caret position about image span
+* add caretIn parameter(whether caret can move into special text for SpecialTextSpan(like a image span or @xxxx)) for SpecialTextSpan
+
 ## [0.2.2]
 
 * fix caret position for last one image span

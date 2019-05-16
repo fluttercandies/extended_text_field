@@ -768,6 +768,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       {bool userInput: false}) {
     if (supportSpecialText) {
       final bool textChanged = _value?.text != value?.text;
+      final bool selectionChanged = _value?.selection != value?.selection;
       if (textChanged) {
         var newTextSpan = widget.specialTextSpanBuilder.build(value?.text);
         if (newTextSpan == null) return value;
@@ -779,8 +780,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         if (newTextSpan != null) {
           var text = newTextSpan.toPlainText();
           //correct caret Offset
-          //make sure caret is not in image span
-          if (text != value.text) {
+          //make sure caret is not in text when caretIn is false
+          if (text != value.text || selectionChanged) {
             value =
                 correctCaretOffset(value, newTextSpan, _textInputConnection);
           }
@@ -1057,6 +1058,21 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   void _handleSelectionChanged(TextSelection selection,
       ExtendedRenderEditable renderObject, SelectionChangedCause cause) {
+//    if (supportSpecialText) {
+//      var newTextSpan = widget.specialTextSpanBuilder.build(_value?.text);
+//      if (newTextSpan != null) {
+//        var value = correctCaretOffset(
+//            _value, newTextSpan, _textInputConnection,
+//            newSelection: selection);
+//
+//        ///change
+//        if (value != _value) {
+//          selection = value.selection;
+//          _value = value;
+//        }
+//      }
+//    }
+
     widget.controller.selection = selection;
 
     // This will show the keyboard for all selection changes on the

@@ -78,6 +78,17 @@ TextPosition convertTextPainterPostionToTextInputPostion(
       if (ts is SpecialTextSpan) {
         var length = ts.actualText.length;
         caretOffset += (length - ts.toPlainText().length);
+
+        ///make sure caret is not in text when caretIn is false
+        if (!ts.caretIn && caretOffset > ts.start && caretOffset < ts.end) {
+          if (caretOffset > (ts.end - ts.start) / 2.0 + ts.start) {
+            //move caretOffset to end
+            caretOffset = ts.end;
+          } else {
+            caretOffset = ts.start;
+          }
+          break;
+        }
       }
       textOffset += ts.toPlainText().length;
       if (textOffset >= textPosition.offset) {
@@ -134,27 +145,35 @@ double getImageSpanCorrectPosition(ImageSpan image, TextDirection direction) {
 }
 
 ///correct caret Offset
-///make sure caret is not in image span
+///make sure caret is not in text when caretIn is false
 TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan textSpan,
-    TextInputConnection textInputConnection) {
-  if (value.selection.isValid && value.selection.isCollapsed) {
-    int caretOffset = value.selection.extentOffset;
-    var imageSpans = textSpan.children.where((x) => x is ImageSpan);
+    TextInputConnection textInputConnection,
+    {TextSelection newSelection}) {
+  TextSelection selection = newSelection ?? value.selection;
+
+  if (selection.isValid && selection.isCollapsed) {
+    int caretOffset = selection.extentOffset;
+    var specialTextSpans =
+        textSpan.children.where((x) => x is SpecialTextSpan && !x.caretIn);
     //correct caret Offset
-    //make sure caret is not in image span
-    for (ImageSpan ts in imageSpans) {
+    //make sure caret is not in text when caretIn is false
+    for (SpecialTextSpan ts in specialTextSpans) {
       if (caretOffset > ts.start && caretOffset < ts.end) {
-        //move caretOffset to end
-        caretOffset = ts.end;
+        if (caretOffset > (ts.end - ts.start) / 2.0 + ts.start) {
+          //move caretOffset to end
+          caretOffset = ts.end;
+        } else {
+          caretOffset = ts.start;
+        }
         break;
       }
     }
 
     ///tell textInput caretOffset is changed.
-    if (caretOffset != value.selection.baseOffset) {
+    if (caretOffset != selection.baseOffset) {
       value = value.copyWith(
-          selection: value.selection
-              .copyWith(baseOffset: caretOffset, extentOffset: caretOffset));
+          selection: selection.copyWith(
+              baseOffset: caretOffset, extentOffset: caretOffset));
       textInputConnection?.setEditingState(value);
     }
   }
