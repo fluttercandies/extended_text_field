@@ -1,7 +1,11 @@
-## [0.2.3]
+## [0.2.4]
 
 * fix caret position about image span
 * add caretIn parameter(whether caret can move into special text for SpecialTextSpan(like a image span or @xxxx)) for SpecialTextSpan
+
+## [0.2.3]
+
+* disabled informationCollector to keep backwards compatibility for now (ExtendedNetworkImageProvider)
 
 ## [0.2.2]
 
