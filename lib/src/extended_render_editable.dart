@@ -1665,6 +1665,9 @@ class ExtendedRenderEditable extends RenderBox {
     assert(state != null);
     assert(boundedOffset != null);
     assert(lastTextPosition != null);
+
+    lastTextPosition = makeSureCaretNotInSpecialText(text, lastTextPosition);
+
     if (state == FloatingCursorDragState.Start) {
       _relativeOrigin = const Offset(0, 0);
       _previousOffset = null;
