@@ -1666,8 +1666,6 @@ class ExtendedRenderEditable extends RenderBox {
     assert(boundedOffset != null);
     assert(lastTextPosition != null);
 
-    lastTextPosition = makeSureCaretNotInSpecialText(text, lastTextPosition);
-
     if (state == FloatingCursorDragState.Start) {
       _relativeOrigin = const Offset(0, 0);
       _previousOffset = null;
@@ -1889,7 +1887,7 @@ class ExtendedRenderEditable extends RenderBox {
     if (!paintCursorAboveText)
       _textPainter.paint(context.canvas, effectiveOffset);
 
-    if (_floatingCursorOn && false) {
+    if (_floatingCursorOn) {
       if (_resetFloatingCursorAnimationValue == null) {
         _paintCaret(
             context.canvas,
