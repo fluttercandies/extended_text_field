@@ -1,3 +1,10 @@
+## [0.2.5]
+
+* update extended_text_library
+* update extended_text_library
+1.remove caretIn parameter(SpecialTextSpan)
+2.deleteAll parameter has the same effect as caretIn parameter(SpecialTextSpan)
+
 ## [0.2.4]
 
 * fix caret position about image span

@@ -1065,6 +1065,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       var value = correctCaretOffset(
           _value, renderEditable?.text, _textInputConnection,
           newSelection: selection);
+
       ///change
       if (value != _value) {
         selection = value.selection;

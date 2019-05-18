@@ -70,7 +70,6 @@ class ImageText extends SpecialText {
         imageWidth: width,
         imageHeight: height,
         start: start,
-        deleteAll: true,
         fit: fit,
         clearMemoryCacheIfFailed: true,
         margin: EdgeInsets.only(left: 2.0, top: 2.0, right: 2.0),
