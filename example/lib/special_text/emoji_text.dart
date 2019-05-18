@@ -25,7 +25,6 @@ class EmojiText extends SpecialText {
           imageWidth: size,
           imageHeight: size,
           start: start,
-          deleteAll: true,
           fit: BoxFit.fill,
           margin: EdgeInsets.only(left: 2.0, top: 2.0, right: 2.0));
     }

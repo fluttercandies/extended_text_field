@@ -80,7 +80,7 @@ TextPosition convertTextPainterPostionToTextInputPostion(
         caretOffset += (length - ts.toPlainText().length);
 
         ///make sure caret is not in text when caretIn is false
-        if (!ts.caretIn && caretOffset > ts.start && caretOffset < ts.end) {
+        if (ts.deleteAll && caretOffset > ts.start && caretOffset < ts.end) {
           if (caretOffset > (ts.end - ts.start) / 2.0 + ts.start) {
             //move caretOffset to end
             caretOffset = ts.end;
@@ -147,7 +147,7 @@ TextPosition makeSureCaretNotInSpecialText(
     for (TextSpan ts in text.children) {
       if (ts is SpecialTextSpan) {
         ///make sure caret is not in text when caretIn is false
-        if (!ts.caretIn && caretOffset > ts.start && caretOffset < ts.end) {
+        if (ts.deleteAll && caretOffset > ts.start && caretOffset < ts.end) {
           if (caretOffset > (ts.end - ts.start) / 2.0 + ts.start) {
             //move caretOffset to end
             caretOffset = ts.end;
@@ -188,7 +188,7 @@ TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan textSpan,
   if (selection.isValid && selection.isCollapsed) {
     int caretOffset = selection.extentOffset;
     var specialTextSpans =
-        textSpan.children.where((x) => x is SpecialTextSpan && !x.caretIn);
+        textSpan.children.where((x) => x is SpecialTextSpan && x.deleteAll);
     //correct caret Offset
     //make sure caret is not in text when caretIn is false
     for (SpecialTextSpan ts in specialTextSpans) {
