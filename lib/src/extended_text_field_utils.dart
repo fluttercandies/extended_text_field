@@ -137,6 +137,38 @@ TextSelection convertTextPainterSelectionToTextInputSelection(
   return selection;
 }
 
+TextPosition makeSureCaretNotInSpecialText(
+    TextSpan text, TextPosition textPosition) {
+  if (text != null && text.children != null && textPosition != null) {
+    int caretOffset = textPosition.offset;
+    if (caretOffset <= 0) return textPosition;
+
+    int textOffset = 0;
+    for (TextSpan ts in text.children) {
+      if (ts is SpecialTextSpan) {
+        ///make sure caret is not in text when caretIn is false
+        if (!ts.caretIn && caretOffset > ts.start && caretOffset < ts.end) {
+          if (caretOffset > (ts.end - ts.start) / 2.0 + ts.start) {
+            //move caretOffset to end
+            caretOffset = ts.end;
+          } else {
+            caretOffset = ts.start;
+          }
+          break;
+        }
+      }
+      textOffset += ts.toPlainText().length;
+      if (textOffset >= textPosition.offset) {
+        break;
+      }
+    }
+    if (caretOffset != textPosition.offset) {
+      return TextPosition(offset: caretOffset, affinity: textPosition.affinity);
+    }
+  }
+  return textPosition;
+}
+
 double getImageSpanCorrectPosition(ImageSpan image, TextDirection direction) {
   var correctPosition = image.width / 2.0;
   //if (direction == TextDirection.rtl) correctPosition = -correctPosition;
