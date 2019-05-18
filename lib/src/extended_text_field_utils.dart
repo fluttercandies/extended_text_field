@@ -181,6 +181,8 @@ double getImageSpanCorrectPosition(ImageSpan image, TextDirection direction) {
 TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan textSpan,
     TextInputConnection textInputConnection,
     {TextSelection newSelection}) {
+  if (textSpan == null) return value;
+
   TextSelection selection = newSelection ?? value.selection;
 
   if (selection.isValid && selection.isCollapsed) {

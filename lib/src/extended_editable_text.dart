@@ -851,7 +851,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           currentTextPosition =
               TextPosition(offset: renderEditable.selection.baseOffset);
         }
-
         _startCaretRect =
             renderEditable.getLocalRectForCaret(currentTextPosition);
         renderEditable.setFloatingCursor(
@@ -870,6 +869,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               .calculateBoundedFloatingCursorOffset(rawCursorOffset);
           _lastTextPosition = renderEditable.getPositionForPoint(renderEditable
               .localToGlobal(_lastBoundedOffset + _floatingCursorOffset));
+
+          _lastTextPosition = makeSureCaretNotInSpecialText(
+              renderEditable.text, _lastTextPosition);
+
           renderEditable.setFloatingCursor(
               point.state, _lastBoundedOffset, _lastTextPosition);
         } else {
@@ -1058,20 +1061,16 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   void _handleSelectionChanged(TextSelection selection,
       ExtendedRenderEditable renderObject, SelectionChangedCause cause) {
-//    if (supportSpecialText) {
-//      var newTextSpan = widget.specialTextSpanBuilder.build(_value?.text);
-//      if (newTextSpan != null) {
-//        var value = correctCaretOffset(
-//            _value, newTextSpan, _textInputConnection,
-//            newSelection: selection);
-//
-//        ///change
-//        if (value != _value) {
-//          selection = value.selection;
-//          _value = value;
-//        }
-//      }
-//    }
+    if (supportSpecialText) {
+      var value = correctCaretOffset(
+          _value, renderEditable?.text, _textInputConnection,
+          newSelection: selection);
+      ///change
+      if (value != _value) {
+        selection = value.selection;
+        _value = value;
+      }
+    }
 
     widget.controller.selection = selection;
 
