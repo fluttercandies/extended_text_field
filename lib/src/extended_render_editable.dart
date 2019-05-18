@@ -1889,7 +1889,7 @@ class ExtendedRenderEditable extends RenderBox {
     if (!paintCursorAboveText)
       _textPainter.paint(context.canvas, effectiveOffset);
 
-    if (_floatingCursorOn) {
+    if (_floatingCursorOn && false) {
       if (_resetFloatingCursorAnimationValue == null) {
         _paintCaret(
             context.canvas,
