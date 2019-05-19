@@ -870,8 +870,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           _lastTextPosition = renderEditable.getPositionForPoint(renderEditable
               .localToGlobal(_lastBoundedOffset + _floatingCursorOffset));
 
-          _lastTextPosition = makeSureCaretNotInSpecialText(
-              renderEditable.text, _lastTextPosition);
+          if (renderEditable?.handleSpecialText ?? false) {
+            _lastTextPosition = makeSureCaretNotInSpecialText(
+                renderEditable.text, _lastTextPosition);
+          }
 
           renderEditable.setFloatingCursor(
               point.state, _lastBoundedOffset, _lastTextPosition);
@@ -1061,7 +1063,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   void _handleSelectionChanged(TextSelection selection,
       ExtendedRenderEditable renderObject, SelectionChangedCause cause) {
-    if (supportSpecialText) {
+    if (renderEditable?.handleSpecialText ?? false) {
       var value = correctCaretOffset(
           _value, renderEditable?.text, _textInputConnection,
           newSelection: selection);
@@ -1072,7 +1074,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         _value = value;
       }
     }
-
     widget.controller.selection = selection;
 
     // This will show the keyboard for all selection changes on the
