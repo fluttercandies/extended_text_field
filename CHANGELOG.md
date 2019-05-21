@@ -1,3 +1,7 @@
+## [0.2.6]
+
+* take care when TextSpan children is null
+
 ## [0.2.5]
 
 * update extended_text_library

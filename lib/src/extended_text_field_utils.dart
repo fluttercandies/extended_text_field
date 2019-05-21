@@ -181,7 +181,7 @@ double getImageSpanCorrectPosition(ImageSpan image, TextDirection direction) {
 TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan textSpan,
     TextInputConnection textInputConnection,
     {TextSelection newSelection}) {
-  if (textSpan == null) return value;
+  if (textSpan == null || textSpan.children == null) return value;
 
   TextSelection selection = newSelection ?? value.selection;
 
@@ -221,7 +221,7 @@ TextEditingValue handleSpecialTextSpanDelete(
     TextInputConnection textInputConnection) {
   var oldText = oldValue?.text;
   var newText = value?.text;
-  if (oldTextSpan != null) {
+  if (oldTextSpan != null && oldTextSpan.children != null) {
     var imageSpans = oldTextSpan.children
         .where((x) => (x is SpecialTextSpan && x.deleteAll));
 
