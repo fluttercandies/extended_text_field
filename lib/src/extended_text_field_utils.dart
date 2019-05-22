@@ -187,8 +187,14 @@ TextEditingValue correctCaretOffset(TextEditingValue value, TextSpan textSpan,
 
   if (selection.isValid && selection.isCollapsed) {
     int caretOffset = selection.extentOffset;
-    var specialTextSpans =
-        textSpan.children.where((x) => x is SpecialTextSpan && x.deleteAll);
+    List<SpecialTextSpan> specialTextSpans=[];
+    if(textSpan.children!=null){
+      for(var x in textSpan.children){
+        if(x is SpecialTextSpan && x.deleteAll){
+          specialTextSpans.add(x);
+        }
+      }
+    }
     //correct caret Offset
     //make sure caret is not in text when caretIn is false
     for (SpecialTextSpan ts in specialTextSpans) {
