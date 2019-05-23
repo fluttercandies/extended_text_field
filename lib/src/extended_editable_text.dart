@@ -1388,6 +1388,18 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       physics: widget.scrollPhysics,
       dragStartBehavior: widget.dragStartBehavior,
       viewportBuilder: (BuildContext context, ViewportOffset offset) {
+        if (offset != null && offset is ScrollPosition) {
+          var sp = offset as ScrollPosition;
+          if (sp.minScrollExtent != null && sp.maxScrollExtent != null) {
+            //pixels should >= minScrollExtent
+            //pixels should <= maxScrollExtent
+            if (sp.pixels < sp.minScrollExtent ||
+                sp.pixels > sp.maxScrollExtent) {
+              offset = ViewportOffset.zero();
+            }
+          }
+        }
+
         return CompositedTransformTarget(
           link: _layerLink,
           child: Semantics(

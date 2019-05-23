@@ -264,6 +264,7 @@ class ExtendedTextField extends StatefulWidget {
   final TextStyle style;
 
   /// {@macro flutter.widgets.editableText.strutStyle}
+
   final StrutStyle strutStyle;
 
   /// {@macro flutter.widgets.editableText.textAlign}

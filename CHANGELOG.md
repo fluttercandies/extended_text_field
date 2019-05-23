@@ -1,3 +1,7 @@
+## [0.2.7]
+
+* fix selection handles blinking
+
 ## [0.2.6]
 
 * take care when TextSpan children is null
