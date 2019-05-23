@@ -1,3 +1,8 @@
+## [0.2.8]
+
+* corret selection handles position for image textspan
+* StrutStyle strutStyle is obsoleted, it will lead to bugs for image span size.
+
 ## [0.2.7]
 
 * fix selection handles blinking

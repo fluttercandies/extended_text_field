@@ -264,7 +264,7 @@ class ExtendedTextField extends StatefulWidget {
   final TextStyle style;
 
   /// {@macro flutter.widgets.editableText.strutStyle}
-
+  @Deprecated('This will lead to bugs for image span size.')
   final StrutStyle strutStyle;
 
   /// {@macro flutter.widgets.editableText.textAlign}
