@@ -289,11 +289,12 @@ class ExtendedRenderEditable extends RenderBox {
   void _updateVisibleRegionMinY() {
     if (textSelectionDelegate.textEditingValue == null ||
         textSelectionDelegate.textEditingValue.text == null ||
-        textSelectionDelegate.textEditingValue.selection == null) return;
+        textSelectionDelegate.textEditingValue.selection == null ||
+        _textPainter.text == null) return;
     List<TextBox> boxs = _textPainter.getBoxesForSelection(
         textSelectionDelegate.textEditingValue.selection.copyWith(
             baseOffset: 0,
-            extentOffset: textSelectionDelegate.textEditingValue.text.length));
+            extentOffset: _textPainter.text.toPlainText().length));
     boxs.forEach((f) {
       _visibleRegionMinY = math.min(f.top, _visibleRegionMinY);
     });
