@@ -28,9 +28,6 @@ please fix them base on your flutter version.
 it has not time to maintain codes for every version,sorry for that,
 and will update codes for stable flutter version as soon as possible.
 
-- TextPainter.getFullHeightForCaret api is not support under lower flutter version,
-  I have to comment out them. if you think the caret height is not comfortable,
-  you can uncomment them base on your flutter version.
 ```dart
     ///zmt
     ///1.5.7
