@@ -260,7 +260,8 @@ class ExtendedRenderEditable extends RenderBox {
     ///zmt
     ///caret may be less than 0, because it's bigger than text
     ///
-    final Rect visibleRegion = Offset(0.0, -_kCaretHeightOffset) & size;
+
+    final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
 
     final Offset startOffset = _textPainter.getOffsetForCaret(
       TextPosition(offset: selection.start, affinity: selection.affinity),
@@ -277,6 +278,25 @@ class ExtendedRenderEditable extends RenderBox {
 
     _selectionEndInViewport.value =
         visibleRegion.contains(endOffset + effectiveOffset);
+  }
+
+  ///some times _visibleRegionMinY will lower than 0.0;
+  ///that the _selectionStartInViewport and _selectionEndInViewport will not right.
+  ///
+  double _visibleRegionMinY = -_kCaretHeightOffset;
+
+  ///zmt
+  void _updateVisibleRegionMinY() {
+    if (textSelectionDelegate.textEditingValue == null ||
+        textSelectionDelegate.textEditingValue.text == null ||
+        textSelectionDelegate.textEditingValue.selection == null) return;
+    List<TextBox> boxs = _textPainter.getBoxesForSelection(
+        textSelectionDelegate.textEditingValue.selection.copyWith(
+            baseOffset: 0,
+            extentOffset: textSelectionDelegate.textEditingValue.text.length));
+    boxs.forEach((f) {
+      _visibleRegionMinY = math.min(f.top, _visibleRegionMinY);
+    });
   }
 
   static const int _kLeftArrowCode = 21;
@@ -1532,6 +1552,7 @@ class ExtendedRenderEditable extends RenderBox {
     final double maxWidth = _isMultiline ? availableWidth : double.infinity;
     _textPainter.layout(minWidth: availableWidth, maxWidth: maxWidth);
     _textLayoutLastWidth = constraintWidth;
+    _updateVisibleRegionMinY();
   }
 
   // TODO(garyq): This is no longer producing the highest-fidelity caret
@@ -1609,25 +1630,26 @@ class ExtendedRenderEditable extends RenderBox {
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
     ///zmt
-    ///1.5.7
+    /// 1.5.4-hotfix.2
     ///under lower version of flutter, getFullHeightForCaret is not support
+    ///
     ///
     // Override the height to take the full height of the glyph at the TextPosition
     // when not on iOS. iOS has special handling that creates a taller caret.
     // TODO(garyq): See the TODO for _getCaretPrototype.
-//    if (defaultTargetPlatform != TargetPlatform.iOS &&
-//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
-//            null) {
-//      caretRect = Rect.fromLTWH(
-//        caretRect.left,
-//        // Offset by _kCaretHeightOffset to counteract the same value added in
-//        // _getCaretPrototype. This prevents this from scaling poorly for small
-//        // font sizes.
-//        caretRect.top - _kCaretHeightOffset,
-//        caretRect.width,
-//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
-//      );
-//    }
+    if (defaultTargetPlatform != TargetPlatform.iOS &&
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
+            null) {
+      caretRect = Rect.fromLTWH(
+        caretRect.left,
+        // Offset by _kCaretHeightOffset to counteract the same value added in
+        // _getCaretPrototype. This prevents this from scaling poorly for small
+        // font sizes.
+        caretRect.top - _kCaretHeightOffset,
+        caretRect.width,
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
+      );
+    }
 
     caretRect = caretRect.shift(_getPixelPerfectCursorOffset(caretRect));
 

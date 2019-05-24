@@ -920,7 +920,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         textInputAction: widget.textInputAction,
         textCapitalization: widget.textCapitalization,
         style: style,
-        strutStyle: widget.strutStyle,
+        //strutStyle: widget.strutStyle,
         textAlign: widget.textAlign,
         textDirection: widget.textDirection,
         autofocus: widget.autofocus,

@@ -1,3 +1,8 @@
+## [0.2.9]
+
+* uncomment getFullHeightForCaret method for 1.5.4-hotfix.2
+* corret selection handles visibility for _updateSelectionExtentsVisibility method
+
 ## [0.2.8]
 
 * corret selection handles position for image textspan
