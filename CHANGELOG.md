@@ -1,3 +1,7 @@
+## [0.3.1]
+
+* update path_provider 1.1.0
+
 ## [0.3.0]
 
 * uncomment getFullHeightForCaret method for 1.5.4-hotfix.2
