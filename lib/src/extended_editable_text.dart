@@ -11,7 +11,6 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:extended_text_field/src/extended_render_editable.dart';
-import 'package:extended_text_field/src/extended_text_field_utils.dart';
 import 'package:extended_text_field/src/extended_text_selection.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';

@@ -9,7 +9,7 @@
 import 'dart:async';
 
 import 'package:extended_text_field/src/extended_render_editable.dart';
-import 'package:extended_text_field/src/extended_text_field_utils.dart';
+import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show kDoubleTapTimeout, kDoubleTapSlop;
 import 'package:flutter/gestures.dart';

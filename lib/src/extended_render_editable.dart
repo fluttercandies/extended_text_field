@@ -11,7 +11,6 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui show TextBox, lerpDouble;
 
-import 'package:extended_text_field/src/extended_text_field_utils.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
