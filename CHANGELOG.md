@@ -1,3 +1,11 @@
+## [0.3.5]
+
+* update extended_text_library
+
+## [0.3.4]
+
+* remove un-used codes in extended_text_selection
+
 ## [0.3.3]
 
 * update extended_text_library

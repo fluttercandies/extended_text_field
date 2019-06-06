@@ -1,5 +1,5 @@
 ///
-///  create by zhoumaotuo on 2019/4/25
+///  create by zmtzawqlp on 2019/4/25
 ///  update baso on flutter version 1.5.7
 ///
 
@@ -652,7 +652,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   final GlobalKey _editableKey = GlobalKey();
 
   TextInputConnection _textInputConnection;
-  ExtendedTextSelectionOverlay _selectionOverlay;
+  ExtendedTextFieldSelectionOverlay _selectionOverlay;
 
   final ScrollController _scrollController = ScrollController();
   AnimationController _cursorBlinkOpacityController;
@@ -1082,7 +1082,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _hideSelectionOverlayIfNeeded();
 
     if (widget.selectionControls != null) {
-      _selectionOverlay = ExtendedTextSelectionOverlay(
+      _selectionOverlay = ExtendedTextFieldSelectionOverlay(
         context: context,
         value: _value,
         debugRequiredFor: widget,
@@ -1200,7 +1200,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   /// The current status of the text selection handles.
   @visibleForTesting
-  ExtendedTextSelectionOverlay get selectionOverlay => _selectionOverlay;
+  ExtendedTextFieldSelectionOverlay get selectionOverlay => _selectionOverlay;
 
   int _obscureShowCharTicksPending = 0;
   int _obscureLatestCharIndex;
