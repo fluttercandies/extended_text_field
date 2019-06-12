@@ -1,4 +1,4 @@
-## [0.3.6]
+## [0.3.7]
 
 * update extended_text_library
 

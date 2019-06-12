@@ -1,7 +1,7 @@
 name: extended_text_field
 description: extended official text field to quickly build special text like inline image, @somebody, custom background etc.
-version: 0.3.6
-author: zmtzawq <zmtzawqlp@live.com>
+version: 0.3.7
+author: zmtzawqlp <zmtzawqlp@live.com>
 homepage: https://github.com/fluttercandies/extended_text_field
 
 environment:
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  extended_text_library: ^0.3.7
+  extended_text_library: ^0.4.1
   extended_image_library: ^0.1.2
 
 dev_dependencies:
