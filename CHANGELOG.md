@@ -1,3 +1,8 @@
+## [0.3.8]
+
+* improve codes base on v1.7.8
+* support WidgetSpan (ExtendedWidgetSpan)
+
 ## [0.3.7]
 
 * update extended_text_library

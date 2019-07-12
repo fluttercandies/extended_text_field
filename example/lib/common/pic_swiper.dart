@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'package:image_picker_saver/image_picker_saver.dart';
+import 'dart:math';
+
 import 'package:extended_image/extended_image.dart';
+import 'package:image_picker_saver/image_picker_saver.dart';
 import 'package:oktoast/oktoast.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart' hide Image;
@@ -16,7 +18,8 @@ class PicSwiper extends StatefulWidget {
 
 class _PicSwiperState extends State<PicSwiper>
     with SingleTickerProviderStateMixin {
-  var rebuild = StreamController<int>.broadcast();
+  var rebuildIndex = StreamController<int>.broadcast();
+  var rebuildSwiper = StreamController<bool>.broadcast();
   AnimationController _animationController;
   Animation<double> _animation;
   Function animationListener;
@@ -30,54 +33,36 @@ class _PicSwiperState extends State<PicSwiper>
   List<double> doubleTapScales = <double>[1.0, 2.0];
 
   int currentIndex;
+  bool _showSwiper = true;
 
   @override
   void initState() {
     currentIndex = widget.index;
     _animationController = AnimationController(
         duration: const Duration(milliseconds: 150), vsync: this);
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   void dispose() {
-    rebuild.close();
+    rebuildIndex.close();
+    rebuildSwiper.close();
     _animationController?.dispose();
     clearGestureDetailsCache();
     //cancelToken?.cancel();
-    // TODO: implement dispose
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-        child: Column(
-      children: <Widget>[
-        AppBar(
-          actions: <Widget>[
-            GestureDetector(
-              child: Container(
-                padding: EdgeInsets.only(right: 10.0),
-                alignment: Alignment.center,
-                child: Text(
-                  "Save",
-                  style: TextStyle(fontSize: 16.0, color: Colors.white),
-                ),
-              ),
-              onTap: () {
-                saveNetworkImageToPhoto(widget.pics[currentIndex].picUrl)
-                    .then((bool done) {
-                  showToast(done ? "save succeed" : "save failed",
-                      position: ToastPosition(align: Alignment.topCenter));
-                });
-              },
-            )
-          ],
-        ),
-        Expanded(
-            child: Stack(
+    var size = MediaQuery.of(context).size;
+    Widget result = Material(
+
+        /// if you use ExtendedImageSlidePage and slideType =SlideType.onlyImage,
+        /// make sure your page is transparent background
+        color: Colors.transparent,
+        shadowColor: Colors.transparent,
+        child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
             ExtendedImageGesturePageView.builder(
@@ -86,17 +71,29 @@ class _PicSwiperState extends State<PicSwiper>
                 Widget image = ExtendedImage.network(
                   item,
                   fit: BoxFit.contain,
-                  //cancelToken: cancelToken,
-                  //autoCancel: false,
+                  enableSlideOutPage: true,
                   mode: ExtendedImageMode.Gesture,
-                  gestureConfig: GestureConfig(
-                      inPageView: true,
-                      initialScale: 1.0,
-                      maxScale: 5.0,
-                      animationMaxScale: 5.0,
-                      //you can cache gesture state even though page view page change.
-                      //remember call clearGestureDetailsCache() method at the right time.(for example,this page dispose)
-                      cacheGesture: false),
+                  initGestureConfigHandler: (state) {
+                    double initialScale = 1.0;
+
+                    if (state.extendedImageInfo != null &&
+                        state.extendedImageInfo.image != null) {
+                      initialScale = _initalScale(
+                          size: size,
+                          initialScale: initialScale,
+                          imageSize: Size(
+                              state.extendedImageInfo.image.width.toDouble(),
+                              state.extendedImageInfo.image.height.toDouble()));
+                    }
+                    return GestureConfig(
+                        inPageView: true,
+                        initialScale: initialScale,
+                        maxScale: max(initialScale, 5.0),
+                        animationMaxScale: max(initialScale, 5.0),
+                        //you can cache gesture state even though page view page change.
+                        //remember call clearGestureDetailsCache() method at the right time.(for example,this page dispose)
+                        cacheGesture: false);
+                  },
                   onDoubleTap: (ExtendedImageGestureState state) {
                     ///you can use define pointerDownPosition as you can,
                     ///default value is double tap pointer down postion.
@@ -133,39 +130,87 @@ class _PicSwiperState extends State<PicSwiper>
                     _animationController.forward();
                   },
                 );
-                image = Container(
-                  child: image,
-                  padding: EdgeInsets.all(5.0),
-                );
-//                if (index == currentIndex) {
-//                  return Hero(
-//                    tag: item + index.toString(),
-//                    child: image,
-//                  );
-//                } else {
-                return image;
-                //}
+
+                if (index == currentIndex) {
+                  return Hero(
+                    tag: item + index.toString(),
+                    child: image,
+                  );
+                } else {
+                  return image;
+                }
               },
               itemCount: widget.pics.length,
               onPageChanged: (int index) {
                 currentIndex = index;
-                rebuild.add(index);
+                rebuildIndex.add(index);
               },
               controller: PageController(
                 initialPage: currentIndex,
               ),
               scrollDirection: Axis.horizontal,
+              physics: BouncingScrollPhysics(),
+              //physics: ClampingScrollPhysics(),
             ),
-            Positioned(
-              bottom: 0.0,
-              left: 0.0,
-              right: 0.0,
-              child: MySwiperPlugin(widget.pics, currentIndex, rebuild),
+            StreamBuilder<bool>(
+              builder: (c, d) {
+                if (d.data == null || !d.data) return Container();
+
+                return Positioned(
+                  bottom: 0.0,
+                  left: 0.0,
+                  right: 0.0,
+                  child:
+                      MySwiperPlugin(widget.pics, currentIndex, rebuildIndex),
+                );
+              },
+              initialData: true,
+              stream: rebuildSwiper.stream,
             )
           ],
-        ))
-      ],
-    ));
+        ));
+
+    return ExtendedImageSlidePage(
+      child: result,
+      slideAxis: SlideAxis.both,
+      slideType: SlideType.onlyImage,
+      onSlidingPage: (state) {
+        ///you can change other widgets' state on page as you want
+        ///base on offset/isSliding etc
+        //var offset= state.offset;
+        var showSwiper = !state.isSliding;
+        if (showSwiper != _showSwiper) {
+          // do not setState directly here, the image state will change,
+          // you should only notify the widgets which are needed to change
+          // setState(() {
+          // _showSwiper = showSwiper;
+          // });
+
+          _showSwiper = showSwiper;
+          rebuildSwiper.add(_showSwiper);
+        }
+      },
+    );
+  }
+
+  double _initalScale({Size imageSize, Size size, double initialScale}) {
+    var n1 = imageSize.height / imageSize.width;
+    var n2 = size.height / size.width;
+    if (n1 > n2) {
+      final FittedSizes fittedSizes =
+          applyBoxFit(BoxFit.contain, imageSize, size);
+      //final Size sourceSize = fittedSizes.source;
+      Size destinationSize = fittedSizes.destination;
+      return size.width / destinationSize.width;
+    } else if (n1 / n2 < 1 / 4) {
+      final FittedSizes fittedSizes =
+          applyBoxFit(BoxFit.contain, imageSize, size);
+      //final Size sourceSize = fittedSizes.source;
+      Size destinationSize = fittedSizes.destination;
+      return size.height / destinationSize.height;
+    }
+
+    return initialScale;
   }
 }
 
@@ -190,22 +235,36 @@ class MySwiperPlugin extends StatelessWidget {
                   width: 10.0,
                 ),
                 Text(
-                  pics[data.data].des ?? "",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Expanded(
-                  child: Container(),
-                ),
-                Text(
                   "${data.data + 1}",
                 ),
                 Text(
                   " / ${pics.length}",
                 ),
+                Expanded(
+                    child: Text(pics[data.data].des ?? "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16.0, color: Colors.blue))),
                 Container(
                   width: 10.0,
                 ),
+                GestureDetector(
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10.0),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Save",
+                      style: TextStyle(fontSize: 16.0, color: Colors.blue),
+                    ),
+                  ),
+                  onTap: () {
+                    saveNetworkImageToPhoto(pics[index].picUrl)
+                        .then((bool done) {
+                      showToast(done ? "save succeed" : "save failed",
+                          position: ToastPosition(align: Alignment.topCenter));
+                    });
+                  },
+                )
               ],
             ),
           ),

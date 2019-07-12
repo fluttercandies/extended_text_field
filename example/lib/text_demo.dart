@@ -25,7 +25,7 @@ class TextDemo extends StatefulWidget {
 
 class _TextDemoState extends State<TextDemo> {
   TextEditingController _textEditingController = TextEditingController();
-
+  final GlobalKey _key = GlobalKey();
   MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder(type: BuilderType.extendedText);
 
@@ -133,6 +133,7 @@ class _TextDemoState extends State<TextDemo> {
             color: Colors.blue,
           ),
           ExtendedTextField(
+            key: _key,
             specialTextSpanBuilder: MySpecialTextSpanBuilder(
                 showAtBackground: true, type: BuilderType.extendedTextField),
             controller: _textEditingController,
@@ -383,7 +384,8 @@ class _TextDemoState extends State<TextDemo> {
       }
 
       setState(() {
-        //FocusScope.of(context).requestFocus(_focusNode);
+        ///hide selectionOverlay when try to insert text .
+        (_key.currentState as ExtendedTextFieldState).selectionOverlay?.hide();
         _textEditingController.value = value.copyWith(
             text: newText,
             selection: value.selection.copyWith(

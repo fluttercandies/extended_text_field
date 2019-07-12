@@ -1,3 +1,5 @@
+import 'dart:math';
+
 ///
 ///  create by zmtzawqlp on 2019/4/25
 ///
@@ -34,10 +36,14 @@ class ExtendedTextFieldSelectionOverlay {
     @required this.layerLink,
     @required this.renderObject,
     this.selectionControls,
+    bool handlesVisible = false,
     this.selectionDelegate,
     this.dragStartBehavior = DragStartBehavior.start,
+    this.onSelectionHandleTapped,
   })  : assert(value != null),
         assert(context != null),
+        assert(handlesVisible != null),
+        _handlesVisible = handlesVisible,
         _value = value {
     final OverlayState overlay = Overlay.of(context);
     assert(
@@ -91,11 +97,23 @@ class ExtendedTextFieldSelectionOverlay {
   ///  * [DragGestureRecognizer.dragStartBehavior], which gives an example for the different behaviors.
   final DragStartBehavior dragStartBehavior;
 
+  /// {@template flutter.widgets.textSelection.onSelectionHandleTapped}
+  /// A callback that's invoked when a selection handle is tapped.
+  ///
+  /// Both regular taps and long presses invoke this callback, but a drag
+  /// gesture won't.
+  /// {@endtemplate}
+  final VoidCallback onSelectionHandleTapped;
+
   /// Controls the fade-in and fade-out animations for the toolbar and handles.
   static const Duration fadeDuration = Duration(milliseconds: 150);
 
   AnimationController _toolbarController;
   Animation<double> get _toolbarOpacity => _toolbarController.view;
+
+  /// Retrieve current value.
+  @visibleForTesting
+  TextEditingValue get value => _value;
 
   TextEditingValue _value;
 
@@ -107,6 +125,36 @@ class ExtendedTextFieldSelectionOverlay {
   OverlayEntry _toolbar;
 
   TextSelection get _selection => _value.selection;
+
+  /// Whether selection handles are visible.
+  ///
+  /// Set to false if you want to hide the handles. Use this property to show or
+  /// hide the handle without rebuilding them.
+  ///
+  /// If this method is called while the [SchedulerBinding.schedulerPhase] is
+  /// [SchedulerPhase.persistentCallbacks], i.e. during the build, layout, or
+  /// paint phases (see [WidgetsBinding.drawFrame]), then the update is delayed
+  /// until the post-frame callbacks phase. Otherwise the update is done
+  /// synchronously. This means that it is safe to call during builds, but also
+  /// that if you do call this during a build, the UI will not update until the
+  /// next frame (i.e. many milliseconds later).
+  ///
+  /// Defaults to false.
+  bool get handlesVisible => _handlesVisible;
+  bool _handlesVisible = false;
+  set handlesVisible(bool visible) {
+    assert(visible != null);
+    if (_handlesVisible == visible) return;
+    _handlesVisible = visible;
+    // If we are in build state, it will be too late to update visibility.
+    // We will need to schedule the build in next frame.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback(_markNeedsBuild);
+    } else {
+      _markNeedsBuild();
+    }
+  }
 
   /// Shows the handles by inserting them into the [context]'s overlay.
   void showHandles() {
@@ -120,6 +168,15 @@ class ExtendedTextFieldSelectionOverlay {
               _buildHandle(context, _TextSelectionHandlePosition.end)),
     ];
     Overlay.of(context, debugRequiredFor: debugRequiredFor).insertAll(_handles);
+  }
+
+  /// Destroys the handles by removing them from overlay.
+  void hideHandles() {
+    if (_handles != null) {
+      _handles[0].remove();
+      _handles[1].remove();
+      _handles = null;
+    }
   }
 
   /// Shows the toolbar by inserting it into the [context]'s overlay.
@@ -167,22 +224,31 @@ class ExtendedTextFieldSelectionOverlay {
   }
 
   /// Whether the handles are currently visible.
-  bool get handlesAreVisible => _handles != null;
+  bool get handlesAreVisible => _handles != null && handlesVisible;
 
   /// Whether the toolbar is currently visible.
   bool get toolbarIsVisible => _toolbar != null;
 
-  /// Hides the overlay.
+  /// Hides the entire overlay including the toolbar and the handles.
   void hide() {
     if (_handles != null) {
       _handles[0].remove();
       _handles[1].remove();
       _handles = null;
     }
-    _toolbar?.remove();
-    _toolbar = null;
+    if (_toolbar != null) {
+      hideToolbar();
+    }
+  }
 
+  /// Hides the toolbar part of the overlay.
+  ///
+  /// To hide the whole overlay, see [hide].
+  void hideToolbar() {
+    assert(_toolbar != null);
     _toolbarController.stop();
+    _toolbar.remove();
+    _toolbar = null;
   }
 
   /// Final cleanup.
@@ -197,18 +263,20 @@ class ExtendedTextFieldSelectionOverlay {
             position == _TextSelectionHandlePosition.end) ||
         selectionControls == null)
       return Container(); // hide the second handle when collapsed
-    return _TextSelectionHandleOverlay(
-      onSelectionHandleChanged: (TextSelection newSelection) {
-        _handleSelectionHandleChanged(newSelection, position);
-      },
-      onSelectionHandleTapped: _handleSelectionHandleTapped,
-      layerLink: layerLink,
-      renderObject: renderObject,
-      selection: _selection,
-      selectionControls: selectionControls,
-      position: position,
-      dragStartBehavior: dragStartBehavior,
-    );
+    return Visibility(
+        visible: handlesVisible,
+        child: _TextSelectionHandleOverlay(
+          onSelectionHandleChanged: (TextSelection newSelection) {
+            _handleSelectionHandleChanged(newSelection, position);
+          },
+          onSelectionHandleTapped: onSelectionHandleTapped,
+          layerLink: layerLink,
+          renderObject: renderObject,
+          selection: _selection,
+          selectionControls: selectionControls,
+          position: position,
+          dragStartBehavior: dragStartBehavior,
+        ));
   }
 
   Widget _buildToolbar(BuildContext context) {
@@ -217,16 +285,26 @@ class ExtendedTextFieldSelectionOverlay {
     // Find the horizontal midpoint, just above the selected text.
     final List<TextSelectionPoint> endpoints =
         renderObject.getEndpointsForSelection(_selection);
-    final Offset midpoint = Offset(
-      (endpoints.length == 1)
-          ? endpoints[0].point.dx
-          : (endpoints[0].point.dx + endpoints[1].point.dx) / 2.0,
-      endpoints[0].point.dy - renderObject.preferredLineHeight,
-    );
 
     final Rect editingRegion = Rect.fromPoints(
       renderObject.localToGlobal(Offset.zero),
       renderObject.localToGlobal(renderObject.size.bottomRight(Offset.zero)),
+    );
+
+    final bool isMultiline =
+        endpoints.last.point.dy - endpoints.first.point.dy >
+            renderObject.preferredLineHeight / 2;
+
+    // If the selected text spans more than 1 line, horizontally center the toolbar.
+    // Derived from both iOS and Android.
+    final double midX = isMultiline
+        ? editingRegion.width / 2
+        : (endpoints.first.point.dx + endpoints.last.point.dx) / 2;
+
+    final Offset midpoint = Offset(
+      midX,
+      // The y-coordinate won't be made use of most likely.
+      endpoints[0].point.dy - renderObject.preferredLineHeight,
     );
 
     return FadeTransition(
@@ -236,7 +314,13 @@ class ExtendedTextFieldSelectionOverlay {
         showWhenUnlinked: false,
         offset: -editingRegion.topLeft,
         child: selectionControls.buildToolbar(
-            context, editingRegion, midpoint, selectionDelegate),
+          context,
+          editingRegion,
+          renderObject.preferredLineHeight,
+          midpoint,
+          endpoints,
+          selectionDelegate,
+        ),
       ),
     );
   }
@@ -255,17 +339,6 @@ class ExtendedTextFieldSelectionOverlay {
     selectionDelegate.textEditingValue =
         _value.copyWith(selection: newSelection, composing: TextRange.empty);
     selectionDelegate.bringIntoView(textPosition);
-  }
-
-  void _handleSelectionHandleTapped() {
-    if (_value.selection.isCollapsed) {
-      if (_toolbar != null) {
-        _toolbar?.remove();
-        _toolbar = null;
-      } else {
-        showToolbar();
-      }
-    }
   }
 }
 
@@ -307,6 +380,8 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
   }
 }
 
+/// The minimum size that a widget should be in order to be easily interacted
+/// with by the user.
 class _TextSelectionHandleOverlayState
     extends State<_TextSelectionHandleOverlay>
     with SingleTickerProviderStateMixin {
@@ -350,8 +425,10 @@ class _TextSelectionHandleOverlayState
   }
 
   void _handleDragStart(DragStartDetails details) {
-    _dragPosition = details.globalPosition +
-        Offset(0.0, -widget.selectionControls.handleSize.height);
+    final Size handleSize = widget.selectionControls.getHandleSize(
+      widget.renderObject.preferredLineHeight,
+    );
+    _dragPosition = details.globalPosition + Offset(0.0, -handleSize.height);
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
@@ -393,7 +470,8 @@ class _TextSelectionHandleOverlayState
   }
 
   void _handleTap() {
-    widget.onSelectionHandleTapped();
+    if (widget.onSelectionHandleTapped != null)
+      widget.onSelectionHandleTapped();
   }
 
   @override
@@ -425,31 +503,62 @@ class _TextSelectionHandleOverlayState
       point.dy.clamp(0.0, viewport.height),
     );
 
+    final Offset handleAnchor = widget.selectionControls.getHandleAnchor(
+      type,
+      widget.renderObject.preferredLineHeight,
+    );
+    final Size handleSize = widget.selectionControls.getHandleSize(
+      widget.renderObject.preferredLineHeight,
+    );
+    final Rect handleRect = Rect.fromLTWH(
+      // Put handleAnchor on top of point
+      point.dx - handleAnchor.dx,
+      point.dy - handleAnchor.dy,
+      handleSize.width,
+      handleSize.height,
+    );
+
+    // Make sure the GestureDetector is big enough to be easily interactive.
+    final Rect interactiveRect = handleRect.expandToInclude(
+      Rect.fromCircle(
+          center: handleRect.center, radius: kMinInteractiveSize / 2),
+    );
+    final RelativeRect padding = RelativeRect.fromLTRB(
+      max((interactiveRect.width - handleRect.width) / 2, 0),
+      max((interactiveRect.height - handleRect.height) / 2, 0),
+      max((interactiveRect.width - handleRect.width) / 2, 0),
+      max((interactiveRect.height - handleRect.height) / 2, 0),
+    );
+
     return CompositedTransformFollower(
       link: widget.layerLink,
+      offset: interactiveRect.topLeft,
       showWhenUnlinked: false,
       child: FadeTransition(
         opacity: _opacity,
-        child: GestureDetector(
-          dragStartBehavior: widget.dragStartBehavior,
-          onPanStart: _handleDragStart,
-          onPanUpdate: _handleDragUpdate,
-          onTap: _handleTap,
-          child: Stack(
-            // Always let the selection handles draw outside of the conceptual
-            // box where (0,0) is the top left corner of the RenderEditable.
-            overflow: Overflow.visible,
-            children: <Widget>[
-              Positioned(
-                left: point.dx,
-                top: point.dy,
-                child: widget.selectionControls.buildHandle(
-                  context,
-                  type,
-                  widget.renderObject.preferredLineHeight,
-                ),
+        child: Container(
+          alignment: Alignment.topLeft,
+          width: interactiveRect.width,
+          height: interactiveRect.height,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            dragStartBehavior: widget.dragStartBehavior,
+            onPanStart: _handleDragStart,
+            onPanUpdate: _handleDragUpdate,
+            onTap: _handleTap,
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: padding.left,
+                top: padding.top,
+                right: padding.right,
+                bottom: padding.bottom,
               ),
-            ],
+              child: widget.selectionControls.buildHandle(
+                context,
+                type,
+                widget.renderObject.preferredLineHeight,
+              ),
+            ),
           ),
         ),
       ),

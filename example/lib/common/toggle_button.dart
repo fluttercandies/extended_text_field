@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ToggleButton extends StatefulWidget {
   final Widget activeWidget;
   final Widget unActiveWidget;
-  bool active;
+  final bool active;
   final ValueChanged<bool> activeChanged;
   ToggleButton(
       {this.activeWidget,
@@ -15,10 +15,19 @@ class ToggleButton extends StatefulWidget {
 }
 
 class _ToggleButtonState extends State<ToggleButton> {
+  bool _active = false;
+
   @override
   void initState() {
+    _active = widget.active;
     // TODO: implement initState
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(ToggleButton oldWidget) {
+    _active = widget.active;
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -27,8 +36,8 @@ class _ToggleButtonState extends State<ToggleButton> {
       behavior: HitTestBehavior.translucent,
       onTap: () {
         setState(() {
-          widget.active = !widget.active;
-          widget.activeChanged?.call(widget.active);
+          _active = !_active;
+          widget.activeChanged?.call(_active);
         });
       },
       child: Padding(

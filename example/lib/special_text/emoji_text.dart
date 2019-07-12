@@ -9,7 +9,7 @@ class EmojiText extends SpecialText {
       : super(EmojiText.flag, "]", textStyle);
 
   @override
-  TextSpan finishText() {
+  InlineSpan finishText() {
     // TODO: implement finishText
     var key = toString();
     if (EmojiUitl.instance.emojiMap.containsKey(key)) {
@@ -26,7 +26,7 @@ class EmojiText extends SpecialText {
           imageHeight: size,
           start: start,
           fit: BoxFit.fill,
-          margin: EdgeInsets.only(left: 2.0, top: 2.0, right: 2.0));
+          margin: EdgeInsets.only(left: 2.0, right: 2.0));
     }
 
     return TextSpan(text: toString(), style: textStyle);
