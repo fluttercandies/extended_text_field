@@ -4,7 +4,7 @@
 
 extended official text field to quickly build special text like inline image or @somebody etc.
 
-base on flutter version 1.5.7
+base on flutter sdk 1.7.8
 
 [Chinese blog](https://juejin.im/post/5ccc25156fb9a0320f7df543)
 
@@ -23,33 +23,11 @@ base on flutter version 1.5.7
 
 - Not support:it won't handle special text when obscureText is true.
 
-- codes are base on flutter 1.5.4-hotfix.2, if any one find some codes are broken,
+- codes are base on flutter sdk 1.7.8, if any one find some codes are broken,
 please fix them base on your flutter version.
 it has not time to maintain codes for every version,sorry for that,
 and will update codes for stable flutter version as soon as possible.
 
-```dart
-    ///zmt
-    ///1.5.7
-    ///under lower version of flutter, getFullHeightForCaret is not support
-    ///
-    // Override the height to take the full height of the glyph at the TextPosition
-    // when not on iOS. iOS has special handling that creates a taller caret.
-    // TODO(garyq): See the TODO for _getCaretPrototype.
-//    if (defaultTargetPlatform != TargetPlatform.iOS &&
-//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
-//            null) {
-//      caretRect = Rect.fromLTWH(
-//        caretRect.left,
-//        // Offset by _kCaretHeightOffset to counteract the same value added in
-//        // _getCaretPrototype. This prevents this from scaling poorly for small
-//        // font sizes.
-//        caretRect.top - _kCaretHeightOffset,
-//        caretRect.width,
-//        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
-//      );
-//    }
-```
 
 ##  How to use it.
 
