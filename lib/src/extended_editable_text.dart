@@ -1,6 +1,6 @@
 ///
 ///  create by zmtzawqlp on 2019/4/25
-///  update baso on flutter version 1.5.7
+///  base on flutter sdk 1.7.8
 ///
 
 // Copyright 2015 The Chromium Authors. All rights reserved.
@@ -836,7 +836,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       return;
     }
 
-    value = _handleSpecialTextSpan(value, userInput: true);
+    value = _handleSpecialTextSpan(value);
     if (value.text != _value.text) {
       _hideSelectionOverlayIfNeeded();
       _showCaretOnScreen();
@@ -855,8 +855,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   ///zmt
-  TextEditingValue _handleSpecialTextSpan(TextEditingValue value,
-      {bool userInput: false}) {
+  TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
     if (supportSpecialText) {
       final bool textChanged = _value?.text != value?.text;
       final bool selectionChanged = _value?.selection != value?.selection;
@@ -1030,6 +1029,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     final TextEditingValue localValue = _value;
     if (localValue == _lastKnownRemoteTextEditingValue) return;
     _lastKnownRemoteTextEditingValue = localValue;
+
     _textInputConnection.setEditingState(localValue);
   }
 
@@ -1284,7 +1284,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   void _formatAndSetValue(TextEditingValue value, {bool set: false}) {
     final bool textChanged = _value?.text != value?.text;
-
+    //https://github.com/flutter/flutter/issues/36048
+    if (textChanged) {
+      _hideSelectionOverlayIfNeeded();
+    }
     if (textChanged &&
         widget.inputFormatters != null &&
         widget.inputFormatters.isNotEmpty) {
@@ -1386,6 +1389,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   void _didChangeTextEditingValue() {
+    final bool textChanged =
+        _value?.text != _lastKnownRemoteTextEditingValue?.text;
+    //https://github.com/flutter/flutter/issues/36048
+    if (textChanged) {
+      _hideSelectionOverlayIfNeeded();
+    }
     _updateRemoteEditingValueIfNeeded();
     _startOrStopCursorTimerIfNeeded();
     _updateOrDisposeSelectionOverlayIfNeeded();

@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  extended_text_library: ^0.4.3
-  extended_image_library: ^0.1.4
+  extended_text_library: ^0.4.2
+
 #  extended_text_library:
 #    path: ../extended_text_library
 

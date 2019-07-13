@@ -2,6 +2,7 @@ import 'dart:async';
 
 ///
 ///  create by zmtzawqlp on 2019/4/25
+///  base on flutter sdk 1.7.8
 ///
 
 // Copyright 2015 The Chromium Authors. All rights reserved.
@@ -1183,17 +1184,23 @@ class ExtendedRenderEditable extends RenderBox
     final Offset effectiveOffset =
         (_initialOffset ?? Offset.zero) + _paintOffset;
 
+    TextSelection textPainterSelection = selection;
+    if (handleSpecialText) {
+      textPainterSelection =
+          convertTextInputSelectionToTextPainterSelection(text, selection);
+    }
     if (selection.isCollapsed) {
       // TODO(mpcomplete): This doesn't work well at an RTL/LTR boundary.
-      var temp =
-          convertTextInputSelectionToTextPainterSelection(text, selection);
+
       double caretHeight;
       ValueChanged<double> caretHeightCallBack = (value) {
         caretHeight = value;
       };
       final Offset caretOffset = _getCaretOffset(
           effectiveOffset,
-          TextPosition(offset: temp.extentOffset, affinity: selection.affinity),
+          TextPosition(
+              offset: textPainterSelection.extentOffset,
+              affinity: selection.affinity),
           TextPosition(
               offset: selection.extentOffset, affinity: selection.affinity),
           caretHeightCallBack: caretHeightCallBack);
@@ -1204,7 +1211,7 @@ class ExtendedRenderEditable extends RenderBox
       return <TextSelectionPoint>[TextSelectionPoint(start, null)];
     } else {
       final List<ui.TextBox> boxes =
-          _textPainter.getBoxesForSelection(selection);
+          _textPainter.getBoxesForSelection(textPainterSelection);
       final Offset start =
           Offset(boxes.first.start, boxes.first.bottom) + effectiveOffset;
       final Offset end =

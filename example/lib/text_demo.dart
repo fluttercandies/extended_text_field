@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:example/common/toggle_button.dart';
 import 'package:example/special_text/emoji_text.dart';
@@ -98,16 +99,23 @@ class _TextDemoState extends State<TextDemo> {
                   }
                   //image
                   else {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) {
-                      return PicSwiper(
-                        images.indexOf(images
-                            .firstWhere((x) => x.imageUrl == value.toString())),
-                        images
-                            .map<PicSwiperItem>(
-                                (f) => PicSwiperItem(f.imageUrl, des: f.title))
-                            .toList(),
-                      );
-                    }));
+                    var page = PicSwiper(
+                      images.indexOf(images
+                          .firstWhere((x) => x.imageUrl == value.toString())),
+                      images
+                          .map<PicSwiperItem>(
+                              (f) => PicSwiperItem(f.imageUrl, des: f.title))
+                          .toList(),
+                    );
+                    Navigator.push(
+                        context,
+                        Platform.isAndroid
+                            ? TransparentMaterialPageRoute(builder: (_) {
+                                return page;
+                              })
+                            : TransparentCupertinoPageRoute(builder: (_) {
+                                return page;
+                              }));
                   }
                 },
               );
@@ -383,15 +391,10 @@ class _TextDemoState extends State<TextDemo> {
         newText = value.text.replaceRange(start, end, text);
       }
 
-      setState(() {
-        ///hide selectionOverlay when try to insert text .
-        (_key.currentState as ExtendedTextFieldState).selectionOverlay?.hide();
-        _textEditingController.value = value.copyWith(
-            text: newText,
-            selection: value.selection.copyWith(
-                baseOffset: end + text.length,
-                extentOffset: end + text.length));
-      });
+      _textEditingController.value = value.copyWith(
+          text: newText,
+          selection: value.selection.copyWith(
+              baseOffset: end + text.length, extentOffset: end + text.length));
     }
   }
 }

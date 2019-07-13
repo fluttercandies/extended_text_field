@@ -131,6 +131,13 @@ class _PicSwiperState extends State<PicSwiper>
                   },
                 );
 
+                image = GestureDetector(
+                  child: image,
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                );
+
                 if (index == currentIndex) {
                   return Hero(
                     tag: item + index.toString(),

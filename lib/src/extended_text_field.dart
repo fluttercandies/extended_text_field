@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/4/22
-///  base on flutter version 1.5.7
+///  base on flutter sdk 1.7.8
 ///
 import 'dart:collection';
 import 'package:flutter/cupertino.dart';
@@ -565,7 +565,7 @@ class ExtendedTextField extends StatefulWidget {
 }
 
 class _ExtendedTextFieldState extends State<ExtendedTextField>
-    with AutomaticKeepAliveClientMixin, ExtendedTextFieldState {
+    with AutomaticKeepAliveClientMixin {
   final GlobalKey<ExtendedEditableTextState> _editableTextKey =
       GlobalKey<ExtendedEditableTextState>();
 
@@ -1105,13 +1105,4 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       ),
     );
   }
-
-  @override
-  ExtendedTextFieldSelectionOverlay get selectionOverlay =>
-      _editableText.selectionOverlay;
-}
-
-///public interface of _ExtendedTextFieldState
-abstract class ExtendedTextFieldState {
-  ExtendedTextFieldSelectionOverlay get selectionOverlay;
 }
