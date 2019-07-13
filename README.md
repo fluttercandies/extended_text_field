@@ -48,7 +48,7 @@ class AtText extends SpecialText {
       : super(flag, " ", textStyle, onTap: onTap);
 
   @override
-  TextSpan finishText() {
+  InlineSpan finishText() {
     // TODO: implement finishText
     TextStyle textStyle =
         this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
@@ -103,7 +103,7 @@ class EmojiText extends SpecialText {
       : super(EmojiText.flag, "]", textStyle);
 
   @override
-  TextSpan finishText() {
+  InlineSpan finishText() {
     // TODO: implement finishText
     var key = toString();
     if (EmojiUitl.instance.emojiMap.containsKey(key)) {
