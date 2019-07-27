@@ -14,8 +14,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import 'extended_text_selection.dart';
-
 /// Signature for the [ExtendedTextField.buildCounter] callback.
 typedef InputCounterWidgetBuilder = Widget Function(
   /// The build context for the TextField

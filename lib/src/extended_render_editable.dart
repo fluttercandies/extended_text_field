@@ -281,10 +281,12 @@ class ExtendedRenderEditable extends RenderBox
 
     final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
 
-    final Offset startOffset = _textPainter.getOffsetForCaret(
-      TextPosition(offset: selection.start, affinity: selection.affinity),
-      Rect.zero,
-    );
+    final Offset startOffset = _getCaretOffset(
+        TextPosition(
+          offset: selection.start,
+          affinity: selection.affinity,
+        ),
+        effectiveOffset: effectiveOffset);
 
     // TODO(justinmc): https://github.com/flutter/flutter/issues/31495
     // Check if the selection is visible with an approximation because a
@@ -298,23 +300,9 @@ class ExtendedRenderEditable extends RenderBox
         .inflate(visibleRegionSlop)
         .contains(startOffset + effectiveOffset);
 
-    Offset endOffset = _textPainter.getOffsetForCaret(
-      TextPosition(offset: selection.end, affinity: selection.affinity),
-      Rect.zero,
-    );
-
-    if (handleSpecialText &&
-        selection.end > 0 &&
-        endOffset == Offset.zero &&
-        effectiveOffset == Offset.zero) {
-      var boxs = _textPainter.getBoxesForSelection(TextSelection(
-          baseOffset: selection.end - 1,
-          extentOffset: selection.end,
-          affinity: selection.affinity));
-      if (boxs.length > 0) {
-        endOffset = boxs.toList().last.toRect().topRight;
-      }
-    }
+    final Offset endOffset = _getCaretOffset(
+        TextPosition(offset: selection.end, affinity: selection.affinity),
+        effectiveOffset: effectiveOffset);
 
     _selectionEndInViewport.value = visibleRegion
         .inflate(visibleRegionSlop)
@@ -1181,8 +1169,7 @@ class ExtendedRenderEditable extends RenderBox
 
     //final Offset paintOffset = _paintOffset;
     ///zmt
-    final Offset effectiveOffset =
-        (_initialOffset ?? Offset.zero) + _paintOffset;
+    final Offset effectiveOffset = _effectiveOffset;
 
     TextSelection textPainterSelection = selection;
     if (handleSpecialText) {
@@ -1197,13 +1184,11 @@ class ExtendedRenderEditable extends RenderBox
         caretHeight = value;
       };
       final Offset caretOffset = _getCaretOffset(
-          effectiveOffset,
           TextPosition(
               offset: textPainterSelection.extentOffset,
               affinity: selection.affinity),
-          TextPosition(
-              offset: selection.extentOffset, affinity: selection.affinity),
-          caretHeightCallBack: caretHeightCallBack);
+          caretHeightCallBack: caretHeightCallBack,
+          effectiveOffset: effectiveOffset);
 
       final Offset start =
           Offset(0.0, caretHeight ?? preferredLineHeight) + caretOffset;
@@ -1659,9 +1644,9 @@ class ExtendedRenderEditable extends RenderBox
     ValueChanged<double> caretHeightCallBack = (value) {
       caretHeight = value;
     };
-    final Offset caretOffset = _getCaretOffset(
-        effectiveOffset, textPosition, textInputPosition,
-        caretHeightCallBack: caretHeightCallBack);
+    final Offset caretOffset = _getCaretOffset(textPosition,
+        caretHeightCallBack: caretHeightCallBack,
+        effectiveOffset: effectiveOffset);
 
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
@@ -1718,28 +1703,12 @@ class ExtendedRenderEditable extends RenderBox
     }
   }
 
-  Offset _getCaretOffset(Offset effectiveOffset, TextPosition textPosition,
-      TextPosition textInputPosition,
-      {ValueChanged<double> caretHeightCallBack}) {
+  Offset _getCaretOffset(TextPosition textPosition,
+      {ValueChanged<double> caretHeightCallBack, Offset effectiveOffset}) {
+    effectiveOffset ??= this._effectiveOffset;
+
     ///zmt
     if (handleSpecialText) {
-      var textSpan = text.getSpanForPosition(TextPosition(
-          offset: textPosition.offset, affinity: TextAffinity.upstream));
-      if (textSpan != null && textSpan is ExtendedWidgetSpan) {
-        int index = _placeholderSpans.indexOf(textSpan);
-        if (index >= 0 && index < _textPainter.inlinePlaceholderBoxes.length) {
-          var box = _textPainter.inlinePlaceholderBoxes[index];
-          var rect = box.toRect();
-          if (textInputPosition.offset >= textSpan.end) {
-            caretHeightCallBack?.call(rect.height);
-            return rect.topRight;
-          } else if (textInputPosition.offset >= textSpan.start) {
-            caretHeightCallBack?.call(rect.height);
-            return rect.topLeft;
-          }
-        }
-      }
-
       ///if first index, check by first span
       var offset = textPosition.offset;
       if (offset == 0) {
@@ -1747,6 +1716,7 @@ class ExtendedRenderEditable extends RenderBox
       }
 
       ///last or has ExtendedWidgetSpan
+
       var boxs = _textPainter.getBoxesForSelection(TextSelection(
           baseOffset: offset - 1,
           extentOffset: offset,
@@ -1755,9 +1725,9 @@ class ExtendedRenderEditable extends RenderBox
         var rect = boxs.toList().last.toRect();
         caretHeightCallBack?.call(rect.height);
         if (textPosition.offset == 0) {
-          return rect.topLeft;
+          return rect.topLeft + effectiveOffset;
         } else {
-          return rect.topRight;
+          return rect.topRight + effectiveOffset;
         }
       }
     }
@@ -1932,7 +1902,7 @@ class ExtendedRenderEditable extends RenderBox
       final double scale = textParentData.scale;
       context.pushTransform(
         needsCompositing,
-        offset + textParentData.offset,
+        effectiveOffset + textParentData.offset,
         Matrix4.diagonal3Values(scale, scale, scale),
         (PaintingContext context, Offset offset) {
           context.paintChild(
@@ -1983,10 +1953,13 @@ class ExtendedRenderEditable extends RenderBox
   }
 
   Offset _initialOffset;
+  Offset get _effectiveOffset => (_initialOffset ?? Offset.zero) + _paintOffset;
+
   @override
   void paint(PaintingContext context, Offset offset) {
     ///zmt
     _initialOffset = offset;
+
     _layoutText(constraints.maxWidth);
     if (_hasVisualOverflow)
       context.pushClipRect(
