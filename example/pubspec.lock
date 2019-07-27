@@ -60,37 +60,37 @@ packages:
   extended_image:
     dependency: "direct main"
     description:
-      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_image"
-      relative: false
-    source: path
-    version: "0.5.2"
+      name: extended_image
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.5.3"
   extended_image_library:
     dependency: transitive
     description:
-      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_image_library"
-      relative: false
-    source: path
+      name: extended_image_library
+      url: "https://pub.flutter-io.cn"
+    source: hosted
     version: "0.1.4"
   extended_text:
     dependency: "direct main"
     description:
-      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_text"
-      relative: false
-    source: path
-    version: "0.5.9"
+      name: extended_text
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.6.1"
   extended_text_field:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.3.8"
+    version: "0.3.9"
   extended_text_library:
     dependency: transitive
     description:
-      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_text_library"
-      relative: false
-    source: path
+      name: extended_text_library
+      url: "https://pub.flutter-io.cn"
+    source: hosted
     version: "0.4.2"
   flutter:
     dependency: "direct main"

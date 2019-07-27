@@ -1,3 +1,8 @@
+## [0.4.0]
+
+* fix issue about WidgetSpan [https://github.com/fluttercandies/extended_text_field/issues/11]
+* fix wrong caret offset
+
 ## [0.3.9]
 
 * improve codes base on v1.7.8
