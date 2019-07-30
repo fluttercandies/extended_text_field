@@ -1606,14 +1606,18 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
         List<InlineSpan> children = List<InlineSpan>();
 
-        textSpanNestToArray(before, children);
+        if (before != null) {
+          children.add(before);
+        }
 
         children.add(TextSpan(
           style: composingStyle,
           text: insideText,
         ));
 
-        textSpanNestToArray(after, children);
+        if (after != null) {
+          children.add(after);
+        }
 
         return TextSpan(style: widget.style, children: children);
       }
