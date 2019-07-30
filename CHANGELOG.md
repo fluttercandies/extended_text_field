@@ -1,6 +1,10 @@
+## [0.4.1]
+
+* fix issue that [type 'ImageSpan' is not a subtype of type 'textSpan'](https://github.com/fluttercandies/extended_text_field/issues/13)
+
 ## [0.4.0]
 
-* fix issue about WidgetSpan [https://github.com/fluttercandies/extended_text_field/issues/11]
+* fix issue tgat [WidgetSpan wrong offset](https://github.com/fluttercandies/extended_text_field/issues/11)
 * fix wrong caret offset
 
 ## [0.3.9]
