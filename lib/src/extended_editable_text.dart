@@ -1604,14 +1604,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         var after = widget.specialTextSpanBuilder
             .build(afterText, textStyle: widget.style);
 
-        List<TextSpan> children = List<TextSpan>();
+        List<InlineSpan> children = List<InlineSpan>();
 
-        if (before != null && before is TextSpan && before.children != null) {
-          before.children.forEach((sp) {
-            children.add(sp);
-          });
-        } else {
-          children.add(TextSpan(text: beforeText));
+        if (before != null) {
+          children.add(before);
         }
 
         children.add(TextSpan(
@@ -1619,12 +1615,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           text: insideText,
         ));
 
-        if (after != null && after is TextSpan && after.children != null) {
-          after.children.forEach((sp) {
-            children.add(sp);
-          });
-        } else {
-          children.add(TextSpan(text: afterText));
+        if (after != null) {
+          children.add(after);
         }
 
         return TextSpan(style: widget.style, children: children);
