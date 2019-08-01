@@ -1,3 +1,8 @@
+## [0.4.2]
+
+* support custom selection toolbar and handles
+* improve codes about selection overlay
+
 ## [0.4.1]
 
 * fix issue that [type 'ImageSpan' is not a subtype of type 'textSpan'](https://github.com/fluttercandies/extended_text_field/issues/13)

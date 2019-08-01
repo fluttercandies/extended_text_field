@@ -69,7 +69,8 @@ typedef ExtendedCaretChangedHandler = void Function(Rect caretRect);
 class ExtendedRenderEditable extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, TextParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, TextParentData> {
+        RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
+        ExtendedTextSelectionRenderObject {
   /// Creates a render object that implements the visual aspects of a text field.
   ///
   /// The [textAlign] argument must not be null. It defaults to [TextAlign.start].
@@ -2239,5 +2240,18 @@ class ExtendedRenderEditable extends RenderBox
       child = childAfter(child);
       childIndex += 1;
     }
+  }
+
+  @override
+  Size getSize() {
+    return this.size;
+  }
+
+  @override
+  bool get isAttached => attached;
+
+  @override
+  Offset getlocalToGlobal(Offset point, {RenderObject ancestor}) {
+    return localToGlobal(point, ancestor: ancestor);
   }
 }

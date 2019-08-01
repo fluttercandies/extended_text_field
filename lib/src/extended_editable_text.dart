@@ -12,7 +12,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:extended_text_field/src/extended_render_editable.dart';
-import 'package:extended_text_field/src/extended_text_selection.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -711,8 +710,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   final GlobalKey _editableKey = GlobalKey();
 
   TextInputConnection _textInputConnection;
-  ExtendedTextFieldSelectionOverlay _selectionOverlay;
-
+  ExtendedTextSelectionOverlay _selectionOverlay;
   ScrollController _scrollController = ScrollController();
   AnimationController _cursorBlinkOpacityController;
 
@@ -1173,7 +1171,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _hideSelectionOverlayIfNeeded();
 
     if (widget.selectionControls != null) {
-      _selectionOverlay = ExtendedTextFieldSelectionOverlay(
+      _selectionOverlay = ExtendedTextSelectionOverlay(
         context: context,
         value: _value,
         debugRequiredFor: widget,
@@ -1321,7 +1319,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   /// The current status of the text selection handles.
   //@visibleForTesting
-  ExtendedTextFieldSelectionOverlay get selectionOverlay => _selectionOverlay;
+  ExtendedTextSelectionOverlay get selectionOverlay => _selectionOverlay;
 
   int _obscureShowCharTicksPending = 0;
   int _obscureLatestCharIndex;

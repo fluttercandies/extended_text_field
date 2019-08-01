@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
 
+import 'common/my_extended_text_selection_controls.dart';
 import 'common/pic_swiper.dart';
 import 'common/tu_chong_repository.dart';
 import 'common/tu_chong_source.dart';
@@ -145,6 +146,7 @@ class _TextDemoState extends State<TextDemo> {
             specialTextSpanBuilder: MySpecialTextSpanBuilder(
                 showAtBackground: true, type: BuilderType.extendedTextField),
             controller: _textEditingController,
+            //textSelectionControls: MyExtendedMaterialTextSelectionControls(),
             maxLines: null,
             focusNode: _focusNode,
             decoration: InputDecoration(
