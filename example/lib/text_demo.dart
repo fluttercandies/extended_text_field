@@ -6,8 +6,6 @@ import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
-
-import 'common/my_extended_text_selection_controls.dart';
 import 'common/pic_swiper.dart';
 import 'common/tu_chong_repository.dart';
 import 'common/tu_chong_source.dart';
@@ -392,6 +390,7 @@ class _TextDemoState extends State<TextDemo> {
       } else {
         newText = value.text.replaceRange(start, end, text);
       }
+      print("${end + text.length}");
 
       _textEditingController.value = value.copyWith(
           text: newText,

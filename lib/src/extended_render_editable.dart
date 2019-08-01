@@ -10,7 +10,7 @@ import 'dart:async';
 // found in the LICENSE file.
 
 import 'dart:math' as math;
-import 'dart:ui' as ui show TextBox, lerpDouble, PlaceholderAlignment;
+import 'dart:ui' as ui show TextBox, lerpDouble;
 
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
@@ -66,11 +66,8 @@ typedef ExtendedCaretChangedHandler = void Function(Rect caretRect);
 /// Keyboard handling, IME handling, scrolling, toggling the [showCursor] value
 /// to actually blink the cursor, and other features not mentioned above are the
 /// responsibility of higher layers and not handled by this object.
-class ExtendedRenderEditable extends RenderBox
-    with
-        ContainerRenderObjectMixin<RenderBox, TextParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
-        ExtendedTextSelectionRenderObject {
+class ExtendedRenderEditable extends ExtendedTextRenderBox
+    with ExtendedTextSelectionRenderObject {
   /// Creates a render object that implements the visual aspects of a text field.
   ///
   /// The [textAlign] argument must not be null. It defaults to [TextAlign.start].
@@ -175,13 +172,7 @@ class ExtendedRenderEditable extends RenderBox
     _longPress = LongPressGestureRecognizer(debugOwner: this)
       ..onLongPress = _handleLongPress;
     addAll(children);
-    _extractPlaceholderSpans(text);
-  }
-
-  @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! TextParentData)
-      child.parentData = TextParentData();
+    extractPlaceholderSpans(text);
   }
 
   ///whether to support build SpecialText
@@ -629,7 +620,7 @@ class ExtendedRenderEditable extends RenderBox
   set text(InlineSpan value) {
     if (_textPainter.text == value) return;
     _textPainter.text = value;
-    _extractPlaceholderSpans(value);
+    extractPlaceholderSpans(value);
     _handleSpecialText = hasSpecialText(value);
     markNeedsTextLayout();
     markNeedsSemanticsUpdate();
@@ -1247,26 +1238,6 @@ class ExtendedRenderEditable extends RenderBox
     return rect.shift(_getPixelPerfectCursorOffset(rect));
   }
 
-  @override
-  double computeMinIntrinsicWidth(double height) {
-    if (!_canComputeIntrinsics()) {
-      return 0.0;
-    }
-    _computeChildrenWidthWithMinIntrinsics(height);
-    _layoutText(double.infinity);
-    return _textPainter.minIntrinsicWidth;
-  }
-
-  @override
-  double computeMaxIntrinsicWidth(double height) {
-    if (!_canComputeIntrinsics()) {
-      return 0.0;
-    }
-    _computeChildrenWidthWithMaxIntrinsics(height);
-    _layoutText(double.infinity);
-    return _textPainter.maxIntrinsicWidth + cursorWidth;
-  }
-
   /// An estimate of the height of a line in the text. See [TextPainter.preferredLineHeight].
   /// This does not required the layout to be updated.
   double get preferredLineHeight => _textPainter.preferredLineHeight;
@@ -1305,24 +1276,6 @@ class ExtendedRenderEditable extends RenderBox
     }
     _layoutText(width);
     return math.max(preferredLineHeight, _textPainter.height);
-  }
-
-  @override
-  double computeMinIntrinsicHeight(double width) {
-    if (!_canComputeIntrinsics()) {
-      return 0.0;
-    }
-    _computeChildrenHeightWithMinIntrinsics(width);
-    return _preferredHeight(width);
-  }
-
-  @override
-  double computeMaxIntrinsicHeight(double width) {
-    if (!_canComputeIntrinsics()) {
-      return 0.0;
-    }
-    _computeChildrenHeightWithMinIntrinsics(width);
-    return _preferredHeight(width);
   }
 
   @override
@@ -1562,6 +1515,14 @@ class ExtendedRenderEditable extends RenderBox
 
   Rect _caretPrototype;
 
+  @override
+  void layoutText(
+      {double minWidth = 0.0,
+      double maxWidth = double.infinity,
+      double constraintWidth = double.infinity}) {
+    _layoutText(constraintWidth);
+  }
+
   void _layoutText(double constraintWidth) {
     assert(constraintWidth != null);
     if (_textLayoutLastWidth == constraintWidth) return;
@@ -1596,9 +1557,9 @@ class ExtendedRenderEditable extends RenderBox
 
   @override
   void performLayout() {
-    _layoutChildren(constraints);
+    layoutChildren(constraints);
     _layoutText(constraints.maxWidth);
-    _setParentData();
+    setParentData();
     _caretPrototype = _getCaretPrototype;
     _selectionRects = null;
     // We grab _textPainter.size here because assigning to `size` on the next
@@ -1890,31 +1851,7 @@ class ExtendedRenderEditable extends RenderBox
       _paintSelection(context.canvas, effectiveOffset);
     }
 
-    RenderBox child = firstChild;
-    int childIndex = 0;
-
-    ///maybe overflow
-    while (child != null &&
-        childIndex < _textPainter.inlinePlaceholderBoxes.length) {
-      //assert(childIndex < _textPainter.inlinePlaceholderBoxes.length);
-
-      final TextParentData textParentData = child.parentData;
-
-      final double scale = textParentData.scale;
-      context.pushTransform(
-        needsCompositing,
-        effectiveOffset + textParentData.offset,
-        Matrix4.diagonal3Values(scale, scale, scale),
-        (PaintingContext context, Offset offset) {
-          context.paintChild(
-            child,
-            offset,
-          );
-        },
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
+    paintWidgets(context, effectiveOffset);
 
     ///zmt
     _paintSpecialText(context, effectiveOffset);
@@ -2070,103 +2007,6 @@ class ExtendedRenderEditable extends RenderBox
     ];
   }
 
-  List<PlaceholderSpan> _placeholderSpans;
-  void _extractPlaceholderSpans(InlineSpan span) {
-    _placeholderSpans = <PlaceholderSpan>[];
-    span.visitChildren((InlineSpan span) {
-      if (span is PlaceholderSpan) {
-        final PlaceholderSpan placeholderSpan = span;
-        _placeholderSpans.add(placeholderSpan);
-      }
-      return true;
-    });
-  }
-
-  // Intrinsics cannot be calculated without a full layout for
-  // alignments that require the baseline (baseline, aboveBaseline,
-  // belowBaseline).
-  bool _canComputeIntrinsics() {
-    for (PlaceholderSpan span in _placeholderSpans) {
-      switch (span.alignment) {
-        case ui.PlaceholderAlignment.baseline:
-        case ui.PlaceholderAlignment.aboveBaseline:
-        case ui.PlaceholderAlignment.belowBaseline:
-          {
-            assert(
-                RenderObject.debugCheckingIntrinsics,
-                'Intrinsics are not available for PlaceholderAlignment.baseline, '
-                'PlaceholderAlignment.aboveBaseline, or PlaceholderAlignment.belowBaseline,');
-            return false;
-          }
-        case ui.PlaceholderAlignment.top:
-        case ui.PlaceholderAlignment.middle:
-        case ui.PlaceholderAlignment.bottom:
-          {
-            continue;
-          }
-      }
-    }
-    return true;
-  }
-
-  void _computeChildrenWidthWithMaxIntrinsics(double height) {
-    RenderBox child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions =
-        List<PlaceholderDimensions>(childCount);
-    int childIndex = 0;
-    while (child != null) {
-      // Height and baseline is irrelevant as all text will be laid
-      // out in a single line.
-      placeholderDimensions[childIndex] = PlaceholderDimensions(
-        size: Size(child.getMaxIntrinsicWidth(height), height),
-        alignment: _placeholderSpans[childIndex].alignment,
-        baseline: _placeholderSpans[childIndex].baseline,
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    _textPainter.setPlaceholderDimensions(placeholderDimensions);
-  }
-
-  void _computeChildrenWidthWithMinIntrinsics(double height) {
-    RenderBox child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions =
-        List<PlaceholderDimensions>(childCount);
-    int childIndex = 0;
-    while (child != null) {
-      final double intrinsicWidth = child.getMinIntrinsicWidth(height);
-      final double intrinsicHeight =
-          child.getMinIntrinsicHeight(intrinsicWidth);
-      placeholderDimensions[childIndex] = PlaceholderDimensions(
-        size: Size(intrinsicWidth, intrinsicHeight),
-        alignment: _placeholderSpans[childIndex].alignment,
-        baseline: _placeholderSpans[childIndex].baseline,
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    _textPainter.setPlaceholderDimensions(placeholderDimensions);
-  }
-
-  void _computeChildrenHeightWithMinIntrinsics(double width) {
-    RenderBox child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions =
-        List<PlaceholderDimensions>(childCount);
-    int childIndex = 0;
-    while (child != null) {
-      final double intrinsicHeight = child.getMinIntrinsicHeight(width);
-      final double intrinsicWidth = child.getMinIntrinsicWidth(intrinsicHeight);
-      placeholderDimensions[childIndex] = PlaceholderDimensions(
-        size: Size(intrinsicWidth, intrinsicHeight),
-        alignment: _placeholderSpans[childIndex].alignment,
-        baseline: _placeholderSpans[childIndex].baseline,
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    _textPainter.setPlaceholderDimensions(placeholderDimensions);
-  }
-
 //  double _computeIntrinsicHeight(double width) {
 //    if (!_canComputeIntrinsics()) {
 //      return 0.0;
@@ -2175,72 +2015,6 @@ class ExtendedRenderEditable extends RenderBox
 //    _layoutText(width);
 //    return _textPainter.height;
 //  }
-
-  // Layout the child inline widgets. We then pass the dimensions of the
-  // children to _textPainter so that appropriate placeholders can be inserted
-  // into the LibTxt layout. This does not do anything if no inline widgets were
-  // specified.
-  void _layoutChildren(BoxConstraints constraints) {
-    if (childCount == 0) {
-      return;
-    }
-    RenderBox child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions =
-        List<PlaceholderDimensions>(childCount);
-    int childIndex = 0;
-    while (child != null) {
-      // Only constrain the width to the maximum width of the paragraph.
-      // Leave height unconstrained, which will overflow if expanded past.
-      child.layout(
-          BoxConstraints(
-            maxWidth: constraints.maxWidth,
-          ),
-          parentUsesSize: true);
-      double baselineOffset;
-      switch (_placeholderSpans[childIndex].alignment) {
-        case ui.PlaceholderAlignment.baseline:
-          {
-            baselineOffset = child
-                .getDistanceToBaseline(_placeholderSpans[childIndex].baseline);
-            break;
-          }
-        default:
-          {
-            baselineOffset = null;
-            break;
-          }
-      }
-      placeholderDimensions[childIndex] = PlaceholderDimensions(
-        size: child.size,
-        alignment: _placeholderSpans[childIndex].alignment,
-        baseline: _placeholderSpans[childIndex].baseline,
-        baselineOffset: baselineOffset,
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    _textPainter.setPlaceholderDimensions(placeholderDimensions);
-  }
-
-  // Iterate through the laid-out children and set the parentData offsets based
-  // off of the placeholders inserted for each child.
-  void _setParentData() {
-    RenderBox child = firstChild;
-    int childIndex = 0;
-
-    ///maybe overflow
-    while (child != null &&
-        childIndex < _textPainter.inlinePlaceholderBoxes.length) {
-      final TextParentData textParentData = child.parentData;
-
-      textParentData.offset = Offset(
-          _textPainter.inlinePlaceholderBoxes[childIndex].left,
-          _textPainter.inlinePlaceholderBoxes[childIndex].top);
-      textParentData.scale = _textPainter.inlinePlaceholderScales[childIndex];
-      child = childAfter(child);
-      childIndex += 1;
-    }
-  }
 
   @override
   Size getSize() {
@@ -2254,4 +2028,12 @@ class ExtendedRenderEditable extends RenderBox
   Offset getlocalToGlobal(Offset point, {RenderObject ancestor}) {
     return localToGlobal(point, ancestor: ancestor);
   }
+
+  TextOverflow get overflow => TextOverflow.visible;
+
+  @override
+  bool get softWrap => false;
+
+  @override
+  TextPainter get textPainter => _textPainter;
 }

@@ -26,9 +26,13 @@ dependencies:
   extended_text_field:
     path: ../
   url_launcher: ^5.0.2
-  extended_text: any
+#  extended_text: any
+  extended_text:
+    path: D:\Flutter\github\FlutterCandies\dev\extended_text
   loading_more_list: any
-  extended_image: any
+#  extended_image: any
+  extended_image:
+    path: D:\Flutter\github\FlutterCandies\dev\extended_image
   http_client_helper: any
   image_picker_saver: ^0.1.0
   oktoast: ^2.1.4

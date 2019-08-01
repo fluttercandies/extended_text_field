@@ -2,7 +2,6 @@ import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
 
 import 'common/my_extended_text_selection_controls.dart';
-import 'common/tu_chong_repository.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/7/31

@@ -17,30 +17,6 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   @override
   TextSpan build(String data, {TextStyle textStyle, onTap}) {
     TextSpan result = super.build(data, textStyle: textStyle, onTap: onTap);
-    handleSpeicalTextStyle(result);
-    return result;
-  }
-
-  TextSpan handleSpeicalTextStyle(TextSpan result) {
-    if (specialTextStyle.length != 0 &&
-        result != null &&
-        result.children != null) {
-      int index = 0;
-      List<InlineSpan> inlineList = new List<InlineSpan>();
-      for (InlineSpan item in result.children) {
-        if (item is SpecialInlineSpanBase) {
-          var base = item as SpecialInlineSpanBase;
-
-          index = base.end;
-        } else {
-          var start = index;
-          var end = index + item.toPlainText().length;
-
-          index = end;
-        }
-      }
-      return TextSpan(style: result.style, children: inlineList);
-    }
     return result;
   }
 
