@@ -273,12 +273,15 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
     final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
 
-    final Offset startOffset = _getCaretOffset(
-        TextPosition(
-          offset: selection.start,
-          affinity: selection.affinity,
-        ),
-        effectiveOffset: effectiveOffset);
+    final Offset startOffset = getCaretOffset(
+      TextPosition(
+        offset: selection.start,
+        affinity: selection.affinity,
+      ),
+      effectiveOffset: effectiveOffset,
+      caretPrototype: _caretPrototype,
+      handleSpecialText: handleSpecialText,
+    );
 
     // TODO(justinmc): https://github.com/flutter/flutter/issues/31495
     // Check if the selection is visible with an approximation because a
@@ -292,9 +295,12 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
         .inflate(visibleRegionSlop)
         .contains(startOffset + effectiveOffset);
 
-    final Offset endOffset = _getCaretOffset(
-        TextPosition(offset: selection.end, affinity: selection.affinity),
-        effectiveOffset: effectiveOffset);
+    final Offset endOffset = getCaretOffset(
+      TextPosition(offset: selection.end, affinity: selection.affinity),
+      effectiveOffset: effectiveOffset,
+      caretPrototype: _caretPrototype,
+      handleSpecialText: handleSpecialText,
+    );
 
     _selectionEndInViewport.value = visibleRegion
         .inflate(visibleRegionSlop)
@@ -308,17 +314,17 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
   ///zmt
   void _updateVisibleRegionMinY() {
-    if (textSelectionDelegate.textEditingValue == null ||
-        textSelectionDelegate.textEditingValue.text == null ||
-        textSelectionDelegate.textEditingValue.selection == null ||
-        _textPainter.text == null) return;
-    List<TextBox> boxs = _textPainter.getBoxesForSelection(
-        textSelectionDelegate.textEditingValue.selection.copyWith(
-            baseOffset: 0,
-            extentOffset: _textPainter.text.toPlainText().length));
-    boxs.forEach((f) {
-      _visibleRegionMinY = math.min(f.top, _visibleRegionMinY);
-    });
+//    if (textSelectionDelegate.textEditingValue == null ||
+//        textSelectionDelegate.textEditingValue.text == null ||
+//        textSelectionDelegate.textEditingValue.selection == null ||
+//        _textPainter.text == null) return;
+//    List<TextBox> boxs = _textPainter.getBoxesForSelection(
+//        textSelectionDelegate.textEditingValue.selection.copyWith(
+//            baseOffset: 0,
+//            extentOffset: _textPainter.text.toPlainText().length));
+//    boxs.forEach((f) {
+//      _visibleRegionMinY = math.min(f.top, _visibleRegionMinY);
+//    });
   }
 
   static const int _kLeftArrowCode = 21;
@@ -1175,12 +1181,15 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
       ValueChanged<double> caretHeightCallBack = (value) {
         caretHeight = value;
       };
-      final Offset caretOffset = _getCaretOffset(
-          TextPosition(
-              offset: textPainterSelection.extentOffset,
-              affinity: selection.affinity),
-          caretHeightCallBack: caretHeightCallBack,
-          effectiveOffset: effectiveOffset);
+      final Offset caretOffset = getCaretOffset(
+        TextPosition(
+            offset: textPainterSelection.extentOffset,
+            affinity: selection.affinity),
+        caretHeightCallBack: caretHeightCallBack,
+        effectiveOffset: effectiveOffset,
+        caretPrototype: _caretPrototype,
+        handleSpecialText: handleSpecialText,
+      );
 
       final Offset start =
           Offset(0.0, caretHeight ?? preferredLineHeight) + caretOffset;
@@ -1523,9 +1532,9 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     _layoutText(constraintWidth);
   }
 
-  void _layoutText(double constraintWidth) {
+  void _layoutText(double constraintWidth, {bool forceLayout: false}) {
     assert(constraintWidth != null);
-    if (_textLayoutLastWidth == constraintWidth) return;
+    if (_textLayoutLastWidth == constraintWidth && !forceLayout) return;
     final double caretMargin = _kCaretGap + cursorWidth;
     final double availableWidth = math.max(0.0, constraintWidth - caretMargin);
     final double maxWidth = _isMultiline ? availableWidth : double.infinity;
@@ -1558,7 +1567,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   @override
   void performLayout() {
     layoutChildren(constraints);
-    _layoutText(constraints.maxWidth);
+    _layoutText(constraints.maxWidth, forceLayout: true);
     setParentData();
     _caretPrototype = _getCaretPrototype;
     _selectionRects = null;
@@ -1606,9 +1615,13 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     ValueChanged<double> caretHeightCallBack = (value) {
       caretHeight = value;
     };
-    final Offset caretOffset = _getCaretOffset(textPosition,
-        caretHeightCallBack: caretHeightCallBack,
-        effectiveOffset: effectiveOffset);
+    final Offset caretOffset = getCaretOffset(
+      textPosition,
+      caretHeightCallBack: caretHeightCallBack,
+      effectiveOffset: effectiveOffset,
+      caretPrototype: _caretPrototype,
+      handleSpecialText: handleSpecialText,
+    );
 
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
@@ -1663,41 +1676,6 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
       _lastCaretRect = caretRect;
       if (onCaretChanged != null) onCaretChanged(caretRect);
     }
-  }
-
-  Offset _getCaretOffset(TextPosition textPosition,
-      {ValueChanged<double> caretHeightCallBack, Offset effectiveOffset}) {
-    effectiveOffset ??= this._effectiveOffset;
-
-    ///zmt
-    if (handleSpecialText) {
-      ///if first index, check by first span
-      var offset = textPosition.offset;
-      if (offset == 0) {
-        offset = 1;
-      }
-
-      ///last or has ExtendedWidgetSpan
-
-      var boxs = _textPainter.getBoxesForSelection(TextSelection(
-          baseOffset: offset - 1,
-          extentOffset: offset,
-          affinity: textPosition.affinity));
-      if (boxs.length > 0) {
-        var rect = boxs.toList().last.toRect();
-        caretHeightCallBack?.call(rect.height);
-        if (textPosition.offset == 0) {
-          return rect.topLeft + effectiveOffset;
-        } else {
-          return rect.topRight + effectiveOffset;
-        }
-      }
-    }
-
-    final Offset caretOffset =
-        _textPainter.getOffsetForCaret(textPosition, _caretPrototype) +
-            effectiveOffset;
-    return caretOffset;
   }
 
   /// Sets the screen position of the floating cursor and the text position
@@ -1845,7 +1823,6 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
         showSelection = true;
       _updateSelectionExtentsVisibility(effectiveOffset, actualSelection);
     }
-
     if (showSelection) {
       _selectionRects ??= _textPainter.getBoxesForSelection(actualSelection);
       _paintSelection(context.canvas, effectiveOffset);

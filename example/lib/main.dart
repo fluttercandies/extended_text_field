@@ -46,8 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     pages.add(Page(
         PageType.text, "build special text and inline image in text field"));
-    pages.add(Page(
-        PageType.customToolBar, "custom selection tool bar for text field"));
+    pages.add(Page(PageType.customToolbar,
+        "custom selection toolbar and handles for text field"));
 
     super.initState();
   }
@@ -89,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 case PageType.text:
                   pageWidget = TextDemo(_listSourceRepository);
                   break;
-                case PageType.customToolBar:
+                case PageType.customToolbar:
                   pageWidget = CustomToolBar();
                   break;
                 default:
@@ -118,4 +118,4 @@ class Page {
   Page(this.type, this.description);
 }
 
-enum PageType { text, customToolBar }
+enum PageType { text, customToolbar }

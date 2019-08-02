@@ -2,15 +2,17 @@ import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:math' as math;
 
 // Minimal padding from all edges of the selection toolbar to all edges of the
 // viewport.
 
 const double _kToolbarScreenPadding = 8.0;
 const double _kToolbarHeight = 44.0;
+const double _kHandleSize = 22.0;
 
 ///
-///  create by zmtzawqlp on 2019/6/10
+///  create by zmtzawqlp on 2019/8/3
 ///
 
 class MyExtendedMaterialTextSelectionControls
@@ -76,6 +78,36 @@ class MyExtendedMaterialTextSelectionControls
       ),
     );
   }
+
+  @override
+  Widget buildHandle(
+      BuildContext context, TextSelectionHandleType type, double textHeight) {
+    final Widget handle = SizedBox(
+      width: _kHandleSize,
+      height: _kHandleSize,
+      child: Image.asset("assets/5.png"),
+    );
+
+    // [handle] is a circle, with a rectangle in the top left quadrant of that
+    // circle (an onion pointing to 10:30). We rotate [handle] to point
+    // straight up or up-right depending on the handle type.
+    switch (type) {
+      case TextSelectionHandleType.left: // points up-right
+        return Transform.rotate(
+          angle: math.pi / 4.0,
+          child: handle,
+        );
+      case TextSelectionHandleType.right: // points up-left
+        return Transform.rotate(
+          angle: -math.pi / 4.0,
+          child: handle,
+        );
+      case TextSelectionHandleType.collapsed: // points up
+        return handle;
+    }
+    assert(type != null);
+    return null;
+  }
 }
 
 /// Manages a copy/paste text selection toolbar.
@@ -128,6 +160,7 @@ class _TextSelectionToolbar extends StatelessWidget {
     return Material(
       elevation: 1.0,
       child: Wrap(children: items),
+      borderRadius: BorderRadius.all(Radius.circular(10.0)),
     );
   }
 }

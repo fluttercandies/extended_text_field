@@ -870,17 +870,29 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
 
   void _handleSingleLongTapEnd(LongPressEndDetails details) {
     if (widget.selectionEnabled) {
-      if (_shouldShowSelectionToolbar)
-        _editableTextKey.currentState.showToolbar();
+      _showToolbarForLongTapAndDoubleTap();
+    }
+  }
+
+  void _showToolbarForLongTapAndDoubleTap() {
+    if (_shouldShowSelectionToolbar) {
+      //long tap or double tap will not show toolbar
+      //after remove select all texts
+      //fix https://github.com/flutter/flutter/issues/37455
+      if (_editableText.selectionOverlay == null) {
+        bool showHandles = _editableText.textEditingValue.text != null &&
+            _editableText.textEditingValue.text != "";
+        _editableTextKey.currentState
+            .createSelectionOverlay(showHandles: showHandles);
+      }
+      _editableText.showToolbar();
     }
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
     if (widget.selectionEnabled) {
       _renderEditable.selectWord(cause: SelectionChangedCause.doubleTap);
-      if (_shouldShowSelectionToolbar) {
-        _editableText.showToolbar();
-      }
+      _showToolbarForLongTapAndDoubleTap();
     }
   }
 

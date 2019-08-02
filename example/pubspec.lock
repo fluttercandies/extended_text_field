@@ -77,21 +77,21 @@ packages:
       path: "D:\\Flutter\\github\\FlutterCandies\\dev\\extended_text"
       relative: false
     source: path
-    version: "0.6.3"
+    version: "0.6.4"
   extended_text_field:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.4.1"
+    version: "0.4.2"
   extended_text_library:
     dependency: transitive
     description:
       path: "D:\\Flutter\\github\\FlutterCandies\\dev\\extended_text_library"
       relative: false
     source: path
-    version: "0.4.2"
+    version: "0.4.4"
   flutter:
     dependency: "direct main"
     description: flutter

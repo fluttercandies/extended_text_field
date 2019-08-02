@@ -843,6 +843,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         _obscureLatestCharIndex = _value.selection.baseOffset;
       }
     }
+
     _lastKnownRemoteTextEditingValue = value;
     _formatAndSetValue(value);
 
@@ -1171,19 +1172,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _hideSelectionOverlayIfNeeded();
 
     if (widget.selectionControls != null) {
-      _selectionOverlay = ExtendedTextSelectionOverlay(
-        context: context,
-        value: _value,
-        debugRequiredFor: widget,
-        layerLink: _layerLink,
-        renderObject: renderObject,
-        selectionControls: widget.selectionControls,
-        selectionDelegate: this,
-        dragStartBehavior: widget.dragStartBehavior,
-        onSelectionHandleTapped: widget.onSelectionHandleTapped,
-      );
-      _selectionOverlay.handlesVisible = widget.showSelectionHandles;
-      _selectionOverlay.showHandles();
+      createSelectionOverlay(renderObject: renderObject);
 
 //      final bool longPress = cause == SelectionChangedCause.longPress;
 //      if (cause != SelectionChangedCause.keyboard &&
@@ -1192,6 +1181,24 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
       if (widget.onSelectionChanged != null)
         widget.onSelectionChanged(selection, cause);
+    }
+  }
+
+  void createSelectionOverlay(
+      {ExtendedRenderEditable renderObject, bool showHandles: true}) {
+    _selectionOverlay = ExtendedTextSelectionOverlay(
+        context: context,
+        value: _value,
+        debugRequiredFor: widget,
+        layerLink: _layerLink,
+        renderObject: renderObject ?? renderEditable,
+        selectionControls: widget.selectionControls,
+        selectionDelegate: this,
+        dragStartBehavior: widget.dragStartBehavior,
+        onSelectionHandleTapped: widget.onSelectionHandleTapped,
+        handlesVisible: widget.showSelectionHandles);
+    if (showHandles) {
+      _selectionOverlay.showHandles();
     }
   }
 

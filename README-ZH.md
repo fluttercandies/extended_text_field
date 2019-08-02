@@ -4,9 +4,9 @@
 
 extended official text field to quickly build special text like inline image or @somebody etc.
 
-base on flutter sdk 1.7.8
+文档语言: [English](README.md) | [中文简体](README-ZH.md)
 
-Language: [English](README.md) | [中文简体](README-ZH.md)
+base on flutter sdk 1.7.8
 
 [Chinese blog](https://juejin.im/post/5ccc25156fb9a0320f7df543)
 
