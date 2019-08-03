@@ -1,113 +1,113 @@
 ## [0.4.2]
 
-* support custom selection toolbar and handles
-* improve codes about selection overlay
+* Support custom selection toolbar and handles
+* Improve codes about selection overlay
+* Select all SpecialTextSpan(which deleteAll is true) when double tap or long tap
 
 ## [0.4.1]
 
-* fix issue that [type 'ImageSpan' is not a subtype of type 'textSpan'](https://github.com/fluttercandies/extended_text_field/issues/13)
+* Fix issue that [type 'ImageSpan' is not a subtype of type 'textSpan'](https://github.com/fluttercandies/extended_text_field/issues/13)
 
 ## [0.4.0]
 
-* fix issue tgat [WidgetSpan wrong offset](https://github.com/fluttercandies/extended_text_field/issues/11)
-* fix wrong caret offset
+* Fix issue tgat [WidgetSpan wrong offset](https://github.com/fluttercandies/extended_text_field/issues/11)
+* Fix wrong caret offset
 
 ## [0.3.9]
 
-* improve codes base on v1.7.8
-* support WidgetSpan (ExtendedWidgetSpan)
+* Improve codes base on v1.7.8
+* Support WidgetSpan (ExtendedWidgetSpan)
 
 ## [0.3.7]
 
-* update extended_text_library
+* Update extended_text_library
 
 ## [0.3.4]
 
-* remove un-used codes in extended_text_selection
+* Remove un-used codes in extended_text_selection
 
 ## [0.3.3]
 
-* update extended_text_library
+* Update extended_text_library
 
 ## [0.3.2]
 
-* update path_provider 1.1.0
+* Update path_provider 1.1.0
 
 ## [0.3.0]
 
-* uncomment getFullHeightForCaret method for 1.5.4-hotfix.2
-* corret selection handles visibility for _updateSelectionExtentsVisibility method
+* Uncomment getFullHeightForCaret method for 1.5.4-hotfix.2
+* Corret selection handles visibility for _updateSelectionExtentsVisibility method
 
 ## [0.2.8]
 
-* corret selection handles position for image textspan
+* Corret selection handles position for image textspan
 * StrutStyle strutStyle is obsoleted, it will lead to bugs for image span size.
 
 ## [0.2.7]
 
-* fix selection handles blinking
+* Fix selection handles blinking
 
 ## [0.2.6]
 
-* take care when TextSpan children is null
+* Take care when TextSpan children is null
 
 ## [0.2.5]
 
-* update extended_text_library
-* update extended_text_library
-1.remove caretIn parameter(SpecialTextSpan)
-2.deleteAll parameter has the same effect as caretIn parameter(SpecialTextSpan)
+* Update extended_text_library
+1.Remove caretIn parameter(SpecialTextSpan)
+2.DeleteAll parameter has the same effect as caretIn parameter(SpecialTextSpan)
 
 ## [0.2.4]
 
-* fix caret position about image span
-* add caretIn parameter(whether caret can move into special text for SpecialTextSpan(like a image span or @xxxx)) for SpecialTextSpan
+* Fix caret position about image span
+* Add caretIn parameter(whether caret can move into special text for SpecialTextSpan(like a image span or @xxxx)) for SpecialTextSpan
 
 ## [0.2.3]
 
-* disabled informationCollector to keep backwards compatibility for now (ExtendedNetworkImageProvider)
+* Disabled informationCollector to keep backwards compatibility for now (ExtendedNetworkImageProvider)
 
 ## [0.2.2]
 
-* fix caret position for last one image span
-* add image text demo
-* fix position for specialTex
+* Fix caret position for last one image span
+* Add image text demo
+* Fix position for specialTex
 
 ## [0.2.1]
 
-* fix caret position for image span
+* Fix caret position for image span
 
 ## [0.2.0]
 
-* only iterate textSpan.children to find SpecialTextSpan
+* Only iterate textSpan.children to find SpecialTextSpan
 
 ## [0.1.9]
 
-* add BackgroundTextSpan, support to paint custom background
+* Add BackgroundTextSpan, support to paint custom background
 
 ## [0.1.8]
 
-* handle TextEditingValue's composing
+* Handle TextEditingValue's composing
 
 ## [0.1.6]
 
-* improve codes to avoid unnecessary computation
+* Improve codes to avoid unnecessary computation
 
 ## [0.1.5]
 
-* override compareTo method in SpecialTextSpan and ImageSpan to
-  fix issue that image span or special text span was error rendering
+* Override compareTo method in SpecialTextSpan and ImageSpan to
+  Fix issue that image span or special text span was error rendering
 
 ## [0.1.4]
 
-* update limitation
-* improve codes
+* Update limitation
+* Improve codes
 
 ## [0.1.3]
 
-* update limitation
-* improve codes
+* Update limitation
+* Improve codes
 
 ## [0.1.1]
 
-* support special text amd inline image
+* Support special text amd inline image

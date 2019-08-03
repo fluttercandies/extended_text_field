@@ -9,9 +9,8 @@ import 'my_special_text_span_builder.dart';
 class ImageText extends SpecialText {
   static const String flag = "<img";
   final int start;
-  final BuilderType type;
   final SpecialTextGestureTapCallback onTap;
-  ImageText(TextStyle textStyle, {this.start, this.type, this.onTap})
+  ImageText(TextStyle textStyle, {this.start, this.onTap})
       : super(ImageText.flag, "/>", textStyle);
   String _imageUrl;
   String get imageUrl => _imageUrl;
@@ -39,8 +38,8 @@ class ImageText extends SpecialText {
     double width = 60.0;
     double height = 60.0;
     BoxFit fit = BoxFit.cover;
-    double num300 = type == BuilderType.extendedText ? 90.0 : 60.0;
-    double num400 = type == BuilderType.extendedText ? 120.0 : 80.0;
+    double num300 = 60.0;
+    double num400 = 80.0;
 
     height = num300;
     width = num400;

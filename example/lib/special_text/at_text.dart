@@ -11,9 +11,8 @@ class AtText extends SpecialText {
   /// whether show background for @somebody
   final bool showAtBackground;
 
-  final BuilderType type;
   AtText(TextStyle textStyle, SpecialTextGestureTapCallback onTap,
-      {this.showAtBackground: false, this.type, this.start})
+      {this.showAtBackground: false, this.start})
       : super(flag, " ", textStyle, onTap: onTap);
 
   @override
@@ -23,15 +22,6 @@ class AtText extends SpecialText {
         this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
 
     final String atText = toString();
-
-    if (type == BuilderType.extendedText)
-      return TextSpan(
-          text: atText,
-          style: textStyle,
-          recognizer: TapGestureRecognizer()
-            ..onTap = () {
-              if (onTap != null) onTap(atText);
-            });
 
     return showAtBackground
         ? BackgroundTextSpan(
@@ -43,23 +33,19 @@ class AtText extends SpecialText {
             ///caret can move into special text
             deleteAll: true,
             style: textStyle,
-            recognizer: type == BuilderType.extendedText
-                ? (TapGestureRecognizer()
-                  ..onTap = () {
-                    if (onTap != null) onTap(atText);
-                  })
-                : null)
+            recognizer: (TapGestureRecognizer()
+              ..onTap = () {
+                if (onTap != null) onTap(atText);
+              }))
         : SpecialTextSpan(
             text: atText,
             actualText: atText,
             start: start,
             style: textStyle,
-            recognizer: type == BuilderType.extendedText
-                ? (TapGestureRecognizer()
-                  ..onTap = () {
-                    if (onTap != null) onTap(atText);
-                  })
-                : null);
+            recognizer: (TapGestureRecognizer()
+              ..onTap = () {
+                if (onTap != null) onTap(atText);
+              }));
   }
 }
 

@@ -14,7 +14,7 @@ packages:
       name: boolean_selector
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.0.4"
+    version: "1.0.5"
   charcode:
     dependency: transitive
     description:
@@ -32,7 +32,7 @@ packages:
   extended_text_library:
     dependency: "direct main"
     description:
-      path: "D:\\Flutter\\github\\FlutterCandies\\dev\\extended_text_library"
+      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_text_library"
       relative: false
     source: path
     version: "0.4.4"
@@ -73,7 +73,7 @@ packages:
       name: pedantic
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.7.0"
+    version: "1.8.0+1"
   quiver:
     dependency: transitive
     description:
