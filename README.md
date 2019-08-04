@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field)
 
-extended official text field to quickly build special text like inline image or @somebody etc.
+Extended official text field to build special text like inline image, @somebody, custom background etc quickly.It also support to build custom seleciton toolbar and handles.
 
 base on flutter sdk 1.7.8
 
@@ -13,10 +13,11 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
-
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_image.gif)
 
+![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/custom_toolbar.gif)
 
+![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/widget_span.gif)
 ## limitation
 
 - Not support: it won't handle special text when TextDirection.rtl.

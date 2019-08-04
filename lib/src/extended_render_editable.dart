@@ -1296,6 +1296,44 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   @override
   bool hitTestSelf(Offset position) => true;
 
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
+    RenderBox child = firstChild;
+    int childIndex = 0;
+    while (child != null &&
+        childIndex < _textPainter.inlinePlaceholderBoxes.length) {
+      final TextParentData textParentData = child.parentData;
+      final Matrix4 transform = Matrix4.translationValues(
+          textParentData.offset.dx + _effectiveOffset.dx,
+          textParentData.offset.dy + _effectiveOffset.dy,
+          0.0)
+        ..scale(
+            textParentData.scale, textParentData.scale, textParentData.scale);
+      final bool isHit = result.addWithPaintTransform(
+        transform: transform,
+        position: position,
+        hitTest: (BoxHitTestResult result, Offset transformed) {
+          assert(() {
+            final Offset manualPosition =
+                (position - textParentData.offset - _effectiveOffset) /
+                    textParentData.scale;
+            return (transformed.dx - manualPosition.dx).abs() <
+                    precisionErrorTolerance &&
+                (transformed.dy - manualPosition.dy).abs() <
+                    precisionErrorTolerance;
+          }());
+          return child.hitTest(result, position: transformed);
+        },
+      );
+      if (isHit) {
+        return true;
+      }
+      child = childAfter(child);
+      childIndex += 1;
+    }
+    return false;
+  }
+
   TapGestureRecognizer _tap;
   LongPressGestureRecognizer _longPress;
 

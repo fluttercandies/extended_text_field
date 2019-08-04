@@ -401,6 +401,11 @@ class _TextDemoState extends State<TextDemo> {
           text: newText,
           selection: value.selection.copyWith(
               baseOffset: end + text.length, extentOffset: end + text.length));
+    } else {
+      _textEditingController.value = TextEditingValue(
+          text: text,
+          selection:
+              TextSelection.fromPosition(TextPosition(offset: text.length)));
     }
   }
 }

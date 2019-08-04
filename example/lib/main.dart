@@ -1,4 +1,5 @@
 import 'package:example/text_demo.dart';
+import 'package:example/widget_span.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 
@@ -46,8 +47,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     pages.add(Page(
         PageType.text, "build special text and inline image in text field"));
-    pages.add(Page(PageType.customToolbar,
+    pages.add(Page(PageType.toolbar_hanldes,
         "custom selection toolbar and handles for text field"));
+    pages.add(Page(PageType.widgetSpan, "mailbox demo with widgetSpan"));
 
     super.initState();
   }
@@ -89,8 +91,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 case PageType.text:
                   pageWidget = TextDemo(_listSourceRepository);
                   break;
-                case PageType.customToolbar:
+                case PageType.toolbar_hanldes:
                   pageWidget = CustomToolBar();
+                  break;
+                case PageType.widgetSpan:
+                  pageWidget = WidgetSpanDemo();
                   break;
                 default:
                   break;
@@ -118,4 +123,4 @@ class Page {
   Page(this.type, this.description);
 }
 
-enum PageType { text, customToolbar }
+enum PageType { text, toolbar_hanldes, widgetSpan }

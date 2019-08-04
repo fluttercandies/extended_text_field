@@ -2,8 +2,6 @@ import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import 'my_special_text_span_builder.dart';
-
 class AtText extends SpecialText {
   static const String flag = "@";
   final int start;
@@ -16,8 +14,7 @@ class AtText extends SpecialText {
       : super(flag, " ", textStyle, onTap: onTap);
 
   @override
-  TextSpan finishText() {
-    // TODO: implement finishText
+  InlineSpan finishText() {
     TextStyle textStyle =
         this.textStyle?.copyWith(color: Colors.blue, fontSize: 16.0);
 

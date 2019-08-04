@@ -60,10 +60,10 @@ packages:
   extended_image:
     dependency: "direct main"
     description:
-      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_image"
-      relative: false
-    source: path
-    version: "0.5.2"
+      name: extended_image
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.5.3"
   extended_image_library:
     dependency: transitive
     description:

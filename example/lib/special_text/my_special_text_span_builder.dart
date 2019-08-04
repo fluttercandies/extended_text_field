@@ -6,8 +6,6 @@ import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/material.dart';
 
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
-  Map<TextRange, TextStyle> specialTextStyle = Map<TextRange, TextStyle>();
-
   /// whether show background for @somebody
   final bool showAtBackground;
   MySpecialTextSpanBuilder({
@@ -24,7 +22,6 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   SpecialText createSpecialText(String flag,
       {TextStyle textStyle, SpecialTextGestureTapCallback onTap, int index}) {
     if (flag == null || flag == "") return null;
-    // TODO: implement createSpecialText
 
     ///index is end index of start flag, so text start index should be index-(flag.length-1)
     if (isStart(flag, AtText.flag)) {

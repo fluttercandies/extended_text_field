@@ -1,8 +1,5 @@
 import 'package:extended_text_field/extended_text_field.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-import 'my_special_text_span_builder.dart';
 
 class DollarText extends SpecialText {
   static const String flag = "\$";
@@ -12,8 +9,7 @@ class DollarText extends SpecialText {
       : super(flag, flag, textStyle, onTap: onTap);
 
   @override
-  TextSpan finishText() {
-    // TODO: implement finishText
+  InlineSpan finishText() {
     final String text = getContent();
 
     return SpecialTextSpan(

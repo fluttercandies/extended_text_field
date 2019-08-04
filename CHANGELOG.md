@@ -3,6 +3,7 @@
 * Support custom selection toolbar and handles
 * Improve codes about selection overlay
 * Select all SpecialTextSpan(which deleteAll is true) when double tap or long tap
+* Support WidgetSpan hitTest
 
 ## [0.4.1]
 
