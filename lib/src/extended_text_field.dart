@@ -172,7 +172,8 @@ class ExtendedTextField extends StatefulWidget {
       this.buildCounter,
       this.scrollController,
       this.scrollPhysics,
-      this.specialTextSpanBuilder})
+      this.specialTextSpanBuilder,
+      this.textSelectionControls})
       : assert(textAlign != null),
         assert(readOnly != null),
         assert(autofocus != null),
@@ -198,6 +199,10 @@ class ExtendedTextField extends StatefulWidget {
         keyboardType = keyboardType ??
             (maxLines == 1 ? TextInputType.text : TextInputType.multiline),
         super(key: key);
+
+  /// An interface for building the selection UI, to be provided by the
+  /// implementor of the toolbar widget or handle widget
+  final TextSelectionControls textSelectionControls;
 
   ///build your ccustom text span
   final SpecialTextSpanBuilder specialTextSpanBuilder;
@@ -865,17 +870,29 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
 
   void _handleSingleLongTapEnd(LongPressEndDetails details) {
     if (widget.selectionEnabled) {
-      if (_shouldShowSelectionToolbar)
-        _editableTextKey.currentState.showToolbar();
+      _showToolbarForLongTapAndDoubleTap();
+    }
+  }
+
+  void _showToolbarForLongTapAndDoubleTap() {
+    if (_shouldShowSelectionToolbar) {
+      //long tap or double tap will not show toolbar
+      //after remove select all texts
+      //fix https://github.com/flutter/flutter/issues/37455
+      if (_editableText.selectionOverlay == null) {
+        bool showHandles = _editableText.textEditingValue.text != null &&
+            _editableText.textEditingValue.text != "";
+        _editableTextKey.currentState
+            .createSelectionOverlay(showHandles: showHandles);
+      }
+      _editableText.showToolbar();
     }
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
     if (widget.selectionEnabled) {
       _renderEditable.selectWord(cause: SelectionChangedCause.doubleTap);
-      if (_shouldShowSelectionToolbar) {
-        _editableText.showToolbar();
-      }
+      _showToolbarForLongTapAndDoubleTap();
     }
   }
 
@@ -968,7 +985,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       formatters.add(LengthLimitingTextInputFormatter(widget.maxLength));
 
     bool forcePressEnabled;
-    TextSelectionControls textSelectionControls;
+    TextSelectionControls textSelectionControls = widget.textSelectionControls;
     bool paintCursorAboveText;
     bool cursorOpacityAnimates;
     Offset cursorOffset;
@@ -978,7 +995,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     switch (themeData.platform) {
       case TargetPlatform.iOS:
         forcePressEnabled = true;
-        textSelectionControls = cupertinoTextSelectionControls;
+        textSelectionControls ??= cupertinoExtendedTextSelectionControls;
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
         cursorColor ??= CupertinoTheme.of(context).primaryColor;
@@ -997,7 +1014,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
-        textSelectionControls = materialTextSelectionControls;
+        textSelectionControls ??= materialExtendedTextSelectionControls;
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
         cursorColor ??= themeData.cursorColor;

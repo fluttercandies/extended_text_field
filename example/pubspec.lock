@@ -49,7 +49,7 @@ packages:
       name: csslib
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.16.0"
+    version: "0.16.1"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -74,24 +74,24 @@ packages:
   extended_text:
     dependency: "direct main"
     description:
-      name: extended_text
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.6.1"
+      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_text"
+      relative: false
+    source: path
+    version: "0.6.4"
   extended_text_field:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.3.9"
+    version: "0.4.2"
   extended_text_library:
     dependency: transitive
     description:
-      name: extended_text_library
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.4.2"
+      path: "E:\\Flutter\\FlutterCandies\\dev\\extended_text_library"
+      relative: false
+    source: path
+    version: "0.4.4"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -143,7 +143,7 @@ packages:
       name: loading_more_list
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.3.6"
+    version: "0.3.7"
   matcher:
     dependency: transitive
     description:
@@ -164,7 +164,7 @@ packages:
       name: oktoast
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.1.7"
+    version: "2.2.0"
   path:
     dependency: transitive
     description:
@@ -178,7 +178,7 @@ packages:
       name: path_provider
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.1.2"
+    version: "1.2.0"
   pedantic:
     dependency: transitive
     description:
@@ -253,7 +253,7 @@ packages:
       name: url_launcher
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "5.0.3"
+    version: "5.1.1"
   vector_math:
     dependency: transitive
     description:

@@ -1,8 +1,10 @@
 import 'package:example/text_demo.dart';
+import 'package:example/widget_span.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 
 import 'common/tu_chong_repository.dart';
+import 'custom_toolbar.dart';
 
 void main() {
   runApp(MyApp());
@@ -43,9 +45,11 @@ class _MyHomePageState extends State<MyHomePage> {
   TuChongRepository _listSourceRepository = TuChongRepository();
   @override
   void initState() {
-    // TODO: implement initState
     pages.add(Page(
         PageType.text, "build special text and inline image in text field"));
+    pages.add(Page(PageType.toolbar_hanldes,
+        "custom selection toolbar and handles for text field"));
+    pages.add(Page(PageType.widgetSpan, "mailbox demo with widgetSpan"));
 
     super.initState();
   }
@@ -53,14 +57,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _listSourceRepository.dispose();
-    // TODO: implement dispose
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-
     var content = ListView.builder(
       itemBuilder: (_, int index) {
         var page = pages[index];
@@ -88,7 +89,13 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: () {
               switch (page.type) {
                 case PageType.text:
-                  pageWidget = new TextDemo(_listSourceRepository);
+                  pageWidget = TextDemo(_listSourceRepository);
+                  break;
+                case PageType.toolbar_hanldes:
+                  pageWidget = CustomToolBar();
+                  break;
+                case PageType.widgetSpan:
+                  pageWidget = WidgetSpanDemo();
                   break;
                 default:
                   break;
@@ -116,4 +123,4 @@ class Page {
   Page(this.type, this.description);
 }
 
-enum PageType { text }
+enum PageType { text, toolbar_hanldes, widgetSpan }

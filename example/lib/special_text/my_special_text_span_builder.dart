@@ -8,33 +8,45 @@ import 'package:flutter/material.dart';
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   /// whether show background for @somebody
   final bool showAtBackground;
-  final BuilderType type;
-  MySpecialTextSpanBuilder(
-      {this.showAtBackground: false, this.type: BuilderType.extendedText});
+  MySpecialTextSpanBuilder({
+    this.showAtBackground: false,
+  });
+
+  @override
+  TextSpan build(String data, {TextStyle textStyle, onTap}) {
+    TextSpan result = super.build(data, textStyle: textStyle, onTap: onTap);
+    return result;
+  }
 
   @override
   SpecialText createSpecialText(String flag,
       {TextStyle textStyle, SpecialTextGestureTapCallback onTap, int index}) {
     if (flag == null || flag == "") return null;
-    // TODO: implement createSpecialText
 
     ///index is end index of start flag, so text start index should be index-(flag.length-1)
     if (isStart(flag, AtText.flag)) {
-      return AtText(textStyle, onTap,
-          start: index - (AtText.flag.length - 1),
-          showAtBackground: showAtBackground,
-          type: type);
+      return AtText(
+        textStyle,
+        onTap,
+        start: index - (AtText.flag.length - 1),
+        showAtBackground: showAtBackground,
+      );
     } else if (isStart(flag, EmojiText.flag)) {
       return EmojiText(textStyle, start: index - (EmojiText.flag.length - 1));
     } else if (isStart(flag, DollarText.flag)) {
-      return DollarText(textStyle, onTap,
-          start: index - (DollarText.flag.length - 1), type: type);
+      return DollarText(
+        textStyle,
+        onTap,
+        start: index - (DollarText.flag.length - 1),
+      );
     } else if (isStart(flag, ImageText.flag)) {
       return ImageText(textStyle,
-          start: index - (ImageText.flag.length - 1), type: type, onTap: onTap);
+          start: index - (ImageText.flag.length - 1), onTap: onTap);
     }
     return null;
   }
 }
 
-enum BuilderType { extendedText, extendedTextField }
+class SpecialTextStyle {
+  TextRange textRange;
+}

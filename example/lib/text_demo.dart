@@ -6,7 +6,7 @@ import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
-
+import 'common/my_extended_text_selection_controls.dart';
 import 'common/pic_swiper.dart';
 import 'common/tu_chong_repository.dart';
 import 'common/tu_chong_source.dart';
@@ -26,9 +26,12 @@ class TextDemo extends StatefulWidget {
 
 class _TextDemoState extends State<TextDemo> {
   TextEditingController _textEditingController = TextEditingController();
+  MyExtendedMaterialTextSelectionControls
+      _myExtendedMaterialTextSelectionControls =
+      MyExtendedMaterialTextSelectionControls();
   final GlobalKey _key = GlobalKey();
   MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
-      MySpecialTextSpanBuilder(type: BuilderType.extendedText);
+      MySpecialTextSpanBuilder();
 
   List<TuChongItem> images = List<TuChongItem>();
 
@@ -143,8 +146,10 @@ class _TextDemoState extends State<TextDemo> {
           ExtendedTextField(
             key: _key,
             specialTextSpanBuilder: MySpecialTextSpanBuilder(
-                showAtBackground: true, type: BuilderType.extendedTextField),
+              showAtBackground: true,
+            ),
             controller: _textEditingController,
+            textSelectionControls: _myExtendedMaterialTextSelectionControls,
             maxLines: null,
             focusNode: _focusNode,
             decoration: InputDecoration(
@@ -389,12 +394,18 @@ class _TextDemoState extends State<TextDemo> {
         }
       } else {
         newText = value.text.replaceRange(start, end, text);
+        end = start;
       }
 
       _textEditingController.value = value.copyWith(
           text: newText,
           selection: value.selection.copyWith(
               baseOffset: end + text.length, extentOffset: end + text.length));
+    } else {
+      _textEditingController.value = TextEditingValue(
+          text: text,
+          selection:
+              TextSelection.fromPosition(TextPosition(offset: text.length)));
     }
   }
 }

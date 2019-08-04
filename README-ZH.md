@@ -2,40 +2,41 @@
 
 [![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field)
 
-Extended official text field to build special text like inline image, @somebody, custom background etc quickly.It also support to build custom seleciton toolbar and handles.
+官方输入框的扩展组件，支持图片，@某人，自定义文字背景。也支持自定义菜单和选择器。
 
-base on flutter sdk 1.7.8
+基于Flutter SDK 1.7.8
 
-Language: [English](README.md) | [中文简体](README-ZH.md)
+文档语言: [English](README.md) | [中文简体](README-ZH.md)
 
 - [extended_text_field](#extendedtextfield)
-  - [Limitation](#limitation)
-  - [Speical Text](#speical-text)
-    - [Create Speical Text](#create-speical-text)
-    - [SpecialTextSpanBuilder](#specialtextspanbuilder)
-  - [Image](#image)
+  - [限制](#%e9%99%90%e5%88%b6)
+  - [特殊文本](#%e7%89%b9%e6%ae%8a%e6%96%87%e6%9c%ac)
+    - [创建特殊文本](#%e5%88%9b%e5%bb%ba%e7%89%b9%e6%ae%8a%e6%96%87%e6%9c%ac)
+    - [特殊文本Builder](#%e7%89%b9%e6%ae%8a%e6%96%87%e6%9c%acbuilder)
+  - [图片](#%e5%9b%be%e7%89%87)
     - [ImageSpan](#imagespan)
-    - [Cache Image](#cache-image)
-  - [TextSelectionControls](#textselectioncontrols)
+    - [缓存图片](#%e7%bc%93%e5%ad%98%e5%9b%be%e7%89%87)
+  - [文本选择控制器](#%e6%96%87%e6%9c%ac%e9%80%89%e6%8b%a9%e6%8e%a7%e5%88%b6%e5%99%a8)
   - [WidgetSpan](#widgetspan)
 
-## Limitation
+## 限制
 
-- Not support: it won't handle special text when TextDirection.rtl.
+- 不支持TextDirection.rtl，从右向左.
 
-  Image position calculated by TextPainter is strange.
+- 不支持obscureText为true.
 
-- Not support:it won't handle special text when obscureText is true.
-
-## Speical Text
+## 特殊文本
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
-### Create Speical Text
+### 创建特殊文本
 
-extended text helps to convert your text to speical textSpan quickly.
+extended_text 帮助将字符串文本快速转换为特殊的TextSpan
 
-for example, follwing code show how to create @xxxx speical textSpan.
+下面的例子告诉你怎么创建一个@xxx
+
+具体思路是对字符串进行进栈遍历，通过判断flag来判定是否是一个特殊字符。
+例子：@zmtzawqlp ，以@开头并且以空格结束，我们就认为它是一个@的特殊文本
 
 ```dart
 class AtText extends SpecialText {
@@ -88,9 +89,12 @@ class AtText extends SpecialText {
 
 ```
 
-### SpecialTextSpanBuilder
+### 特殊文本Builder
 
-create your SpecialTextSpanBuilder
+创建属于你自己规则的Builder，上面说了你可以继承SpecialText来定义各种各样的特殊文本。
+- build 方法中，是通过具体思路是对字符串进行进栈遍历，通过判断flag来判定是否是一个特殊文本。
+  感兴趣的，可以看一下SpecialTextSpanBuilder里面build方法的实现，当然你也可以写出属于自己的build逻辑
+- createSpecialText 通过判断flag来判定是否是一个特殊文本
 
 ```dart
 class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
@@ -127,16 +131,17 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   }
 }
 ```
+其实你也不是一定要用这套代码将字符串转换为TextSpan，你可以有自己的方法，给最后的TextSpan就可以了。
 
 [more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/text_demo.dart)
 
-## Image
+## 图片
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_image.gif)
 
 ### ImageSpan
 
-show inline image by using ImageSpan.
+使用ImageSpan 展示图片
 
 ```dart
 ImageSpan(
@@ -172,20 +177,20 @@ ImageSpan(AssetImage("xxx.jpg"),
   }
 ```
 
-| parameter   | description                                                                   | default  |
-| ----------- | ----------------------------------------------------------------------------- | -------- |
-| image       | The image to display(ImageProvider).                                          | -        |
-| imageWidth  | The width of image(not include margin)                                        | required |
-| imageHeight | The height of image(not include margin)                                       | required |
-| margin      | The margin of image                                                           | -        |
-| actualText  | Actual text, take care of it when enable selection,something likes "\[love\]" | '\uFFFC' |
-| start       | Start index of text,take care of it when enable selection.                    | 0        |
+| 参数        | 描述                                                              | 默认             |
+| ----------- | ----------------------------------------------------------------- | ---------------- |
+| image       | 图片展示的Provider(ImageProvider)                                 | -                |
+| imageWidth  | 宽度，不包括 margin                                               | 必填             |
+| imageHeight | 高度，不包括 margin                                               | 必填             |
+| margin      | 图片的margin                                                      | -                |
+| actualText  | 真实的文本,当你开启文本选择功能的时候，必须设置,比如图片"\[love\] | 空占位符'\uFFFC' |
+| start       | 在文本字符串中的开始位置,当你开启文本选择功能的时候，必须设置     | 0                |
 
-### Cache Image
+### 缓存图片
 
-if you want cache the network image, you can use ExtendedNetworkImageProvider and clear them with clearDiskCachedImages
+你可以用ExtendedNetworkImageProvider来缓存文本中的图片，使用clearDiskCachedImages方法来清掉本地缓存
 
-import extended_image_library
+引入 extended_image_library
 
 ```dart
 dependencies:
@@ -207,16 +212,16 @@ ExtendedNetworkImageProvider(
       cancelToken = cancelToken ?? CancellationToken();
 ```
 
-| parameter   | description                                                                           | default             |
-| ----------- | ------------------------------------------------------------------------------------- | ------------------- |
-| url         | The URL from which the image will be fetched.                                         | required            |
-| scale       | The scale to place in the [ImageInfo] object of the image.                            | 1.0                 |
-| headers     | The HTTP headers that will be used with [HttpClient.get] to fetch image from network. | -                   |
-| cache       | whether cache image to local                                                          | false               |
-| retries     | the time to retry to request                                                          | 3                   |
-| timeLimit   | time limit to request image                                                           | -                   |
-| timeRetry   | the time duration to retry to request                                                 | milliseconds: 100   |
-| cancelToken | token to cancel network request                                                       | CancellationToken() |
+| 参数        | 描述                | 默认                |
+| ----------- | ------------------- | ------------------- |
+| url         | 网络请求地址        | required            |
+| scale       | ImageInfo中的scale  | 1.0                 |
+| headers     | HttpClient的headers | -                   |
+| cache       | 是否缓存到本地      | false               |
+| retries     | 请求尝试次数        | 3                   |
+| timeLimit   | 请求超时            | -                   |
+| timeRetry   | 请求重试间隔        | milliseconds: 100   |
+| cancelToken | 用于取消请求的Token | CancellationToken() |
 
 ```dart
 /// Clear the disk cache directory then return if it succeed.
@@ -226,13 +231,13 @@ Future<bool> clearDiskCachedImages({Duration duration}) async
 
 [more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/text_demo.dart)
 
-## TextSelectionControls
+## 文本选择控制器
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/custom_toolbar.gif)
 
-default value of textSelectionControls are MaterialExtendedTextSelectionControls/CupertinoExtendedTextSelectionControls
+提供了默认的控制器MaterialExtendedTextSelectionControls/CupertinoExtendedTextSelectionControls
 
-override buildToolbar or buildHandle to custom your toolbar widget or handle widget
+你可以通过重写，来定义工具栏和选择器
 
 ```dart
 class MyExtendedMaterialTextSelectionControls
@@ -393,7 +398,7 @@ class _TextSelectionToolbar extends StatelessWidget {
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/widget_span.gif)
 
-support to select and hitTest ExtendedWidgetSpan, you can create any widget in ExtendedTextField.
+ExtendedWidgetSpan 支持选择以及hitTest, 所以你可以在输入框中加入任何的widget。
 
 ```dart
 class EmailText extends SpecialText {
