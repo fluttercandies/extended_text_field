@@ -1249,7 +1249,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
             .height;
         final double interactiveHandleHeight = max(
           handleHeight,
-          kMinInteractiveSize,
+          kExtendedMinInteractiveSize,
         );
         final Offset anchor =
             _selectionOverlay.selectionControls.getHandleAnchor(
