@@ -1,3 +1,7 @@
+## [0.4.3]
+
+* Fix kMinInteractiveSize is missing in high version of flutter
+
 ## [0.4.2]
 
 * Support custom selection toolbar and handles
