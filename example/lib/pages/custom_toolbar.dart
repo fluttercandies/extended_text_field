@@ -1,13 +1,17 @@
+import 'package:example/common/my_extended_text_selection_controls.dart';
+import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
-
-import 'common/my_extended_text_selection_controls.dart';
-import 'special_text/my_special_text_span_builder.dart';
+import 'package:ff_annotation_route/ff_annotation_route.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/7/31
 ///
 
+@FFRoute(
+    name: "fluttercandies://CustomToolBar",
+    routeName: "custom toolbar",
+    description: "custom selection toolbar and handles for text field")
 class CustomToolBar extends StatefulWidget {
   @override
   _CustomToolBarState createState() => _CustomToolBarState();

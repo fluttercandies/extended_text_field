@@ -1,30 +1,34 @@
-import 'dart:io';
 import 'dart:math';
+import 'package:example/common/my_extended_text_selection_controls.dart';
+import 'package:example/common/pic_swiper.dart';
 import 'package:example/common/toggle_button.dart';
+import 'package:example/common/tu_chong_repository.dart';
+import 'package:example/common/tu_chong_source.dart';
+import 'package:example/special_text/at_text.dart';
+import 'package:example/special_text/dollar_text.dart';
 import 'package:example/special_text/emoji_text.dart';
+import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
-import 'common/my_extended_text_selection_controls.dart';
-import 'common/pic_swiper.dart';
-import 'common/tu_chong_repository.dart';
-import 'common/tu_chong_source.dart';
-import 'special_text/at_text.dart';
-import 'special_text/dollar_text.dart';
-import 'special_text/my_special_text_span_builder.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 
+import 'package:ff_annotation_route/ff_annotation_route.dart';
+
+@FFRoute(
+    name: "fluttercandies://TextDemo",
+    routeName: "text",
+    description: "build special text and inline image in text field")
 class TextDemo extends StatefulWidget {
-  final TuChongRepository tuChongRepository;
-  TextDemo(this.tuChongRepository);
   @override
   _TextDemoState createState() => _TextDemoState();
 }
 
 class _TextDemoState extends State<TextDemo> {
+  TuChongRepository tuChongRepository;
   TextEditingController _textEditingController = TextEditingController();
   MyExtendedMaterialTextSelectionControls
       _myExtendedMaterialTextSelectionControls =
@@ -62,6 +66,17 @@ class _TextDemoState extends State<TextDemo> {
     "error 0 [45] warning 0",
     "error 0 [45] warning 0",
   ];
+
+  @override
+  void initState() {
+    tuChongRepository = TuChongRepository();
+  }
+
+  @override
+  void dispose() {
+    tuChongRepository.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,23 +117,15 @@ class _TextDemoState extends State<TextDemo> {
                   }
                   //image
                   else {
-                    var page = PicSwiper(
-                      images.indexOf(images
-                          .firstWhere((x) => x.imageUrl == value.toString())),
-                      images
-                          .map<PicSwiperItem>(
-                              (f) => PicSwiperItem(f.imageUrl, des: f.title))
-                          .toList(),
-                    );
-                    Navigator.push(
-                        context,
-                        Platform.isAndroid
-                            ? TransparentMaterialPageRoute(builder: (_) {
-                                return page;
-                              })
-                            : TransparentCupertinoPageRoute(builder: (_) {
-                                return page;
-                              }));
+                    Navigator.pushNamed(context, "fluttercandies://picswiper",
+                        arguments: {
+                          "index": images.indexOf(images.firstWhere(
+                              (x) => x.imageUrl == value.toString())),
+                          "pics": images
+                              .map<PicSwiperItem>((f) =>
+                                  PicSwiperItem(f.imageUrl, des: f.title))
+                              .toList(),
+                        });
                   }
                 },
               );
@@ -314,7 +321,7 @@ class _TextDemoState extends State<TextDemo> {
       return ImageGrid((item, text) {
         images.add(item);
         insertText(text);
-      }, widget.tuChongRepository);
+      }, tuChongRepository);
     return Container();
   }
 

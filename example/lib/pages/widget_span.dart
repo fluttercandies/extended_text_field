@@ -1,13 +1,16 @@
+import 'package:example/special_text/email_span_builder.dart';
+import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
-
-import 'special_text/email_span_builder.dart';
-import 'special_text/my_special_text_span_builder.dart';
+import 'package:ff_annotation_route/ff_annotation_route.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/8/4
 ///
-
+@FFRoute(
+    name: "fluttercandies://WidgetSpanDemo",
+    routeName: "widget span",
+    description: "mailbox demo with widgetSpan")
 class WidgetSpanDemo extends StatefulWidget {
   @override
   _WidgetSpanDemoState createState() => _WidgetSpanDemoState();
