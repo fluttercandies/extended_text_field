@@ -21,7 +21,13 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 const double _kCaretGap = 1.0; // pixels
-const double _kCaretHeightOffset = 2.0; // pixels
+///
+///Make Ios/Android caret the same height
+///https://github.com/fluttercandies/extended_text_field/issues/14
+///https://github.com/fluttercandies/extended_text_field/issues/19
+///https://github.com/fluttercandies/extended_text_field/issues/10
+//const double _kCaretHeightOffset = 2.0; // pixels
+const double _kCaretHeightOffset = 0.0; // pixels
 
 // The additional size on the x and y axis with which to expand the prototype
 // cursor to render the floating cursor in pixels.
@@ -1407,7 +1413,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   /// Move selection to the location of the last tap down.
   ///
   /// {@template flutter.rendering.editable.select}
-  /// This method is mainly used to translate user inputs in global positions
+  /// This method is mainly used to translatef user inputs in global positions
   /// into a [TextSelection]. When used in conjunction with a [EditableText],
   /// the selection change is fed back into [TextEditingController.selection].
   ///
@@ -1663,14 +1669,14 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
-//    if (_textPainter.getFullHeightForCaret(textPosition, _caretPrototype) !=
-//        null) {
-//      switch (defaultTargetPlatform) {
-//        case TargetPlatform.iOS:
-//          {
-//            final double heightDiff = _textPainter.getFullHeightForCaret(
-//                    textPosition, _caretPrototype) -
-//                caretRect.height;
+    var fullHeight =
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) ??
+            caretHeight;
+    if (fullHeight != null) {
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.iOS:
+          {
+//            final double heightDiff = fullHeight - caretRect.height;
 //            // Center the caret vertically along the text.
 //            caretRect = Rect.fromLTWH(
 //              caretRect.left,
@@ -1678,26 +1684,28 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 //              caretRect.width,
 //              caretRect.height,
 //            );
-//            break;
-//          }
-//        default:
-//          {
-//            // Override the height to take the full height of the glyph at the TextPosition
-//            // when not on iOS. iOS has special handling that creates a taller caret.
-//            // TODO(garyq): See the TODO for _getCaretPrototype.
-//            caretRect = Rect.fromLTWH(
-//              caretRect.left,
-//              caretRect.top - _kCaretHeightOffset,
-//              caretRect.width,
-//              _textPainter.getFullHeightForCaret(textPosition, _caretPrototype),
-//            );
-//            break;
-//          }
-//      }
-//    }
-    if (caretHeight != null) {
-      caretRect = Rect.fromLTWH(
-          caretRect.left, caretRect.top, caretRect.width, caretHeight);
+            caretRect = Rect.fromLTWH(
+              caretRect.left,
+              caretRect.top,
+              caretRect.width,
+              fullHeight,
+            );
+            break;
+          }
+        default:
+          {
+            // Override the height to take the full height of the glyph at the TextPosition
+            // when not on iOS. iOS has special handling that creates a taller caret.
+            // TODO(garyq): See the TODO for _getCaretPrototype.
+            caretRect = Rect.fromLTWH(
+              caretRect.left,
+              caretRect.top - _kCaretHeightOffset,
+              caretRect.width,
+              fullHeight,
+            );
+            break;
+          }
+      }
     }
 
     caretRect = caretRect.shift(_getPixelPerfectCursorOffset(caretRect));
