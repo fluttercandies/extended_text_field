@@ -21,6 +21,11 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 const double _kCaretGap = 1.0; // pixels
+///
+///Make Ios/Android caret the same height
+///https://github.com/fluttercandies/extended_text_field/issues/14
+///https://github.com/fluttercandies/extended_text_field/issues/19
+///https://github.com/fluttercandies/extended_text_field/issues/10
 //const double _kCaretHeightOffset = 2.0; // pixels
 const double _kCaretHeightOffset = 0.0; // pixels
 
