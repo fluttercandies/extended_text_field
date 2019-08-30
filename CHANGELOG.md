@@ -1,3 +1,7 @@
+## [0.4.4]
+
+* Fix wrong caret hegiht and postion
+
 ## [0.4.3]
 
 * Fix kMinInteractiveSize is missing in high version of flutter
