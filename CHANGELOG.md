@@ -1,6 +1,7 @@
 ## [0.4.4]
 
 * Fix wrong caret hegiht and postion
+* Make Ios/Android caret the same height 
 
 ## [0.4.3]
 

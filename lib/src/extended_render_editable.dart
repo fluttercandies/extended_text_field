@@ -21,7 +21,8 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 const double _kCaretGap = 1.0; // pixels
-const double _kCaretHeightOffset = 2.0; // pixels
+//const double _kCaretHeightOffset = 2.0; // pixels
+const double _kCaretHeightOffset = 0.0; // pixels
 
 // The additional size on the x and y axis with which to expand the prototype
 // cursor to render the floating cursor in pixels.
@@ -1664,18 +1665,25 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
     var fullHeight =
-        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype);
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) ??
+            caretHeight;
     if (fullHeight != null) {
       switch (defaultTargetPlatform) {
         case TargetPlatform.iOS:
           {
-            final double heightDiff = fullHeight - caretRect.height;
-            // Center the caret vertically along the text.
+//            final double heightDiff = fullHeight - caretRect.height;
+//            // Center the caret vertically along the text.
+//            caretRect = Rect.fromLTWH(
+//              caretRect.left,
+//              caretRect.top + heightDiff / 2,
+//              caretRect.width,
+//              caretRect.height,
+//            );
             caretRect = Rect.fromLTWH(
               caretRect.left,
-              caretRect.top + heightDiff / 2,
+              caretRect.top,
               caretRect.width,
-              caretRect.height,
+              fullHeight,
             );
             break;
           }
@@ -1693,13 +1701,6 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
             break;
           }
       }
-    }
-    if (caretHeight != null) {
-      caretRect = Rect.fromLTWH(
-          caretRect.left,
-          caretRect.top - (fullHeight == null ? _kCaretHeightOffset : 0.0),
-          caretRect.width,
-          caretHeight);
     }
 
     caretRect = caretRect.shift(_getPixelPerfectCursorOffset(caretRect));
