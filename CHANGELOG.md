@@ -1,3 +1,7 @@
+## [0.4.5]
+
+* Implement connectionClosed to support Flutter 1.12
+
 ## [0.4.4]
 
 * Fix wrong caret hegiht and postion
