@@ -382,8 +382,10 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
         break;
       case TargetPlatform.iOS:
       case TargetPlatform.fuchsia:
+      case TargetPlatform.macOS:
         return;
     }
+    
 
     if (keyEvent is RawKeyUpEvent) return;
 
