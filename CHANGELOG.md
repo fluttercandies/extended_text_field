@@ -1,3 +1,7 @@
+## [0.4.6]
+
+* Remove TargetPlatform.macOS 
+
 ## [0.4.5]
 
 * Fix build error for flutter sdk 1.12
