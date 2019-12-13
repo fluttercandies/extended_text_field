@@ -732,7 +732,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         return;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
-      case TargetPlatform.macOS:
+      // case TargetPlatform.macOS:
       // Do nothing.
     }
   }
@@ -812,7 +812,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     if (widget.selectionEnabled) {
       switch (Theme.of(context).platform) {
         case TargetPlatform.iOS:
-        case TargetPlatform.macOS:
+        //case TargetPlatform.macOS:
           _renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
           break;
         case TargetPlatform.android:
@@ -834,7 +834,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     if (widget.selectionEnabled) {
       switch (Theme.of(context).platform) {
         case TargetPlatform.iOS:
-        case TargetPlatform.macOS:
+        //case TargetPlatform.macOS:
           _renderEditable.selectPositionAt(
             from: details.globalPosition,
             cause: SelectionChangedCause.longPress,
@@ -854,7 +854,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     if (widget.selectionEnabled) {
       switch (Theme.of(context).platform) {
         case TargetPlatform.iOS:
-        case TargetPlatform.macOS:
+        //case TargetPlatform.macOS:
           _renderEditable.selectPositionAt(
             from: details.globalPosition,
             cause: SelectionChangedCause.longPress,
@@ -999,7 +999,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
 
     switch (themeData.platform) {
       case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
+      //case TargetPlatform.macOS:
         forcePressEnabled = true;
         textSelectionControls ??= cupertinoExtendedTextSelectionControls;
         paintCursorAboveText = true;

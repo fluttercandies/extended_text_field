@@ -382,7 +382,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
         break;
       case TargetPlatform.iOS:
       case TargetPlatform.fuchsia:
-      case TargetPlatform.macOS:
+      //case TargetPlatform.macOS:
         return;
     }
     
