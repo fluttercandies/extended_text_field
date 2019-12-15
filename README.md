@@ -510,4 +510,4 @@ class EmailText extends SpecialText {
 }
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/widget_span.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)
