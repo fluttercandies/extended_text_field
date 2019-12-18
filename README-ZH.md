@@ -133,7 +133,7 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
 ```
 其实你也不是一定要用这套代码将字符串转换为TextSpan，你可以有自己的方法，给最后的TextSpan就可以了。
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/text_demo.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
 
 ## 图片
 
@@ -229,7 +229,7 @@ ExtendedNetworkImageProvider(
 Future<bool> clearDiskCachedImages({Duration duration}) async
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/text_demo.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
 
 ## 文本选择控制器
 
@@ -392,7 +392,7 @@ class _TextSelectionToolbar extends StatelessWidget {
 
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/custom_toolbar.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/custom_toolbar.dart)
 
 ## WidgetSpan
 
@@ -515,4 +515,4 @@ class EmailText extends SpecialText {
 }
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/widget_span.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)

@@ -63,7 +63,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                       suffixIcon: IconButton(
                         icon: Icon(Icons.add),
                         onPressed: () {
-                          var selection = controller.selection.copyWith();
+                          final selection = controller.selection.copyWith();
                           showDialog(
                               context: context,
                               barrierDismissible: true,

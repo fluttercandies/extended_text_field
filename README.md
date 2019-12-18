@@ -128,7 +128,7 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
 }
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/text_demo.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
 
 ## Image
 
@@ -224,7 +224,7 @@ ExtendedNetworkImageProvider(
 Future<bool> clearDiskCachedImages({Duration duration}) async
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/text_demo.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
 
 ## TextSelectionControls
 
@@ -387,7 +387,7 @@ class _TextSelectionToolbar extends StatelessWidget {
 
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/custom_toolbar.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/custom_toolbar.dart)
 
 ## WidgetSpan
 
@@ -510,4 +510,4 @@ class EmailText extends SpecialText {
 }
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/widget_span.dart)
+[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)

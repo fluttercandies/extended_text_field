@@ -1,3 +1,4 @@
+
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -16,7 +17,7 @@ const double _kHandleSize = 22.0;
 ///
 
 class MyExtendedMaterialTextSelectionControls
-    extends MaterialExtendedTextSelectionControls {
+    extends ExtendedMaterialTextSelectionControls {
   MyExtendedMaterialTextSelectionControls();
   @override
   Widget buildToolbar(
@@ -53,7 +54,7 @@ class MyExtendedMaterialTextSelectionControls
     return ConstrainedBox(
       constraints: BoxConstraints.tight(globalEditableRegion.size),
       child: CustomSingleChildLayout(
-        delegate: MaterialExtendedTextSelectionToolbarLayout(
+        delegate: ExtendedMaterialTextSelectionToolbarLayout(
           MediaQuery.of(context).size,
           globalEditableRegion,
           preciseMidpoint,

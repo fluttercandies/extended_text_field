@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:loading_more_list/loading_more_list.dart';
+import 'package:extended_list/extended_list.dart';
 
 import 'package:ff_annotation_route/ff_annotation_route.dart';
 
@@ -54,22 +55,12 @@ class _TextDemoState extends State<TextDemo> {
     "\$Flutter\$. CN dev best dev",
     "\$Dota2 Ti9\$. Shanghai,I'm coming.",
     "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
-    "error 0 [45] warning 0",
   ];
 
   @override
   void initState() {
     tuChongRepository = TuChongRepository();
+    super.initState();
   }
 
   @override
@@ -91,12 +82,19 @@ class _TextDemoState extends State<TextDemo> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("special text and inline image"),
+        title: Text("special text"),
+        actions: <Widget>[
+          FlatButton(
+            child: Icon(Icons.backspace),
+            onPressed: manualDelete,
+          )
+        ],
       ),
       body: Column(
         children: <Widget>[
           Expanded(
-              child: ListView.builder(
+              child: ExtendedListView.builder(
+            extendedListDelegate: ExtendedListDelegate(closeToTrailing: true),
             itemBuilder: (context, index) {
               var left = index % 2 == 0;
               var logo = Image.asset(
@@ -415,6 +413,31 @@ class _TextDemoState extends State<TextDemo> {
               TextSelection.fromPosition(TextPosition(offset: text.length)));
     }
   }
+
+  void manualDelete() {
+    //delete by code
+    final _value = _textEditingController.value;
+    final selection = _value.selection;
+    if (!selection.isValid) return;
+
+    TextEditingValue value;
+    final actualText = _value.text;
+    if (selection.isCollapsed && selection.start == 0) return;
+    final int start =
+        selection.isCollapsed ? selection.start - 1 : selection.start;
+    final int end = selection.end;
+
+    value = TextEditingValue(
+      text: actualText.replaceRange(start, end, ""),
+      selection: TextSelection.collapsed(offset: start),
+    );
+
+    final oldTextSpan = _mySpecialTextSpanBuilder.build(_value.text);
+
+    value = handleSpecialTextSpanDelete(value, _value, oldTextSpan, null);
+
+    _textEditingController.value = value;
+  }
 }
 
 class ImageGrid extends StatefulWidget {
@@ -455,6 +478,5 @@ class _ImageGridState extends State<ImageGrid>
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }
