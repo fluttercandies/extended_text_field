@@ -15,7 +15,6 @@ class ImageText extends SpecialText {
   String get imageUrl => _imageUrl;
   @override
   InlineSpan finishText() {
-    // TODO: implement finishText
     ///content already has endflag "/"
     var text = flag + getContent() + ">";
 

@@ -1,3 +1,10 @@
+## [0.4.7]
+
+* Codes base on 1.12.13+hotfix.5
+* Set limitation of flutter sdk >=1.12.13 <1.12.16
+* Add demo that how to delete text with code
+* Fix issue that not showing text while entering text from keyboard
+  
 ## [0.4.6]
 
 * Remove TargetPlatform.macOS 

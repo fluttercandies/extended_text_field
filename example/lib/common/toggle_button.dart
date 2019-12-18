@@ -20,7 +20,6 @@ class _ToggleButtonState extends State<ToggleButton> {
   @override
   void initState() {
     _active = widget.active;
-    // TODO: implement initState
     super.initState();
   }
 

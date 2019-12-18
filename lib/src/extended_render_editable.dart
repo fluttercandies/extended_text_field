@@ -36,17 +36,46 @@ const Offset _kFloatingCaretSizeIncrease = Offset(0.5, 1.0);
 // The corner radius of the floating cursor in pixels.
 const double _kFloatingCaretRadius = 1.0;
 
-/// Signature for the callback that reports when the user changes the selection
-/// (including the cursor location).
-///
-/// Used by [ExtendedRenderEditable.onSelectionChanged].
-typedef ExtendedSelectionChangedHandler = void Function(TextSelection selection,
-    ExtendedRenderEditable renderObject, SelectionChangedCause cause);
-
-/// Signature for the callback that reports when the caret location changes.
-///
-/// Used by [ExtendedRenderEditable.onCaretChanged].
-typedef ExtendedCaretChangedHandler = void Function(Rect caretRect);
+// Check if the given code unit is a white space or separator
+// character.
+//
+// Includes newline characters from ASCII and separators from the
+// [unicode separator category](https://www.compart.com/en/unicode/category/Zs)
+// (gspencergoog): replace when we expose this ICU information.
+bool _isWhitespace(int codeUnit) {
+  switch (codeUnit) {
+    case 0x9: // horizontal tab
+    case 0xA: // line feed
+    case 0xB: // vertical tab
+    case 0xC: // form feed
+    case 0xD: // carriage return
+    case 0x1C: // file separator
+    case 0x1D: // group separator
+    case 0x1E: // record separator
+    case 0x1F: // unit separator
+    case 0x20: // space
+    case 0xA0: // no-break space
+    case 0x1680: // ogham space mark
+    case 0x2000: // en quad
+    case 0x2001: // em quad
+    case 0x2002: // en space
+    case 0x2003: // em space
+    case 0x2004: // three-per-em space
+    case 0x2005: // four-er-em space
+    case 0x2006: // six-per-em space
+    case 0x2007: // figure space
+    case 0x2008: // punctuation space
+    case 0x2009: // thin space
+    case 0x200A: // hair space
+    case 0x202F: // narrow no-break space
+    case 0x205F: // medium mathematical space
+    case 0x3000: // ideographic space
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
 
 /// Displays some text in a scrollable container with a potentially blinking
 /// cursor and with gesture recognizers.
@@ -72,8 +101,7 @@ typedef ExtendedCaretChangedHandler = void Function(Rect caretRect);
 /// Keyboard handling, IME handling, scrolling, toggling the [showCursor] value
 /// to actually blink the cursor, and other features not mentioned above are the
 /// responsibility of higher layers and not handled by this object.
-class ExtendedRenderEditable extends ExtendedTextRenderBox
-    with ExtendedTextSelectionRenderObject {
+class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Creates a render object that implements the visual aspects of a text field.
   ///
   /// The [textAlign] argument must not be null. It defaults to [TextAlign.start].
@@ -96,6 +124,8 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     Color backgroundCursorColor,
     ValueNotifier<bool> showCursor,
     bool hasFocus,
+    @required LayerLink startHandleLayerLink,
+    @required LayerLink endHandleLayerLink,
     int maxLines = 1,
     int minLines,
     bool expands = false,
@@ -107,6 +137,9 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     this.onSelectionChanged,
     this.onCaretChanged,
     this.ignorePointer = false,
+    bool readOnly = false,
+    bool forceLine = true,
+    TextWidthBasis textWidthBasis = TextWidthBasis.parent,
     bool obscureText = false,
     Locale locale,
     double cursorWidth = 1.0,
@@ -125,6 +158,8 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
             'RenderEditable created without a textDirection.'),
         assert(maxLines == null || maxLines > 0),
         assert(minLines == null || minLines > 0),
+        assert(startHandleLayerLink != null),
+        assert(endHandleLayerLink != null),
         assert(
           (maxLines == null) || (minLines == null) || (maxLines >= minLines),
           'minLines can\'t be greater than maxLines',
@@ -137,10 +172,13 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
         assert(textScaleFactor != null),
         assert(offset != null),
         assert(ignorePointer != null),
+        assert(textWidthBasis != null),
         assert(paintCursorAboveText != null),
         assert(obscureText != null),
         assert(textSelectionDelegate != null),
         assert(cursorWidth != null && cursorWidth >= 0.0),
+        assert(readOnly != null),
+        assert(forceLine != null),
         assert(devicePixelRatio != null),
         _handleSpecialText = hasSpecialText(text),
         _textPainter = TextPainter(
@@ -150,6 +188,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
           textScaleFactor: textScaleFactor,
           locale: locale,
           strutStyle: strutStyle,
+          textWidthBasis: textWidthBasis,
 //              supportSpecialText && hasSpecialText(text) ? null : strutStyle,
         ),
         _cursorColor = cursorColor,
@@ -168,15 +207,14 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
         _floatingCursorAddedMargin = floatingCursorAddedMargin,
         _enableInteractiveSelection = enableInteractiveSelection,
         _devicePixelRatio = devicePixelRatio,
-        _obscureText = obscureText {
+        _startHandleLayerLink = startHandleLayerLink,
+        _endHandleLayerLink = endHandleLayerLink,
+        _obscureText = obscureText,
+        _readOnly = readOnly,
+        _forceLine = forceLine {
     assert(_showCursor != null);
     assert(!_showCursor.value || cursorColor != null);
     this.hasFocus = hasFocus ?? false;
-    _tap = TapGestureRecognizer(debugOwner: this)
-      ..onTapDown = _handleTapDown
-      ..onTap = _handleTap;
-    _longPress = LongPressGestureRecognizer(debugOwner: this)
-      ..onLongPress = _handleLongPress;
     addAll(children);
     extractPlaceholderSpans(text);
   }
@@ -191,12 +229,12 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   static const String obscuringCharacter = '•';
 
   /// Called when the selection changes.
-  ExtendedSelectionChangedHandler onSelectionChanged;
-
-  double _textLayoutLastWidth;
+  ///
+  /// If this is null, then selection changes will be ignored.
+  TextSelectionChangedHandler onSelectionChanged;
 
   /// Called during the paint phase when the caret location changes.
-  ExtendedCaretChangedHandler onCaretChanged;
+  CaretChangedHandler onCaretChanged;
 
   /// If true [handleEvent] does nothing and it's assumed that this
   /// renderer will be notified of input gestures via [handleTapDown],
@@ -205,12 +243,14 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   /// The default value of this property is false.
   bool ignorePointer;
 
-  /// Whether text is composed.
-  ///
-  /// Text is composed when user selects it for editing. The [TextSpan] will have
-  /// children with composing effect and leave text property to be null.
-  @visibleForTesting
-  bool get isComposingText => textSpanToActualText(text) == null;
+  /// {@macro flutter.widgets.text.DefaultTextStyle.textWidthBasis}
+  TextWidthBasis get textWidthBasis => _textPainter.textWidthBasis;
+  set textWidthBasis(TextWidthBasis value) {
+    assert(value != null);
+    if (_textPainter.textWidthBasis == value) return;
+    _textPainter.textWidthBasis = value;
+    markNeedsTextLayout();
+  }
 
   /// The pixel ratio of the current device.
   ///
@@ -289,7 +329,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
       handleSpecialText: handleSpecialText,
     );
 
-    // TODO(justinmc): https://github.com/flutter/flutter/issues/31495
+    // (justinmc): https://github.com/flutter/flutter/issues/31495
     // Check if the selection is visible with an approximation because a
     // difference between rounded and unrounded values causes the caret to be
     // reported as having a slightly (< 0.5) negative y offset. This rounding
@@ -318,314 +358,373 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   ///
   double _visibleRegionMinY = -_kCaretHeightOffset;
 
-  ///zmt
-  void _updateVisibleRegionMinY() {
-//    if (textSelectionDelegate.textEditingValue == null ||
-//        textSelectionDelegate.textEditingValue.text == null ||
-//        textSelectionDelegate.textEditingValue.selection == null ||
-//        _textPainter.text == null) return;
-//    List<TextBox> boxs = _textPainter.getBoxesForSelection(
-//        textSelectionDelegate.textEditingValue.selection.copyWith(
-//            baseOffset: 0,
-//            extentOffset: _textPainter.text.toPlainText().length));
-//    boxs.forEach((f) {
-//      _visibleRegionMinY = math.min(f.top, _visibleRegionMinY);
-//    });
-  }
+//   ///zmt
+//   void _updateVisibleRegionMinY() {
+// //    if (textSelectionDelegate.textEditingValue == null ||
+// //        textSelectionDelegate.textEditingValue.text == null ||
+// //        textSelectionDelegate.textEditingValue.selection == null ||
+// //        _textPainter.text == null) return;
+// //    List<TextBox> boxs = _textPainter.getBoxesForSelection(
+// //        textSelectionDelegate.textEditingValue.selection.copyWith(
+// //            baseOffset: 0,
+// //            extentOffset: _textPainter.text.toPlainText().length));
+// //    boxs.forEach((f) {
+// //      _visibleRegionMinY = math.min(f.top, _visibleRegionMinY);
+// //    });
+//   }
 
-  static const int _kLeftArrowCode = 21;
-  static const int _kRightArrowCode = 22;
-  static const int _kUpArrowCode = 19;
-  static const int _kDownArrowCode = 20;
-  static const int _kXKeyCode = 52;
-  static const int _kCKeyCode = 31;
-  static const int _kVKeyCode = 50;
-  static const int _kAKeyCode = 29;
-  static const int _kDelKeyCode = 112;
-
-  // The extent offset of the current selection
-  int _extentOffset = -1;
-
-  // The base offset of the current selection
-  int _baseOffset = -1;
-
-  // Holds the last location the user selected in the case that he selects all
-  // the way to the end or beginning of the field.
-  int _previousCursorLocation = -1;
+  // multiline text field when selecting using the keyboard.
+  int _cursorResetLocation = -1;
 
   // Whether we should reset the location of the cursor in the case the user
-  // selects all the way to the end or the beginning of a field.
-  bool _resetCursor = false;
+  // tries to select vertically past the end or beginning of the field. If they
+  // do, then we need to keep the old cursor location so that we can go back to
+  // it if they change their minds. Only used for resetting selection up and
+  // down in a multiline text field when selecting using the keyboard.
+  bool _wasSelectingVerticallyWithKeyboard = false;
 
-  static const int _kShiftMask =
-      1; // https://developer.android.com/reference/android/view/KeyEvent.html#META_SHIFT_ON
-  static const int _kControlMask = 1 <<
-      12; // https://developer.android.com/reference/android/view/KeyEvent.html#META_CTRL_ON
-
-  // Call through to onSelectionChanged only if the given nextSelection is
-  // different from the existing selection.
-  void _handlePotentialSelectionChange(
+  // Call through to onSelectionChanged.
+  void _handleSelectionChange(
     TextSelection nextSelection,
     SelectionChangedCause cause,
   ) {
-    if (nextSelection == selection) {
+    // Changes made by the keyboard can sometimes be "out of band" for listening
+    // components, so always send those events, even if we didn't think it
+    // changed.
+    if (nextSelection == selection && cause != SelectionChangedCause.keyboard) {
       return;
     }
-    onSelectionChanged(nextSelection, this, cause);
+    if (onSelectionChanged != null) {
+      onSelectionChanged(nextSelection, cause);
+    }
   }
 
-  // TODO(goderbauer): doesn't handle extended grapheme clusters with more than one Unicode scalar value (https://github.com/flutter/flutter/issues/13404).
+  static final Set<LogicalKeyboardKey> _movementKeys = <LogicalKeyboardKey>{
+    LogicalKeyboardKey.arrowRight,
+    LogicalKeyboardKey.arrowLeft,
+    LogicalKeyboardKey.arrowUp,
+    LogicalKeyboardKey.arrowDown,
+  };
+
+  static final Set<LogicalKeyboardKey> _shortcutKeys = <LogicalKeyboardKey>{
+    LogicalKeyboardKey.keyA,
+    LogicalKeyboardKey.keyC,
+    LogicalKeyboardKey.keyV,
+    LogicalKeyboardKey.keyX,
+    LogicalKeyboardKey.delete,
+  };
+
+  static final Set<LogicalKeyboardKey> _nonModifierKeys = <LogicalKeyboardKey>{
+    ..._shortcutKeys,
+    ..._movementKeys,
+  };
+
+  static final Set<LogicalKeyboardKey> _modifierKeys = <LogicalKeyboardKey>{
+    LogicalKeyboardKey.shift,
+    LogicalKeyboardKey.control,
+    LogicalKeyboardKey.alt,
+  };
+
+  static final Set<LogicalKeyboardKey> _macOsModifierKeys =
+      <LogicalKeyboardKey>{
+    LogicalKeyboardKey.shift,
+    LogicalKeyboardKey.meta,
+    LogicalKeyboardKey.alt,
+  };
+
+  static final Set<LogicalKeyboardKey> _interestingKeys = <LogicalKeyboardKey>{
+    ..._modifierKeys,
+    ..._macOsModifierKeys,
+    ..._nonModifierKeys,
+  };
+
+  // todo(goderbauer): doesn't handle extended grapheme clusters with more than one Unicode scalar value (https://github.com/flutter/flutter/issues/13404).
+  // This is because some of this code depends upon counting the length of the
+  // string using Unicode scalar values, rather than using the number of
+  // extended grapheme clusters (a.k.a. "characters" in the end user's mind).
   void _handleKeyEvent(RawKeyEvent keyEvent) {
-    // Only handle key events on Android.
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        break;
-      case TargetPlatform.iOS:
-      case TargetPlatform.fuchsia:
-      //case TargetPlatform.macOS:
-        return;
-    }
-    
+    if (keyEvent is! RawKeyDownEvent || onSelectionChanged == null) return;
+    final Set<LogicalKeyboardKey> keysPressed =
+        LogicalKeyboardKey.collapseSynonyms(RawKeyboard.instance.keysPressed);
+    final LogicalKeyboardKey key = keyEvent.logicalKey;
 
-    if (keyEvent is RawKeyUpEvent) return;
-
-    final RawKeyEventDataAndroid rawAndroidEvent = keyEvent.data;
-    final int pressedKeyCode = rawAndroidEvent.keyCode;
-    final int pressedKeyMetaState = rawAndroidEvent.metaState;
-
-    if (selection.isCollapsed) {
-      _extentOffset = selection.extentOffset;
-      _baseOffset = selection.baseOffset;
+    final bool isMacOS = keyEvent.data is RawKeyEventDataMacOs;
+    if (!_nonModifierKeys.contains(key) ||
+        keysPressed
+                .difference(isMacOS ? _macOsModifierKeys : _modifierKeys)
+                .length >
+            1 ||
+        keysPressed.difference(_interestingKeys).isNotEmpty) {
+      // If the most recently pressed key isn't a non-modifier key, or more than
+      // one non-modifier key is down, or keys other than the ones we're interested in
+      // are pressed, just ignore the keypress.
+      return;
     }
 
-    // Update current key states
-    final bool shift = pressedKeyMetaState & _kShiftMask > 0;
-    final bool ctrl = pressedKeyMetaState & _kControlMask > 0;
-
-    final bool rightArrow = pressedKeyCode == _kRightArrowCode;
-    final bool leftArrow = pressedKeyCode == _kLeftArrowCode;
-    final bool upArrow = pressedKeyCode == _kUpArrowCode;
-    final bool downArrow = pressedKeyCode == _kDownArrowCode;
-    final bool arrow = leftArrow || rightArrow || upArrow || downArrow;
-    final bool aKey = pressedKeyCode == _kAKeyCode;
-    final bool xKey = pressedKeyCode == _kXKeyCode;
-    final bool vKey = pressedKeyCode == _kVKeyCode;
-    final bool cKey = pressedKeyCode == _kCKeyCode;
-    final bool del = pressedKeyCode == _kDelKeyCode;
-
-    // We will only move select or more the caret if an arrow is pressed
-    if (arrow) {
-      int newOffset = _extentOffset;
-
-      // Because the user can use multiple keys to change how he selects
-      // the new offset variable is threaded through these four functions
-      // and potentially changes after each one.
-      if (ctrl)
-        newOffset = _handleControl(rightArrow, leftArrow, ctrl, newOffset);
-      newOffset =
-          _handleHorizontalArrows(rightArrow, leftArrow, shift, newOffset);
-      if (downArrow || upArrow)
-        newOffset = _handleVerticalArrows(upArrow, downArrow, shift, newOffset);
-      newOffset = _handleShift(rightArrow, leftArrow, shift, newOffset);
-
-      _extentOffset = newOffset;
-    } else if (ctrl && (xKey || vKey || cKey || aKey)) {
-      // _handleShortcuts depends on being started in the same stack invocation as the _handleKeyEvent method
-      _handleShortcuts(pressedKeyCode);
+    final bool isWordModifierPressed =
+        isMacOS ? keyEvent.isAltPressed : keyEvent.isControlPressed;
+    final bool isLineModifierPressed =
+        isMacOS ? keyEvent.isMetaPressed : keyEvent.isAltPressed;
+    final bool isShortcutModifierPressed =
+        isMacOS ? keyEvent.isMetaPressed : keyEvent.isControlPressed;
+    if (_movementKeys.contains(key)) {
+      _handleMovement(key,
+          wordModifier: isWordModifierPressed,
+          lineModifier: isLineModifierPressed,
+          shift: keyEvent.isShiftPressed);
+    } else if (isShortcutModifierPressed && _shortcutKeys.contains(key)) {
+      // _handleShortcuts depends on being started in the same stack invocation
+      // as the _handleKeyEvent method
+      _handleShortcuts(key);
+    } else if (key == LogicalKeyboardKey.delete) {
+      _handleDelete();
     }
-    if (del) _handleDelete();
   }
 
-  // Handles full word traversal using control.
-  int _handleControl(
-      bool rightArrow, bool leftArrow, bool ctrl, int newOffset) {
-    // If control is pressed, we will decide which way to look for a word
-    // based on which arrow is pressed.
-    if (leftArrow && _extentOffset > 2) {
-      final TextSelection textSelection =
-          _selectWordAtOffset(TextPosition(offset: _extentOffset - 2));
-      newOffset = textSelection.baseOffset + 1;
-    } else if (rightArrow &&
-        _extentOffset < textSpanToActualText(text).length - 2) {
-      final TextSelection textSelection =
-          _selectWordAtOffset(TextPosition(offset: _extentOffset + 1));
-      newOffset = textSelection.extentOffset - 1;
+  void _handleMovement(
+    LogicalKeyboardKey key, {
+    @required bool wordModifier,
+    @required bool lineModifier,
+    @required bool shift,
+  }) {
+    if (wordModifier && lineModifier) {
+      // If both modifiers are down, nothing happens on any of the platforms.
+      return;
     }
-    return newOffset;
-  }
 
-  int _handleHorizontalArrows(
-      bool rightArrow, bool leftArrow, bool shift, int newOffset) {
-    // Set the new offset to be +/- 1 depending on which arrow is pressed
-    // If shift is down, we also want to update the previous cursor location
-    if (rightArrow && _extentOffset < textSpanToActualText(text).length) {
-      newOffset += 1;
-      if (shift) _previousCursorLocation += 1;
-    }
-    if (leftArrow && _extentOffset > 0) {
-      newOffset -= 1;
-      if (shift) _previousCursorLocation -= 1;
-    }
-    return newOffset;
-  }
+    TextSelection newSelection = selection;
 
-  // Handles moving the cursor vertically as well as taking care of the
-  // case where the user moves the cursor to the end or beginning of the text
-  // and then back up or down.
-  int _handleVerticalArrows(
-      bool upArrow, bool downArrow, bool shift, int newOffset) {
-    // The caret offset gives a location in the upper left hand corner of
-    // the caret so the middle of the line above is a half line above that
-    // point and the line below is 1.5 lines below that point.
-    final double plh = _textPainter.preferredLineHeight;
-    final double verticalOffset = upArrow ? -0.5 * plh : 1.5 * plh;
+    final bool rightArrow = key == LogicalKeyboardKey.arrowRight;
+    final bool leftArrow = key == LogicalKeyboardKey.arrowLeft;
+    final bool upArrow = key == LogicalKeyboardKey.arrowUp;
+    final bool downArrow = key == LogicalKeyboardKey.arrowDown;
 
-    final Offset caretOffset = _textPainter.getOffsetForCaret(
-        TextPosition(offset: _extentOffset), _caretPrototype);
-    final Offset caretOffsetTranslated =
-        caretOffset.translate(0.0, verticalOffset);
-    final TextPosition position =
-        _textPainter.getPositionForOffset(caretOffsetTranslated);
-
-    // To account for the possibility where the user vertically highlights
-    // all the way to the top or bottom of the text, we hold the previous
-    // cursor location. This allows us to restore to this position in the
-    // case that the user wants to unhighlight some text.
-    if (position.offset == _extentOffset) {
-      if (downArrow)
-        newOffset = textSpanToActualText(text).length;
-      else if (upArrow) newOffset = 0;
-      _resetCursor = shift;
-    } else if (_resetCursor && shift) {
-      newOffset = _previousCursorLocation;
-      _resetCursor = false;
-    } else {
-      newOffset = position.offset;
-      _previousCursorLocation = newOffset;
-    }
-    return newOffset;
-  }
-
-  // Handles the selection of text or removal of the selection and placing
-  // of the caret.
-  int _handleShift(bool rightArrow, bool leftArrow, bool shift, int newOffset) {
-    if (onSelectionChanged == null) return newOffset;
-    // In the text_selection class, a TextSelection is defined such that the
-    // base offset is always less than the extent offset.
-    if (shift) {
-      if (_baseOffset < newOffset) {
-        _handlePotentialSelectionChange(
-          TextSelection(
-            baseOffset: _baseOffset,
-            extentOffset: newOffset,
-          ),
-          SelectionChangedCause.keyboard,
-        );
-      } else {
-        _handlePotentialSelectionChange(
-          TextSelection(
-            baseOffset: newOffset,
-            extentOffset: _baseOffset,
-          ),
-          SelectionChangedCause.keyboard,
-        );
+    // Find the previous non-whitespace character
+    int previousNonWhitespace(int extent) {
+      int result = math.max(extent - 1, 0);
+      while (result > 0 && _isWhitespace(plainText.codeUnitAt(result))) {
+        result -= 1;
       }
-    } else {
+      return result;
+    }
+
+    int nextNonWhitespace(int extent) {
+      int result = math.min(extent + 1, plainText.length);
+      while (result < plainText.length &&
+          _isWhitespace(plainText.codeUnitAt(result))) {
+        result += 1;
+      }
+      return result;
+    }
+
+    if ((rightArrow || leftArrow) && !(rightArrow && leftArrow)) {
+      // Jump to begin/end of word.
+      if (wordModifier) {
+        // If control/option is pressed, we will decide which way to look for a
+        // word based on which arrow is pressed.
+        if (leftArrow) {
+          // When going left, we want to skip over any whitespace before the word,
+          // so we go back to the first non-whitespace before asking for the word
+          // boundary, since _selectWordAtOffset finds the word boundaries without
+          // including whitespace.
+          final int startPoint =
+              previousNonWhitespace(newSelection.extentOffset);
+          final TextSelection textSelection =
+              selectWordAtOffset(TextPosition(offset: startPoint));
+          newSelection =
+              newSelection.copyWith(extentOffset: textSelection.baseOffset);
+        } else {
+          // When going right, we want to skip over any whitespace after the word,
+          // so we go forward to the first non-whitespace character before asking
+          // for the word bounds, since _selectWordAtOffset finds the word
+          // boundaries without including whitespace.
+          final int startPoint = nextNonWhitespace(newSelection.extentOffset);
+          final TextSelection textSelection =
+              selectWordAtOffset(TextPosition(offset: startPoint));
+          newSelection =
+              newSelection.copyWith(extentOffset: textSelection.extentOffset);
+        }
+      } else if (lineModifier) {
+        // If control/command is pressed, we will decide which way to expand to
+        // the beginning/end of the line based on which arrow is pressed.
+        if (leftArrow) {
+          // When going left, we want to skip over any whitespace before the line,
+          // so we go back to the first non-whitespace before asking for the line
+          // bounds, since _selectLineAtOffset finds the line boundaries without
+          // including whitespace (like the newline).
+          final int startPoint =
+              previousNonWhitespace(newSelection.extentOffset);
+          final TextSelection textSelection =
+              _selectLineAtOffset(TextPosition(offset: startPoint));
+          newSelection =
+              newSelection.copyWith(extentOffset: textSelection.baseOffset);
+        } else {
+          // When going right, we want to skip over any whitespace after the line,
+          // so we go forward to the first non-whitespace character before asking
+          // for the line bounds, since _selectLineAtOffset finds the line
+          // boundaries without including whitespace (like the newline).
+          final int startPoint = nextNonWhitespace(newSelection.extentOffset);
+          final TextSelection textSelection =
+              _selectLineAtOffset(TextPosition(offset: startPoint));
+          newSelection =
+              newSelection.copyWith(extentOffset: textSelection.extentOffset);
+        }
+      } else {
+        if (rightArrow && newSelection.extentOffset < plainText.length) {
+          newSelection = newSelection.copyWith(
+              extentOffset: newSelection.extentOffset + 1);
+          if (shift) {
+            _cursorResetLocation += 1;
+          }
+        } else if (leftArrow && newSelection.extentOffset > 0) {
+          newSelection = newSelection.copyWith(
+              extentOffset: newSelection.extentOffset - 1);
+          if (shift) {
+            _cursorResetLocation -= 1;
+          }
+        }
+      }
+    }
+
+    // Handles moving the cursor vertically as well as taking care of the
+    // case where the user moves the cursor to the end or beginning of the text
+    // and then back up or down.
+    if (downArrow || upArrow) {
+      // The caret offset gives a location in the upper left hand corner of
+      // the caret so the middle of the line above is a half line above that
+      // point and the line below is 1.5 lines below that point.
+      final double preferredLineHeight = _textPainter.preferredLineHeight;
+      final double verticalOffset =
+          upArrow ? -0.5 * preferredLineHeight : 1.5 * preferredLineHeight;
+
+      final Offset caretOffset = _textPainter.getOffsetForCaret(
+          TextPosition(offset: newSelection.extentOffset), _caretPrototype);
+      final Offset caretOffsetTranslated =
+          caretOffset.translate(0.0, verticalOffset);
+      final TextPosition position =
+          _textPainter.getPositionForOffset(caretOffsetTranslated);
+
+      // To account for the possibility where the user vertically highlights
+      // all the way to the top or bottom of the text, we hold the previous
+      // cursor location. This allows us to restore to this position in the
+      // case that the user wants to unhighlight some text.
+      if (position.offset == newSelection.extentOffset) {
+        if (downArrow) {
+          newSelection = newSelection.copyWith(extentOffset: plainText.length);
+        } else if (upArrow) {
+          newSelection = newSelection.copyWith(extentOffset: 0);
+        }
+        _wasSelectingVerticallyWithKeyboard = shift;
+      } else if (_wasSelectingVerticallyWithKeyboard && shift) {
+        newSelection =
+            newSelection.copyWith(extentOffset: _cursorResetLocation);
+        _wasSelectingVerticallyWithKeyboard = false;
+      } else {
+        newSelection = newSelection.copyWith(extentOffset: position.offset);
+        _cursorResetLocation = newSelection.extentOffset;
+      }
+    }
+
+    // Just place the collapsed selection at the end or beginning of the region
+    // if shift isn't down.
+    if (!shift) {
       // We want to put the cursor at the correct location depending on which
       // arrow is used while there is a selection.
+      int newOffset = newSelection.extentOffset;
       if (!selection.isCollapsed) {
-        if (leftArrow)
-          newOffset = _baseOffset < _extentOffset ? _baseOffset : _extentOffset;
-        else if (rightArrow)
-          newOffset = _baseOffset > _extentOffset ? _baseOffset : _extentOffset;
+        if (leftArrow) {
+          newOffset = newSelection.baseOffset < newSelection.extentOffset
+              ? newSelection.baseOffset
+              : newSelection.extentOffset;
+        } else if (rightArrow) {
+          newOffset = newSelection.baseOffset > newSelection.extentOffset
+              ? newSelection.baseOffset
+              : newSelection.extentOffset;
+        }
       }
-      _handlePotentialSelectionChange(
-        TextSelection.fromPosition(TextPosition(offset: newOffset)),
-        SelectionChangedCause.keyboard,
-      );
+      newSelection =
+          TextSelection.fromPosition(TextPosition(offset: newOffset));
     }
-    return newOffset;
+
+    // Update the text selection delegate so that the engine knows what we did.
+    textSelectionDelegate.textEditingValue = textSelectionDelegate
+        .textEditingValue
+        .copyWith(selection: newSelection);
+    _handleSelectionChange(
+      newSelection,
+      SelectionChangedCause.keyboard,
+    );
   }
 
   // Handles shortcut functionality including cut, copy, paste and select all
-  // using control + (X, C, V, A).
-  Future<void> _handleShortcuts(int pressedKeyCode) async {
-    switch (pressedKeyCode) {
-      case _kCKeyCode:
-        if (!selection.isCollapsed) {
-          Clipboard.setData(ClipboardData(
-              text: selection.textInside(textSpanToActualText(text))));
-        }
-        break;
-      case _kXKeyCode:
-        if (!selection.isCollapsed) {
-          var actualText = textSpanToActualText(text);
-          Clipboard.setData(
-              ClipboardData(text: selection.textInside(actualText)));
-          textSelectionDelegate.textEditingValue = TextEditingValue(
-            text: selection.textBefore(actualText) +
-                selection.textAfter(actualText),
-            selection: TextSelection.collapsed(offset: selection.start),
-          );
-        }
-        break;
-      case _kVKeyCode:
-        // Snapshot the input before using `await`.
-        // See https://github.com/flutter/flutter/issues/11427
-        final TextEditingValue value = textSelectionDelegate.textEditingValue;
-        final ClipboardData data =
-            await Clipboard.getData(Clipboard.kTextPlain);
-        if (data != null) {
-          textSelectionDelegate.textEditingValue = TextEditingValue(
-            text: value.selection.textBefore(value.text) +
-                data.text +
-                value.selection.textAfter(value.text),
-            selection: TextSelection.collapsed(
-                offset: value.selection.start + data.text.length),
-          );
-        }
-        break;
-      case _kAKeyCode:
-        _baseOffset = 0;
-        _extentOffset = textSelectionDelegate.textEditingValue.text.length;
-        _handlePotentialSelectionChange(
-          TextSelection(
-            baseOffset: 0,
-            extentOffset: textSelectionDelegate.textEditingValue.text.length,
-          ),
-          SelectionChangedCause.keyboard,
+  // using control/command + (X, C, V, A).
+  Future<void> _handleShortcuts(LogicalKeyboardKey key) async {
+    assert(_shortcutKeys.contains(key), 'shortcut key $key not recognized.');
+    if (key == LogicalKeyboardKey.keyC) {
+      if (!selection.isCollapsed) {
+        Clipboard.setData(ClipboardData(text: selection.textInside(plainText)));
+      }
+      return;
+    }
+    if (key == LogicalKeyboardKey.keyX) {
+      if (!selection.isCollapsed) {
+        Clipboard.setData(ClipboardData(text: selection.textInside(plainText)));
+        textSelectionDelegate.textEditingValue = TextEditingValue(
+          text:
+              selection.textBefore(plainText) + selection.textAfter(plainText),
+          selection: TextSelection.collapsed(offset: selection.start),
         );
-        break;
-      default:
-        assert(false);
+      }
+      return;
+    }
+    if (key == LogicalKeyboardKey.keyV) {
+      // Snapshot the input before using `await`.
+      // See https://github.com/flutter/flutter/issues/11427
+      final TextEditingValue value = textSelectionDelegate.textEditingValue;
+      final ClipboardData data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data != null) {
+        textSelectionDelegate.textEditingValue = TextEditingValue(
+          text: value.selection.textBefore(value.text) +
+              data.text +
+              value.selection.textAfter(value.text),
+          selection: TextSelection.collapsed(
+              offset: value.selection.start + data.text.length),
+        );
+      }
+      return;
+    }
+    if (key == LogicalKeyboardKey.keyA) {
+      _handleSelectionChange(
+        selection.copyWith(
+          baseOffset: 0,
+          extentOffset: textSelectionDelegate.textEditingValue.text.length,
+        ),
+        SelectionChangedCause.keyboard,
+      );
+      return;
     }
   }
 
   void _handleDelete() {
-    var actualText = textSpanToActualText(text);
-
-    if (selection.textAfter(actualText).isNotEmpty) {
+    if (selection.textAfter(plainText).isNotEmpty) {
       textSelectionDelegate.textEditingValue = TextEditingValue(
-        text: selection.textBefore(actualText) +
-            selection.textAfter(actualText).substring(1),
+        text: selection.textBefore(plainText) +
+            selection.textAfter(plainText).substring(1),
         selection: TextSelection.collapsed(offset: selection.start),
       );
     } else {
       textSelectionDelegate.textEditingValue = TextEditingValue(
-        text: selection.textBefore(actualText),
+        text: selection.textBefore(plainText),
         selection: TextSelection.collapsed(offset: selection.start),
       );
     }
   }
 
-  /// Marks the render object as needing to be laid out again and have its text
-  /// metrics recomputed.
-  ///
-  /// Implies [markNeedsLayout].
-  @protected
-  void markNeedsTextLayout() {
-    _textLayoutLastWidth = null;
-    markNeedsLayout();
+  // Retuns a cached plain text version of the text in the painter.
+  String _cachedPlainText;
+  String get plainText {
+    _cachedPlainText ??= textSpanToActualText(_textPainter.text);
+    return _cachedPlainText;
   }
 
   /// The text to display.
@@ -634,6 +733,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   set text(InlineSpan value) {
     if (_textPainter.text == value) return;
     _textPainter.text = value;
+    _cachedPlainText = null;
     extractPlaceholderSpans(value);
     _handleSpecialText = hasSpecialText(value);
     markNeedsTextLayout();
@@ -648,7 +748,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     assert(value != null);
     if (_textPainter.textAlign == value) return;
     _textPainter.textAlign = value;
-    markNeedsPaint();
+    markNeedsTextLayout();
   }
 
   /// The directionality of the text.
@@ -752,6 +852,26 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     markNeedsSemanticsUpdate();
   }
 
+  /// Whether this rendering object will take a full line regardless the text width.
+  bool get forceLine => _forceLine;
+  bool _forceLine = false;
+  set forceLine(bool value) {
+    assert(value != null);
+    if (_forceLine == value) return;
+    _forceLine = value;
+    markNeedsLayout();
+  }
+
+  /// Whether this rendering object is read only.
+  bool get readOnly => _readOnly;
+  bool _readOnly = false;
+  set readOnly(bool value) {
+    assert(value != null);
+    if (_readOnly == value) return;
+    _readOnly = value;
+    markNeedsSemanticsUpdate();
+  }
+
   /// The maximum number of lines for the text to span, wrapping if necessary.
   ///
   /// If this is 1 (the default), the text will not wrap, but will extend
@@ -823,7 +943,15 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   TextSelection _selection;
   set selection(TextSelection value) {
     if (_selection == value) return;
-    _selection = value;
+    // Use the _fallbackAffinity when the set selection has a null
+    // affinity. This happens when the platform does not supply affinity,
+    // in which case using the fallback affinity computed from dart:ui will
+    // be superior to simply defaulting to TextAffinity.downstream.
+    if (value.affinity == null) {
+      _selection = value.copyWith(affinity: fallbackAffinity);
+    } else {
+      _selection = value;
+    }
     _selectionRects = null;
     markNeedsPaint();
     markNeedsSemanticsUpdate();
@@ -893,6 +1021,30 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     markNeedsPaint();
   }
 
+  /// The [LayerLink] of start selection handle.
+  ///
+  /// [RenderEditable] is responsible for calculating the [Offset] of this
+  /// [LayerLink], which will be used as [CompositedTransformTarget] of start handle.
+  LayerLink get startHandleLayerLink => _startHandleLayerLink;
+  LayerLink _startHandleLayerLink;
+  set startHandleLayerLink(LayerLink value) {
+    if (_startHandleLayerLink == value) return;
+    _startHandleLayerLink = value;
+    markNeedsPaint();
+  }
+
+  /// The [LayerLink] of end selection handle.
+  ///
+  /// [RenderEditable] is responsible for calculating the [Offset] of this
+  /// [LayerLink], which will be used as [CompositedTransformTarget] of end handle.
+  LayerLink get endHandleLayerLink => _endHandleLayerLink;
+  LayerLink _endHandleLayerLink;
+  set endHandleLayerLink(LayerLink value) {
+    if (_endHandleLayerLink == value) return;
+    _endHandleLayerLink = value;
+    markNeedsPaint();
+  }
+
   /// The padding applied to text field. Used to determine the bounds when
   /// moving the floating cursor.
   ///
@@ -938,18 +1090,27 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     return enableInteractiveSelection ?? !obscureText;
   }
 
+  /// The maximum amount the text is allowed to scroll.
+  ///
+  /// This value is only valid after layout and can change as additional
+  /// text is entered or removed in order to accommodate expanding when
+  /// [expands] is set to true.
+  double get maxScrollExtent => _maxScrollExtent;
+  double _maxScrollExtent = 0;
+
+  double get _caretMargin => _kCaretGap + cursorWidth;
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
     super.describeSemanticsConfiguration(config);
 
     config
-      ..value = obscureText
-          ? obscuringCharacter * text.toPlainText().length
-          : text.toPlainText()
+      ..value = obscureText ? obscuringCharacter * plainText.length : plainText
       ..isObscured = obscureText
+      ..isMultiline = _isMultiline
       ..textDirection = textDirection
       ..isFocused = hasFocus
-      ..isTextField = true;
+      ..isTextField = true
+      ..isReadOnly = readOnly;
 
     if (hasFocus && selectionEnabled)
       config.onSetSelection = _handleSetSelection;
@@ -972,7 +1133,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   }
 
   void _handleSetSelection(TextSelection selection) {
-    _handlePotentialSelectionChange(selection, SelectionChangedCause.keyboard);
+    _handleSelectionChange(selection, SelectionChangedCause.keyboard);
   }
 
   void _handleMoveCursorForwardByCharacter(bool extentSelection) {
@@ -981,7 +1142,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     if (extentOffset == null) return;
     final int baseOffset =
         !extentSelection ? extentOffset : _selection.baseOffset;
-    _handlePotentialSelectionChange(
+    _handleSelectionChange(
       TextSelection(baseOffset: baseOffset, extentOffset: extentOffset),
       SelectionChangedCause.keyboard,
     );
@@ -993,7 +1154,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     if (extentOffset == null) return;
     final int baseOffset =
         !extentSelection ? extentOffset : _selection.baseOffset;
-    _handlePotentialSelectionChange(
+    _handleSelectionChange(
       TextSelection(baseOffset: baseOffset, extentOffset: extentOffset),
       SelectionChangedCause.keyboard,
     );
@@ -1007,7 +1168,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     if (nextWord == null) return;
     final int baseOffset =
         extentSelection ? _selection.baseOffset : nextWord.start;
-    _handlePotentialSelectionChange(
+    _handleSelectionChange(
       TextSelection(
         baseOffset: baseOffset,
         extentOffset: nextWord.start,
@@ -1024,12 +1185,11 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     if (previousWord == null) return;
     final int baseOffset =
         extentSelection ? _selection.baseOffset : previousWord.start;
-    onSelectionChanged(
+    _handleSelectionChange(
       TextSelection(
         baseOffset: baseOffset,
         extentOffset: previousWord.start,
       ),
-      this,
       SelectionChangedCause.keyboard,
     );
   }
@@ -1058,42 +1218,14 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   // Check if the given text range only contains white space or separator
   // characters.
   //
-  // newline characters from ascii and separators from the
+  // Includes newline characters from ASCII and separators from the
   // [unicode separator category](https://www.compart.com/en/unicode/category/Zs)
-  // TODO(jonahwilliams): replace when we expose this ICU information.
+  // todo(jonahwilliams): replace when we expose this ICU information.
   bool _onlyWhitespace(TextRange range) {
     for (int i = range.start; i < range.end; i++) {
       final int codeUnit = text.codeUnitAt(i);
-      switch (codeUnit) {
-        case 0x9: // horizontal tab
-        case 0xA: // line feed
-        case 0xB: // vertical tab
-        case 0xC: // form feed
-        case 0xD: // carriage return
-        case 0x1C: // file separator
-        case 0x1D: // group separator
-        case 0x1E: // record separator
-        case 0x1F: // unit separator
-        case 0x20: // space
-        case 0xA0: // no-break space
-        case 0x1680: // ogham space mark
-        case 0x2000: // en quad
-        case 0x2001: // em quad
-        case 0x2002: // en space
-        case 0x2003: // em space
-        case 0x2004: // three-per-em space
-        case 0x2005: // four-er-em space
-        case 0x2006: // six-per-em space
-        case 0x2007: // figure space
-        case 0x2008: // punctuation space
-        case 0x2009: // thin space
-        case 0x200A: // hair space
-        case 0x202F: // narrow no-break space
-        case 0x205F: // medium mathematical space
-        case 0x3000: // ideographic space
-          break;
-        default:
-          return false;
+      if (!_isWhitespace(codeUnit)) {
+        return false;
       }
     }
     return true;
@@ -1102,12 +1234,19 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
+    // _tap = TapGestureRecognizer(debugOwner: this)
+    //   ..onTapDown = _handleTapDown
+    //   ..onTap = _handleTap;
+    // _longPress = LongPressGestureRecognizer(debugOwner: this)
+    //   ..onLongPress = _handleLongPress;
     _offset.addListener(markNeedsPaint);
     _showCursor.addListener(markNeedsPaint);
   }
 
   @override
   void detach() {
+    // _tap.dispose();
+    // _longPress.dispose();
     _offset.removeListener(markNeedsPaint);
     _showCursor.removeListener(markNeedsPaint);
     if (_listenerAttached) RawKeyboard.instance.removeListener(_handleKeyEvent);
@@ -1118,7 +1257,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
   Axis get _viewportAxis => _isMultiline ? Axis.vertical : Axis.horizontal;
 
-  Offset get _paintOffset {
+  Offset get paintOffset {
     switch (_viewportAxis) {
       case Axis.horizontal:
         return Offset(-offset.pixels, 0.0);
@@ -1150,12 +1289,10 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     return null;
   }
 
-  double _maxScrollExtent = 0;
-
   // We need to check the paint offset here because during animation, the start of
   // the text may position outside the visible region even when the text fits.
   bool get _hasVisualOverflow =>
-      _maxScrollExtent > 0 || _paintOffset != Offset.zero;
+      _maxScrollExtent > 0 || paintOffset != Offset.zero;
 
   /// Returns the local coordinates of the endpoints of the given selection.
   ///
@@ -1171,7 +1308,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   ///    a [TextPosition] rather than a [TextSelection].
   List<TextSelectionPoint> getEndpointsForSelection(TextSelection selection) {
     assert(constraints != null);
-    _layoutText(constraints.maxWidth);
+    layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
 
     //final Offset paintOffset = _paintOffset;
     ///zmt
@@ -1183,16 +1320,17 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
           convertTextInputSelectionToTextPainterSelection(text, selection);
     }
     if (selection.isCollapsed) {
-      // TODO(mpcomplete): This doesn't work well at an RTL/LTR boundary.
+      // todo(mpcomplete): This doesn't work well at an RTL/LTR boundary.
 
       double caretHeight;
       ValueChanged<double> caretHeightCallBack = (value) {
         caretHeight = value;
       };
+
       final Offset caretOffset = getCaretOffset(
         TextPosition(
             offset: textPainterSelection.extentOffset,
-            affinity: selection.affinity),
+            affinity: selection.extent.affinity),
         caretHeightCallBack: caretHeightCallBack,
         effectiveOffset: effectiveOffset,
         caretPrototype: _caretPrototype,
@@ -1226,8 +1364,8 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   ///  * [TextPainter.getPositionForOffset], which is the equivalent method
   ///    for a [TextPainter] object.
   TextPosition getPositionForPoint(Offset globalPosition) {
-    _layoutText(constraints.maxWidth);
-    globalPosition += -_paintOffset;
+    layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
+    globalPosition += -paintOffset;
     return _textPainter.getPositionForOffset(globalToLocal(globalPosition));
   }
 
@@ -1243,12 +1381,12 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   ///  * [TextPainter.getOffsetForCaret], the equivalent method for a
   ///    [TextPainter] object.
   Rect getLocalRectForCaret(TextPosition caretPosition) {
-    _layoutText(constraints.maxWidth);
+    layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     final Offset caretOffset =
         _textPainter.getOffsetForCaret(caretPosition, _caretPrototype);
     // This rect is the same as _caretPrototype but without the vertical padding.
     Rect rect = Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight)
-        .shift(caretOffset + _paintOffset);
+        .shift(caretOffset + paintOffset);
     // Add additional cursor offset (generally only if on iOS).
     if (_cursorOffset != null) rect = rect.shift(_cursorOffset);
 
@@ -1272,7 +1410,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     final bool minLimited = minLines != null && minLines > 1;
     final bool maxLimited = maxLines != null;
     if (minLimited || maxLimited) {
-      _layoutText(width);
+      layoutText(maxWidth: width);
       if (minLimited && _textPainter.height < preferredLineHeight * minLines) {
         return preferredLineHeight * minLines;
       }
@@ -1283,7 +1421,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
     // Set the height based on the content
     if (width == double.infinity) {
-      final String text = _textPainter.text.toPlainText();
+      final String text = plainText;
       int lines = 1;
       for (int index = 0; index < text.length; index += 1) {
         if (text.codeUnitAt(index) == 0x0A) // count explicit line breaks
@@ -1291,56 +1429,18 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
       }
       return preferredLineHeight * lines;
     }
-    _layoutText(width);
+    layoutText(maxWidth: width);
     return math.max(preferredLineHeight, _textPainter.height);
   }
 
   @override
   double computeDistanceToActualBaseline(TextBaseline baseline) {
-    _layoutText(constraints.maxWidth);
+    layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     return _textPainter.computeDistanceToActualBaseline(baseline);
   }
 
   @override
   bool hitTestSelf(Offset position) => true;
-
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
-    RenderBox child = firstChild;
-    int childIndex = 0;
-    while (child != null &&
-        childIndex < _textPainter.inlinePlaceholderBoxes.length) {
-      final TextParentData textParentData = child.parentData;
-      final Matrix4 transform = Matrix4.translationValues(
-          textParentData.offset.dx + _effectiveOffset.dx,
-          textParentData.offset.dy + _effectiveOffset.dy,
-          0.0)
-        ..scale(
-            textParentData.scale, textParentData.scale, textParentData.scale);
-      final bool isHit = result.addWithPaintTransform(
-        transform: transform,
-        position: position,
-        hitTest: (BoxHitTestResult result, Offset transformed) {
-          assert(() {
-            final Offset manualPosition =
-                (position - textParentData.offset - _effectiveOffset) /
-                    textParentData.scale;
-            return (transformed.dx - manualPosition.dx).abs() <
-                    precisionErrorTolerance &&
-                (transformed.dy - manualPosition.dy).abs() <
-                    precisionErrorTolerance;
-          }());
-          return child.hitTest(result, position: transformed);
-        },
-      );
-      if (isHit) {
-        return true;
-      }
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    return false;
-  }
 
   TapGestureRecognizer _tap;
   LongPressGestureRecognizer _longPress;
@@ -1355,22 +1455,10 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     }
   }
 
-  Offset _lastTapDownPosition;
-
-  /// If [ignorePointer] is false (the default) then this method is called by
-  /// the internal gesture recognizer's [TapGestureRecognizer.onTapDown]
-  /// callback.
-  ///
-  /// When [ignorePointer] is true, an ancestor widget must respond to tap
-  /// down events by calling this method.
-  void handleTapDown(TapDownDetails details) {
-    _lastTapDownPosition = details.globalPosition;
-  }
-
-  void _handleTapDown(TapDownDetails details) {
-    assert(!ignorePointer);
-    handleTapDown(details);
-  }
+  // void _handleTapDown(TapDownDetails details) {
+  //   assert(!ignorePointer);
+  //   handleTapDown(details);
+  // }
 
   /// If [ignorePointer] is false (the default) then this method is called by
   /// the internal gesture recognizer's [TapGestureRecognizer.onTap]
@@ -1382,10 +1470,10 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     selectPosition(cause: SelectionChangedCause.tap);
   }
 
-  void _handleTap() {
-    assert(!ignorePointer);
-    handleTap();
-  }
+  // void _handleTap() {
+  //   assert(!ignorePointer);
+  //   handleTap();
+  // }
 
   /// If [ignorePointer] is false (the default) then this method is called by
   /// the internal gesture recognizer's [DoubleTapGestureRecognizer.onDoubleTap]
@@ -1407,158 +1495,27 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     selectWord(cause: SelectionChangedCause.longPress);
   }
 
-  void _handleLongPress() {
-    assert(!ignorePointer);
-    handleLongPress();
-  }
+  // void _handleLongPress() {
+  //   assert(!ignorePointer);
+  //   handleLongPress();
+  // }
 
-  /// Move selection to the location of the last tap down.
-  ///
-  /// {@template flutter.rendering.editable.select}
-  /// This method is mainly used to translatef user inputs in global positions
-  /// into a [TextSelection]. When used in conjunction with a [EditableText],
-  /// the selection change is fed back into [TextEditingController.selection].
-  ///
-  /// If you have a [TextEditingController], it's generally easier to
-  /// programmatically manipulate its `value` or `selection` directly.
-  /// {@endtemplate}
-  void selectPosition({@required SelectionChangedCause cause}) {
-    selectPositionAt(from: _lastTapDownPosition, cause: cause);
-  }
-
-  /// Select text between the global positions [from] and [to].
-  void selectPositionAt(
-      {@required Offset from,
-      Offset to,
-      @required SelectionChangedCause cause}) {
-    assert(cause != null);
-    assert(from != null);
-    _layoutText(constraints.maxWidth);
-    if (onSelectionChanged != null) {
-      TextPosition fromPosition =
-          _textPainter.getPositionForOffset(globalToLocal(from - _paintOffset));
-      TextPosition toPosition = to == null
-          ? null
-          : _textPainter.getPositionForOffset(globalToLocal(to - _paintOffset));
-
-      //zmt
-      if (handleSpecialText) {
-        fromPosition =
-            convertTextPainterPostionToTextInputPostion(text, fromPosition);
-        toPosition =
-            convertTextPainterPostionToTextInputPostion(text, toPosition);
-      }
-
-      int baseOffset = fromPosition.offset;
-      int extentOffset = fromPosition.offset;
-
-      if (toPosition != null) {
-        baseOffset = math.min(fromPosition.offset, toPosition.offset);
-        extentOffset = math.max(fromPosition.offset, toPosition.offset);
-      }
-
-      final TextSelection newSelection = TextSelection(
-        baseOffset: baseOffset,
-        extentOffset: extentOffset,
-        affinity: fromPosition.affinity,
-      );
-      // Call [onSelectionChanged] only when the selection actually changed.
-      if (newSelection != _selection) {
-        _handlePotentialSelectionChange(newSelection, cause);
-      }
-    }
-  }
-
-  /// Select a word around the location of the last tap down.
-  ///
-  /// {@macro flutter.rendering.editable.select}
-  void selectWord({@required SelectionChangedCause cause}) {
-    selectWordsInRange(from: _lastTapDownPosition, cause: cause);
-  }
-
-  /// Selects the set words of a paragraph in a given range of global positions.
-  ///
-  /// The first and last endpoints of the selection will always be at the
-  /// beginning and end of a word respectively.
-  ///
-  /// {@macro flutter.rendering.editable.select}
-  void selectWordsInRange(
-      {@required Offset from,
-      Offset to,
-      @required SelectionChangedCause cause}) {
-    assert(cause != null);
-    assert(from != null);
-    _layoutText(constraints.maxWidth);
-    if (onSelectionChanged != null) {
-      final TextPosition firstPosition =
-          _textPainter.getPositionForOffset(globalToLocal(from - _paintOffset));
-      final TextSelection firstWord = _selectWordAtOffset(firstPosition);
-      final TextSelection lastWord = to == null
-          ? firstWord
-          : _selectWordAtOffset(_textPainter
-              .getPositionForOffset(globalToLocal(to - _paintOffset)));
-
-      _handlePotentialSelectionChange(
-        TextSelection(
-          baseOffset: firstWord.base.offset,
-          extentOffset: lastWord.extent.offset,
-          affinity: firstWord.affinity,
-        ),
-        cause,
-      );
-    }
-  }
-
-  /// Move the selection to the beginning or end of a word.
-  ///
-  /// {@macro flutter.rendering.editable.select}
-  void selectWordEdge({@required SelectionChangedCause cause}) {
-    assert(cause != null);
-    _layoutText(constraints.maxWidth);
-    assert(_lastTapDownPosition != null);
-    if (onSelectionChanged != null) {
-      final TextPosition position = _textPainter.getPositionForOffset(
-          globalToLocal(_lastTapDownPosition - _paintOffset));
-
-      final TextRange word = _textPainter.getWordBoundary(position);
-      TextSelection selection;
-
-      ///zmt
-      if (position.offset - word.start <= 1) {
-        selection = handleSpecialText
-            ? convertTextPainterSelectionToTextInputSelection(
-                text,
-                TextSelection.collapsed(
-                    offset: word.start, affinity: TextAffinity.downstream))
-            : TextSelection.collapsed(
-                offset: word.start, affinity: TextAffinity.downstream);
-      } else {
-        selection = handleSpecialText
-            ? convertTextPainterSelectionToTextInputSelection(
-                text,
-                TextSelection.collapsed(
-                    offset: word.end, affinity: TextAffinity.upstream))
-            : TextSelection.collapsed(
-                offset: word.end, affinity: TextAffinity.upstream);
-      }
-      _handlePotentialSelectionChange(
-        selection,
-        cause,
-      );
-    }
-  }
-
-  TextSelection _selectWordAtOffset(TextPosition position) {
-    assert(_textLayoutLastWidth == constraints.maxWidth);
-
-    ///zmt
-    final TextRange word = _textPainter.getWordBoundary(position);
+  TextSelection _selectLineAtOffset(TextPosition position) {
+    assert(
+        textLayoutLastMaxWidth == constraints.maxWidth &&
+            textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($textLayoutLastMinWidth, $textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    final TextRange line = _textPainter.getLineBoundary(position);
     TextSelection selection;
-    // When long-pressing past the end of the text, we want a collapsed cursor.
-    if (position.offset >= word.end) {
+    if (position.offset >= line.end)
       selection = TextSelection.fromPosition(position);
-    } else {
-      selection = TextSelection(baseOffset: word.start, extentOffset: word.end);
+
+    if (selection == null) {
+      // If text is obscured, the entire string should be treated as one line.
+      if (obscureText) {
+        return TextSelection(baseOffset: 0, extentOffset: plainText.length);
+      }
+      selection = TextSelection(baseOffset: line.start, extentOffset: line.end);
     }
 
     return handleSpecialText
@@ -1569,26 +1526,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
   Rect _caretPrototype;
 
-  @override
-  void layoutText(
-      {double minWidth = 0.0,
-      double maxWidth = double.infinity,
-      double constraintWidth = double.infinity}) {
-    _layoutText(constraintWidth);
-  }
-
-  void _layoutText(double constraintWidth, {bool forceLayout: false}) {
-    assert(constraintWidth != null);
-    if (_textLayoutLastWidth == constraintWidth && !forceLayout) return;
-    final double caretMargin = _kCaretGap + cursorWidth;
-    final double availableWidth = math.max(0.0, constraintWidth - caretMargin);
-    final double maxWidth = _isMultiline ? availableWidth : double.infinity;
-    _textPainter.layout(minWidth: availableWidth, maxWidth: maxWidth);
-    _textLayoutLastWidth = constraintWidth;
-    _updateVisibleRegionMinY();
-  }
-
-  // TODO(garyq): This is no longer producing the highest-fidelity caret
+  // todo(garyq): This is no longer producing the highest-fidelity caret
   // heights for Android, especially when non-alphabetic languages
   // are involved. The current implementation overrides the height set
   // here with the full measured height of the text on Android which looks
@@ -1600,19 +1538,25 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   /// of the cursor for iOS is approximate and obtained through an eyeball
   /// comparison.
   Rect get _getCaretPrototype {
+    assert(defaultTargetPlatform != null);
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
         return Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight + 2);
-      default:
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
         return Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth,
             preferredLineHeight - 2.0 * _kCaretHeightOffset);
     }
+    return null;
   }
 
   @override
   void performLayout() {
     layoutChildren(constraints);
-    _layoutText(constraints.maxWidth, forceLayout: true);
+    layoutText(
+        minWidth: constraints.minWidth,
+        maxWidth: constraints.maxWidth,
+        forceLayout: true);
     setParentData();
     _caretPrototype = _getCaretPrototype;
     _selectionRects = null;
@@ -1625,11 +1569,13 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     // though we currently don't use those here.
     // See also RenderParagraph which has a similar issue.
     final Size textPainterSize = _textPainter.size;
-    size = Size(constraints.maxWidth,
+    final double width = forceLine
+        ? constraints.maxWidth
+        : constraints.constrainWidth(_textPainter.size.width + _caretMargin);
+    size = Size(width,
         constraints.constrainHeight(_preferredHeight(constraints.maxWidth)));
-    final Size contentSize = Size(
-        textPainterSize.width + _kCaretGap + cursorWidth,
-        textPainterSize.height);
+    final Size contentSize =
+        Size(textPainterSize.width + _caretMargin, textPainterSize.height);
     _maxScrollExtent = _getMaxScrollExtent(contentSize);
     offset.applyViewportDimension(_viewportExtent);
     offset.applyContentDimensions(0.0, _maxScrollExtent);
@@ -1649,7 +1595,10 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
   void _paintCaret(Canvas canvas, Offset effectiveOffset,
       TextPosition textPosition, TextPosition textInputPosition) {
-    assert(_textLayoutLastWidth == constraints.maxWidth);
+    assert(
+        textLayoutLastMaxWidth == constraints.maxWidth &&
+            textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($textLayoutLastMinWidth, $textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
 
     // If the floating cursor is enabled, the text cursor's color is [backgroundCursorColor] while
     // the floating cursor's color is _cursorColor;
@@ -1698,7 +1647,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
           {
             // Override the height to take the full height of the glyph at the TextPosition
             // when not on iOS. iOS has special handling that creates a taller caret.
-            // TODO(garyq): See the TODO for _getCaretPrototype.
+            // todo(garyq): See the todo for _getCaretPrototype.
             caretRect = Rect.fromLTWH(
               caretRect.left,
               caretRect.top - _kCaretHeightOffset,
@@ -1752,7 +1701,10 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   }
 
   void _paintFloatingCaret(Canvas canvas, Offset effectiveOffset) {
-    assert(_textLayoutLastWidth == constraints.maxWidth);
+    assert(
+        textLayoutLastMaxWidth == constraints.maxWidth &&
+            textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($textLayoutLastMinWidth, $textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
     assert(_floatingCursorOn);
 
     // We always want the floating cursor to render at full opacity.
@@ -1850,8 +1802,11 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
   }
 
   void _paintContents(PaintingContext context, Offset offset) {
-    assert(_textLayoutLastWidth == constraints.maxWidth);
-    final Offset effectiveOffset = offset + _paintOffset;
+    assert(
+        textLayoutLastMaxWidth == constraints.maxWidth &&
+            textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($textLayoutLastMinWidth, $textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    final Offset effectiveOffset = offset + paintOffset;
 
     bool showSelection = false;
     bool showCaret = false;
@@ -1872,7 +1827,7 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     }
     if (showSelection) {
       _selectionRects ??= _textPainter.getBoxesForSelection(actualSelection);
-      _paintSelection(context.canvas, effectiveOffset);
+      paintSelection(context.canvas, effectiveOffset);
     }
 
     paintWidgets(context, effectiveOffset);
@@ -1905,29 +1860,22 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
     }
   }
 
-  void _paintSelection(Canvas canvas, Offset effectiveOffset) {
-    assert(_textLayoutLastWidth == constraints.maxWidth,
-        'Last width ($_textLayoutLastWidth) not the same as max width constraint (${constraints.maxWidth}).');
-    assert(_selectionRects != null);
-    final Paint paint = Paint()..color = _selectionColor;
-    for (ui.TextBox box in _selectionRects)
-      canvas.drawRect(box.toRect().shift(effectiveOffset), paint);
-  }
-
   Offset _initialOffset;
-  Offset get _effectiveOffset => (_initialOffset ?? Offset.zero) + _paintOffset;
+  Offset get _effectiveOffset => (_initialOffset ?? Offset.zero) + paintOffset;
 
   @override
   void paint(PaintingContext context, Offset offset) {
     ///zmt
     _initialOffset = offset;
 
-    _layoutText(constraints.maxWidth);
+    layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     if (_hasVisualOverflow)
       context.pushClipRect(
           needsCompositing, offset, Offset.zero & size, _paintContents);
     else
       _paintContents(context, offset);
+
+    paintHandleLayers(context, super.paint);
   }
 
   void _paintSpecialText(PaintingContext context, Offset offset) {
@@ -1995,7 +1943,6 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
   Offset getOffsetForCaret(TextPosition position, Rect caretPrototype) {
     assert(!debugNeedsLayout);
-    _layoutText(constraints.maxWidth);
     return _textPainter.getOffsetForCaret(position, caretPrototype);
   }
 
@@ -2041,18 +1988,9 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 //  }
 
   @override
-  Size getSize() {
-    return this.size;
-  }
-
-  @override
   bool get isAttached => attached;
 
   @override
-  Offset getlocalToGlobal(Offset point, {RenderObject ancestor}) {
-    return localToGlobal(point, ancestor: ancestor);
-  }
-
   TextOverflow get overflow => TextOverflow.visible;
 
   @override
@@ -2060,4 +1998,16 @@ class ExtendedRenderEditable extends ExtendedTextRenderBox
 
   @override
   TextPainter get textPainter => _textPainter;
+
+  @override
+  double get caretMargin => _caretMargin;
+
+  @override
+  bool get isMultiline => _isMultiline;
+
+  @override
+  List<ui.TextBox> get selectionRects => _selectionRects;
+
+  @override
+  Offset get effectiveOffset => _effectiveOffset;
 }

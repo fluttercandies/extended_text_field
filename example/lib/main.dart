@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:example/pages/no_route.dart';
-import 'package:example/pages/text_demo.dart';
-import 'package:example/pages/widget_span.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:oktoast/oktoast.dart';
 
-import 'common/tu_chong_repository.dart';
-import 'package:example/pages/custom_toolbar.dart';
 
 import 'example_route.dart';
 import 'example_route_helper.dart';
@@ -27,6 +23,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+   
     return OKToast(
         child: MaterialApp(
       title: 'extended text field demo',

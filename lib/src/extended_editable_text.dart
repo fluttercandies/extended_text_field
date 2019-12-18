@@ -1,4 +1,3 @@
-///
 ///  create by zmtzawqlp on 2019/4/25
 ///  base on flutter sdk 1.7.8
 ///
@@ -105,60 +104,74 @@ class ExtendedEditableText extends StatefulWidget {
   /// [TextInputType.text] unless [maxLines] is greater than one, when it will
   /// default to [TextInputType.multiline].
   ///
-  /// The [controller], [focusNode], [style], [cursorColor], [backgroundCursorColor],
-  /// [textAlign], [dragStartBehavior] and [rendererIgnoresPointer] arguments
-  /// must not be null.
-  ExtendedEditableText(
-      {Key key,
-      @required this.controller,
-      @required this.focusNode,
-      this.readOnly = false,
-      this.obscureText = false,
-      this.autocorrect = true,
-      @required this.style,
-      StrutStyle strutStyle,
-      @required this.cursorColor,
-      @required this.backgroundCursorColor,
-      this.textAlign = TextAlign.start,
-      this.textDirection,
-      this.locale,
-      this.textScaleFactor,
-      this.maxLines = 1,
-      this.minLines,
-      this.expands = false,
-      this.autofocus = false,
-      bool showCursor,
-      this.showSelectionHandles = false,
-      this.selectionColor,
-      this.selectionControls,
-      TextInputType keyboardType,
-      this.textInputAction,
-      this.textCapitalization = TextCapitalization.none,
-      this.onChanged,
-      this.onEditingComplete,
-      this.onSubmitted,
-      this.onSelectionChanged,
-      this.onSelectionHandleTapped,
-      List<TextInputFormatter> inputFormatters,
-      this.rendererIgnoresPointer = false,
-      this.cursorWidth = 2.0,
-      this.cursorRadius,
-      this.cursorOpacityAnimates = false,
-      this.cursorOffset,
-      this.paintCursorAboveText = false,
-      this.scrollPadding = const EdgeInsets.all(20.0),
-      this.keyboardAppearance = Brightness.light,
-      this.dragStartBehavior = DragStartBehavior.start,
-      this.enableInteractiveSelection,
-      this.scrollController,
-      this.scrollPhysics,
-      this.specialTextSpanBuilder})
-      : assert(controller != null),
+  /// The text cursor is not shown if [showCursor] is false or if [showCursor]
+  /// is null (the default) and [readOnly] is true.
+  ///
+  /// The [controller], [focusNode], [obscureText], [autocorrect], [autofocus],
+  /// [showSelectionHandles], [enableInteractiveSelection], [forceLine],
+  /// [style], [cursorColor], [cursorOpacityAnimates],[backgroundCursorColor],
+  /// [enableSuggestions], [paintCursorAboveText], [textAlign], [dragStartBehavior],
+  /// [scrollPadding], [dragStartBehavior], [toolbarOptions],
+  /// [rendererIgnoresPointer], and [readOnly] arguments must not be null.
+  ExtendedEditableText({
+    Key key,
+    @required this.controller,
+    @required this.focusNode,
+    this.readOnly = false,
+    this.obscureText = false,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    @required this.style,
+    StrutStyle strutStyle,
+    @required this.cursorColor,
+    @required this.backgroundCursorColor,
+    this.textAlign = TextAlign.start,
+    this.textDirection,
+    this.locale,
+    this.textScaleFactor,
+    this.maxLines = 1,
+    this.minLines,
+    this.expands = false,
+    this.forceLine = true,
+    this.textWidthBasis = TextWidthBasis.parent,
+    this.autofocus = false,
+    bool showCursor,
+    this.showSelectionHandles = false,
+    this.selectionColor,
+    this.selectionControls,
+    TextInputType keyboardType,
+    this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
+    this.onChanged,
+    this.onEditingComplete,
+    this.onSubmitted,
+    this.onSelectionChanged,
+    this.onSelectionHandleTapped,
+    List<TextInputFormatter> inputFormatters,
+    this.rendererIgnoresPointer = false,
+    this.cursorWidth = 2.0,
+    this.cursorRadius,
+    this.cursorOpacityAnimates = false,
+    this.cursorOffset,
+    this.paintCursorAboveText = false,
+    this.scrollPadding = const EdgeInsets.all(20.0),
+    this.keyboardAppearance = Brightness.light,
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.enableInteractiveSelection = true,
+    this.scrollController,
+    this.scrollPhysics,
+    this.toolbarOptions = const ToolbarOptions(
+        copy: true, cut: true, paste: true, selectAll: true),
+    this.specialTextSpanBuilder,
+  })  : assert(controller != null),
         assert(focusNode != null),
         assert(obscureText != null),
         assert(autocorrect != null),
+        assert(enableSuggestions != null),
         assert(showSelectionHandles != null),
+        assert(enableInteractiveSelection != null),
         assert(readOnly != null),
+        assert(forceLine != null),
         assert(style != null),
         assert(cursorColor != null),
         assert(cursorOpacityAnimates != null),
@@ -176,18 +189,22 @@ class ExtendedEditableText extends StatefulWidget {
           !expands || (maxLines == null && minLines == null),
           'minLines and maxLines must be null when expands is true.',
         ),
+        assert(!obscureText || maxLines == 1,
+            'Obscured fields cannot be multiline.'),
         assert(autofocus != null),
         assert(rendererIgnoresPointer != null),
         assert(scrollPadding != null),
         assert(dragStartBehavior != null),
+        assert(toolbarOptions != null),
         _strutStyle = strutStyle,
         keyboardType = keyboardType ??
             (maxLines == 1 ? TextInputType.text : TextInputType.multiline),
         inputFormatters = maxLines == 1
-            ? (<TextInputFormatter>[
-                BlacklistingTextInputFormatter.singleLineFormatter
-              ]..addAll(
-                inputFormatters ?? const Iterable<TextInputFormatter>.empty()))
+            ? <TextInputFormatter>[
+                BlacklistingTextInputFormatter.singleLineFormatter,
+                ...inputFormatters ??
+                    const Iterable<TextInputFormatter>.empty(),
+              ]
             : inputFormatters,
         showCursor = showCursor ?? !readOnly,
         super(key: key);
@@ -211,6 +228,9 @@ class ExtendedEditableText extends StatefulWidget {
   /// {@endtemplate}
   final bool obscureText;
 
+  /// {@macro flutter.widgets.text.DefaultTextStyle.textWidthBasis}
+  final TextWidthBasis textWidthBasis;
+
   /// {@template flutter.widgets.editableText.readOnly}
   /// Whether the text can be changed.
   ///
@@ -220,6 +240,24 @@ class ExtendedEditableText extends StatefulWidget {
   /// Defaults to false. Must not be null.
   /// {@endtemplate}
   final bool readOnly;
+
+  /// Whether the text will take the full width regardless of the text width.
+  ///
+  /// When this is set to false, the width will be based on text width, which
+  /// will also be affected by [textWidthBasis].
+  ///
+  /// Defaults to true. Must not be null.
+  ///
+  /// See also:
+  ///
+  ///  * [textWidthBasis], which controls the calculation of text width.
+  final bool forceLine;
+
+  /// Configuration of toolbar options.
+  ///
+  /// By default, all options are enabled. If [readOnly] is true,
+  /// paste and cut will be disabled regardless.
+  final ToolbarOptions toolbarOptions;
 
   /// Whether to show selection handles.
   ///
@@ -249,6 +287,9 @@ class ExtendedEditableText extends StatefulWidget {
   /// Defaults to true. Cannot be null.
   /// {@endtemplate}
   final bool autocorrect;
+
+  /// {@macro flutter.services.textInput.enableSuggestions}
+  final bool enableSuggestions;
 
   /// The text style to use for the editable text.
   final TextStyle style;
@@ -331,6 +372,7 @@ class ExtendedEditableText extends StatefulWidget {
   /// See also:
   ///
   ///  * [TextCapitalization], for a description of each capitalization behavior.
+  ///
   /// {@endtemplate}
   final TextCapitalization textCapitalization;
 
@@ -652,9 +694,7 @@ class ExtendedEditableText extends StatefulWidget {
   final ScrollPhysics scrollPhysics;
 
   /// {@macro flutter.rendering.editable.selectionEnabled}
-  bool get selectionEnabled {
-    return enableInteractiveSelection ?? !obscureText;
-  }
+  bool get selectionEnabled => enableInteractiveSelection;
 
   @override
   ExtendedEditableTextState createState() => ExtendedEditableTextState();
@@ -668,6 +708,9 @@ class ExtendedEditableText extends StatefulWidget {
     properties.add(DiagnosticsProperty<bool>('obscureText', obscureText,
         defaultValue: false));
     properties.add(DiagnosticsProperty<bool>('autocorrect', autocorrect,
+        defaultValue: true));
+    properties.add(DiagnosticsProperty<bool>(
+        'enableSuggestions', enableSuggestions,
         defaultValue: true));
     style?.debugFillProperties(properties);
     properties.add(
@@ -714,7 +757,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   ScrollController _scrollController = ScrollController();
   AnimationController _cursorBlinkOpacityController;
 
-  final LayerLink _layerLink = LayerLink();
+  final LayerLink _toolbarLayerLink = LayerLink();
+  final LayerLink _startHandleLayerLink = LayerLink();
+  final LayerLink _endHandleLayerLink = LayerLink();
   bool _didAutoFocus = false;
   FocusAttachment _focusAttachment;
 
@@ -741,16 +786,16 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
 
   @override
-  bool get cutEnabled => !widget.readOnly;
+  bool get cutEnabled => widget.toolbarOptions.cut && !widget.readOnly;
 
   @override
-  bool get copyEnabled => true;
+  bool get copyEnabled => widget.toolbarOptions.copy;
 
   @override
-  bool get pasteEnabled => !widget.readOnly;
+  bool get pasteEnabled => widget.toolbarOptions.paste && !widget.readOnly;
 
   @override
-  bool get selectAllEnabled => true;
+  bool get selectAllEnabled => widget.toolbarOptions.selectAll;
   // State lifecycle:
 
   @override
@@ -803,6 +848,16 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       _closeInputConnectionIfNeeded();
     } else {
       if (oldWidget.readOnly && _hasFocus) _openInputConnection();
+    }
+    if (widget.style != oldWidget.style) {
+      final TextStyle style = widget.style;
+      _textInputConnection?.setStyle(
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
+        fontWeight: style.fontWeight,
+        textDirection: _textDirection,
+        textAlign: widget.textAlign,
+      );
     }
   }
 
@@ -971,9 +1026,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         }
         break;
       case FloatingCursorDragState.End:
-        _floatingCursorResetController.value = 0.0;
-        _floatingCursorResetController.animateTo(1.0,
-            duration: _floatingCursorResetTime, curve: Curves.decelerate);
+        // We skip animation if no update has happened.
+        if (_lastTextPosition != null && _lastBoundedOffset != null) {
+          _floatingCursorResetController.value = 0.0;
+          _floatingCursorResetController.animateTo(1.0,
+              duration: _floatingCursorResetTime, curve: Curves.decelerate);
+        }
         break;
     }
   }
@@ -989,7 +1047,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         // The cause is technically the force cursor, but the cause is listed as tap as the desired functionality is the same.
         _handleSelectionChanged(
             TextSelection.collapsed(offset: _lastTextPosition.offset),
-            renderEditable,
             SelectionChangedCause.forcePress);
       _startCaretRect = null;
       _lastTextPosition = null;
@@ -1053,16 +1110,27 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       caretStart = caretRect.top - caretOffset;
       caretEnd = caretRect.bottom + caretOffset;
     } else {
+      // Scrolls horizontally for single-line fields.
       caretStart = caretRect.left;
       caretEnd = caretRect.right;
     }
 
     double scrollOffset = _scrollController.offset;
     final double viewportExtent = _scrollController.position.viewportDimension;
-    if (caretStart < 0.0) // cursor before start of bounds
+    if (caretStart < 0.0) {
+      // cursor before start of bounds
       scrollOffset += caretStart;
-    else if (caretEnd >= viewportExtent) // cursor after end of bounds
+    } else if (caretEnd >= viewportExtent) {
+      // cursor after end of bounds
       scrollOffset += caretEnd - viewportExtent;
+    }
+
+    if (_isMultiline) {
+      // Clamp the final results to prevent programmatically scrolling to
+      // out-of-paragraph-bounds positions when encountering tall fonts/scripts that
+      // extend past the ascent.
+      scrollOffset = scrollOffset.clamp(0.0, renderEditable.maxScrollExtent);
+    }
     return scrollOffset;
   }
 
@@ -1090,6 +1158,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           inputType: widget.keyboardType,
           obscureText: widget.obscureText,
           autocorrect: widget.autocorrect,
+          enableSuggestions: widget.enableSuggestions,
           inputAction: widget.textInputAction ??
               (widget.keyboardType == TextInputType.multiline
                   ? TextInputAction.newline
@@ -1097,9 +1166,23 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           textCapitalization: widget.textCapitalization,
           keyboardAppearance: widget.keyboardAppearance,
         ),
-      )..setEditingState(localValue);
+      );
+      _textInputConnection.show();
+
+      _updateSizeAndTransform();
+      final TextStyle style = widget.style;
+      _textInputConnection
+        ..setStyle(
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          textDirection: _textDirection,
+          textAlign: widget.textAlign,
+        )
+        ..setEditingState(localValue);
+    } else {
+      _textInputConnection.show();
     }
-    _textInputConnection.show();
   }
 
   void _closeInputConnectionIfNeeded() {
@@ -1116,6 +1199,16 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     } else if (!_hasFocus) {
       _closeInputConnectionIfNeeded();
       widget.controller.clearComposing();
+    }
+  }
+
+  @override
+  void connectionClosed() {
+    if (_hasInputConnection) {
+      _textInputConnection.connectionClosedReceived();
+      _textInputConnection = null;
+      _lastKnownRemoteTextEditingValue = null;
+      _finalizeEditing(true);
     }
   }
 
@@ -1150,8 +1243,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     }
   }
 
-  void _handleSelectionChanged(TextSelection selection,
-      ExtendedRenderEditable renderObject, SelectionChangedCause cause) {
+  void _handleSelectionChanged(
+      TextSelection selection, SelectionChangedCause cause) {
     if (renderEditable?.handleSpecialText ?? false) {
       var value = correctCaretOffset(
           _value, renderEditable?.text, _textInputConnection,
@@ -1163,7 +1256,13 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         _value = value;
       }
     }
-    widget.controller.selection = selection;
+
+    final bool textChanged = widget.controller.text != renderEditable.plainText;
+    // zmt
+    // if textChanged, text was changed by user,
+    // _didChangeTextEditingValue setstate to change text of ExtendedRenderEditable
+    // but still slower than this method.
+    if (!textChanged) widget.controller.selection = selection;
 
     // This will show the keyboard for all selection changes on the
     // EditableWidget, not just changes triggered by user gestures.
@@ -1172,34 +1271,38 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _hideSelectionOverlayIfNeeded();
 
     if (widget.selectionControls != null) {
-      createSelectionOverlay(renderObject: renderObject);
+      createSelectionOverlay(renderObject: renderEditable);
 
 //      final bool longPress = cause == SelectionChangedCause.longPress;
 //      if (cause != SelectionChangedCause.keyboard &&
 //          (_value.text.isNotEmpty || longPress))
 //        _selectionOverlay.showHandles();
 
-      if (widget.onSelectionChanged != null)
-        widget.onSelectionChanged(selection, cause);
     }
+
+    if (!textChanged && widget.onSelectionChanged != null)
+      widget.onSelectionChanged(selection, cause);
   }
 
-  void createSelectionOverlay(
-      {ExtendedRenderEditable renderObject, bool showHandles: true}) {
+  void createSelectionOverlay({
+    ExtendedRenderEditable renderObject,
+    bool showHandles: true,
+  }) {
     _selectionOverlay = ExtendedTextSelectionOverlay(
-        context: context,
-        value: _value,
-        debugRequiredFor: widget,
-        layerLink: _layerLink,
-        renderObject: renderObject ?? renderEditable,
-        selectionControls: widget.selectionControls,
-        selectionDelegate: this,
-        dragStartBehavior: widget.dragStartBehavior,
-        onSelectionHandleTapped: widget.onSelectionHandleTapped,
-        handlesVisible: widget.showSelectionHandles);
-    if (showHandles) {
-      _selectionOverlay.showHandles();
-    }
+      context: context,
+      value: _value,
+      debugRequiredFor: widget,
+      toolbarLayerLink: _toolbarLayerLink,
+      startHandleLayerLink: _startHandleLayerLink,
+      endHandleLayerLink: _endHandleLayerLink,
+      renderObject: renderObject ?? renderEditable,
+      selectionControls: widget.selectionControls,
+      selectionDelegate: this,
+      dragStartBehavior: widget.dragStartBehavior,
+      onSelectionHandleTapped: widget.onSelectionHandleTapped,
+    );
+    _selectionOverlay.handlesVisible = widget.showSelectionHandles;
+    if (showHandles) _selectionOverlay.showHandles();
   }
 
   bool _textChangedSinceLastCaretUpdate = false;
@@ -1404,7 +1507,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _startOrStopCursorTimerIfNeeded();
     _updateOrDisposeSelectionOverlayIfNeeded();
     _textChangedSinceLastCaretUpdate = true;
-    // TODO(abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
+    // (abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
     // to avoid this setState().
     setState(() {/* We use widget.controller.value in build(). */});
   }
@@ -1429,6 +1532,16 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       _value = TextEditingValue(text: _value.text);
     }
     updateKeepAlive();
+  }
+
+  void _updateSizeAndTransform() {
+    if (_hasInputConnection) {
+      final Size size = renderEditable.size;
+      final Matrix4 transform = renderEditable.getTransformTo(null);
+      _textInputConnection.setEditableSizeAndTransform(size, transform);
+      SchedulerBinding.instance
+          .addPostFrameCallback((Duration _) => _updateSizeAndTransform());
+    }
   }
 
   TextDirection get _textDirection {
@@ -1467,9 +1580,16 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   /// Shows the selection toolbar at the location of the current cursor.
   ///
-  /// Returns `false` if a toolbar couldn't be shown such as when no text
-  /// selection currently exists.
+  /// Returns `false` if a toolbar couldn't be shown, such as when the toolbar
+  /// is already shown, or when no text selection currently exists.
   bool showToolbar() {
+    // Web is using native dom elements to enable clipboard functionality of the
+    // toolbar: copy, paste, select, cut. It might also provide additional
+    // functionality depending on the browser (such as translate). Due to this
+    // we should not show a Flutter toolbar for the editable text elements.
+    if (kIsWeb) {
+      return false;
+    }
     if (_selectionOverlay == null || _selectionOverlay.toolbarIsVisible) {
       return false;
     }
@@ -1544,20 +1664,24 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         }
 
         return CompositedTransformTarget(
-          link: _layerLink,
+          link: _toolbarLayerLink,
           child: Semantics(
             onCopy: _semanticsOnCopy(controls),
             onCut: _semanticsOnCut(controls),
             onPaste: _semanticsOnPaste(controls),
             child: _Editable(
               key: _editableKey,
-              textSpan: buildTextSpan(context),
+              startHandleLayerLink: _startHandleLayerLink,
+              endHandleLayerLink: _endHandleLayerLink,
+              textSpan: _buildTextSpan(),
               value: _value,
               cursorColor: _cursorColor,
               backgroundCursorColor: widget.backgroundCursorColor,
               showCursor: ExtendedEditableText.debugDeterministicCursor
                   ? ValueNotifier<bool>(widget.showCursor)
                   : _cursorVisibilityNotifier,
+              forceLine: widget.forceLine,
+              readOnly: widget.readOnly,
               hasFocus: _hasFocus,
               maxLines: widget.maxLines,
               minLines: widget.minLines,
@@ -1569,8 +1693,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               textAlign: widget.textAlign,
               textDirection: _textDirection,
               locale: widget.locale,
+              textWidthBasis: widget.textWidthBasis,
               obscureText: widget.obscureText,
               autocorrect: widget.autocorrect,
+              enableSuggestions: widget.enableSuggestions,
               offset: offset,
               onSelectionChanged: _handleSelectionChanged,
               onCaretChanged: _handleCaretChanged,
@@ -1594,7 +1720,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   ///
   /// By default makes text in composing range appear as underlined.
   /// Descendants can override this method to customize appearance of text.
-  InlineSpan buildTextSpan(BuildContext context) {
+  InlineSpan _buildTextSpan() {
     if (!widget.obscureText && _value.composing.isValid && !widget.readOnly) {
       final TextStyle composingStyle = widget.style.merge(
         const TextStyle(decoration: TextDecoration.underline),
@@ -1656,16 +1782,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
     return TextSpan(style: widget.style, text: text);
   }
-
-  @override
-  void connectionClosed() {
-    if (_hasInputConnection) {
-      _textInputConnection.connectionClosedReceived();
-      _textInputConnection = null;
-      _lastKnownRemoteTextEditingValue = null;
-      _finalizeEditing(true);
-    }
-  }
 }
 
 class _Editable extends MultiChildRenderObjectWidget {
@@ -1673,9 +1789,14 @@ class _Editable extends MultiChildRenderObjectWidget {
     Key key,
     this.textSpan,
     this.value,
+    this.startHandleLayerLink,
+    this.endHandleLayerLink,
     this.cursorColor,
     this.backgroundCursorColor,
     this.showCursor,
+    this.forceLine,
+    this.readOnly,
+    this.textWidthBasis,
     this.hasFocus,
     this.maxLines,
     this.minLines,
@@ -1688,6 +1809,7 @@ class _Editable extends MultiChildRenderObjectWidget {
     this.locale,
     this.obscureText,
     this.autocorrect,
+    this.enableSuggestions,
     this.offset,
     this.onSelectionChanged,
     this.onCaretChanged,
@@ -1720,8 +1842,12 @@ class _Editable extends MultiChildRenderObjectWidget {
   final InlineSpan textSpan;
   final TextEditingValue value;
   final Color cursorColor;
+  final LayerLink startHandleLayerLink;
+  final LayerLink endHandleLayerLink;
   final Color backgroundCursorColor;
   final ValueNotifier<bool> showCursor;
+  final bool forceLine;
+  final bool readOnly;
   final bool hasFocus;
   final int maxLines;
   final int minLines;
@@ -1733,10 +1859,12 @@ class _Editable extends MultiChildRenderObjectWidget {
   final TextDirection textDirection;
   final Locale locale;
   final bool obscureText;
+  final TextWidthBasis textWidthBasis;
   final bool autocorrect;
+  final bool enableSuggestions;
   final ViewportOffset offset;
-  final ExtendedSelectionChangedHandler onSelectionChanged;
-  final ExtendedCaretChangedHandler onCaretChanged;
+  final TextSelectionChangedHandler onSelectionChanged;
+  final CaretChangedHandler onCaretChanged;
   final bool rendererIgnoresPointer;
   final double cursorWidth;
   final Radius cursorRadius;
@@ -1753,8 +1881,12 @@ class _Editable extends MultiChildRenderObjectWidget {
       supportSpecialText: supportSpecialText,
       text: textSpan,
       cursorColor: cursorColor,
+      startHandleLayerLink: startHandleLayerLink,
+      endHandleLayerLink: endHandleLayerLink,
       backgroundCursorColor: backgroundCursorColor,
       showCursor: showCursor,
+      forceLine: forceLine,
+      readOnly: readOnly,
       hasFocus: hasFocus,
       maxLines: maxLines,
       minLines: minLines,
@@ -1771,6 +1903,7 @@ class _Editable extends MultiChildRenderObjectWidget {
       onCaretChanged: onCaretChanged,
       ignorePointer: rendererIgnoresPointer,
       obscureText: obscureText,
+      textWidthBasis: textWidthBasis,
       cursorWidth: cursorWidth,
       cursorRadius: cursorRadius,
       cursorOffset: cursorOffset,
@@ -1788,7 +1921,11 @@ class _Editable extends MultiChildRenderObjectWidget {
       ..supportSpecialText = supportSpecialText
       ..text = textSpan
       ..cursorColor = cursorColor
+      ..startHandleLayerLink = startHandleLayerLink
+      ..endHandleLayerLink = endHandleLayerLink
       ..showCursor = showCursor
+      ..forceLine = forceLine
+      ..readOnly = readOnly
       ..hasFocus = hasFocus
       ..maxLines = maxLines
       ..minLines = minLines
@@ -1804,6 +1941,7 @@ class _Editable extends MultiChildRenderObjectWidget {
       ..onSelectionChanged = onSelectionChanged
       ..onCaretChanged = onCaretChanged
       ..ignorePointer = rendererIgnoresPointer
+      ..textWidthBasis = textWidthBasis
       ..obscureText = obscureText
       ..cursorWidth = cursorWidth
       ..cursorRadius = cursorRadius
