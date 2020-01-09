@@ -1656,12 +1656,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           if (sp.minScrollExtent != null && sp.maxScrollExtent != null) {
             // pixels should >= minScrollExtent
             // pixels should <= maxScrollExtent
-            if (sp.pixels < sp.minScrollExtent) {
-              sp.correctPixels(sp.minScrollExtent);
-            }
-            if (sp.pixels > sp.maxScrollExtent) {
-              sp.correctPixels(sp.maxScrollExtent);
-            }
+            offset.correctPixels(offset.pixels
+                .clamp(offset.minScrollExtent, offset.maxScrollExtent));
           }
         }
 
