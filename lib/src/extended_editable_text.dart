@@ -1590,6 +1590,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (kIsWeb) {
       return false;
     }
+
+    if (_selectionOverlay == null &&
+        FocusScope.of(context).focusedChild == widget.focusNode) {
+      createSelectionOverlay();
+    }
+
     if (_selectionOverlay == null || _selectionOverlay.toolbarIsVisible) {
       return false;
     }
@@ -1652,8 +1658,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       dragStartBehavior: widget.dragStartBehavior,
       viewportBuilder: (BuildContext context, ViewportOffset offset) {
         if (offset != null && offset is ScrollPosition) {
-          var sp = offset as ScrollPosition;
-          if (sp.minScrollExtent != null && sp.maxScrollExtent != null) {
+          if (offset.minScrollExtent != null &&
+              offset.maxScrollExtent != null) {
             // pixels should >= minScrollExtent
             // pixels should <= maxScrollExtent
             offset.correctPixels(offset.pixels

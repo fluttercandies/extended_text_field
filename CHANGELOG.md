@@ -1,3 +1,9 @@
+  
+## [0.4.8]
+
+* Fix issue that the cursor returns to the top when deleting quickly in Multi-line text
+* Fix issue that toolbar will not show if autofocus is true when longpress
+
 ## [0.4.7]
 
 * Codes base on 1.12.13+hotfix.5
