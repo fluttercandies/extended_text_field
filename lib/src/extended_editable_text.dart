@@ -1786,6 +1786,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
     return TextSpan(style: widget.style, text: text);
   }
+
+  @override
+  TextEditingValue get currentTextEditingValue => _value;
 }
 
 class _Editable extends MultiChildRenderObjectWidget {

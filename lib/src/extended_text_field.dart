@@ -28,7 +28,6 @@ typedef InputCounterWidgetBuilder = Widget Function(
   @required bool isFocused,
 });
 
-
 /// A material design text field.
 ///
 /// A text field lets the user enter text, either with hardware keyboard or with
@@ -787,15 +786,17 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       });
     }
     switch (Theme.of(context).platform) {
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+        // case TargetPlatform.macOS:
+        // Do nothing.
+        break;
       case TargetPlatform.iOS:
+      default:
         if (cause == SelectionChangedCause.longPress) {
           _editableText?.bringIntoView(selection.base);
         }
-        return;
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      // case TargetPlatform.macOS:
-      // Do nothing.
+        break;
     }
   }
 
@@ -846,7 +847,16 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     Radius cursorRadius = widget.cursorRadius;
 
     switch (themeData.platform) {
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+        forcePressEnabled = false;
+        textSelectionControls ??= extendedMaterialTextSelectionControls;
+        paintCursorAboveText = false;
+        cursorOpacityAnimates = false;
+        cursorColor ??= themeData.cursorColor;
+        break;
       case TargetPlatform.iOS:
+      default:
         //case TargetPlatform.macOS:
         forcePressEnabled = true;
         textSelectionControls ??= extendedCupertinoTextSelectionControls;
@@ -856,15 +866,6 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
-        break;
-
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-        forcePressEnabled = false;
-        textSelectionControls ??= extendedMaterialTextSelectionControls;
-        paintCursorAboveText = false;
-        cursorOpacityAnimates = false;
-        cursorColor ??= themeData.cursorColor;
         break;
     }
 
