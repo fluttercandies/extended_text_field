@@ -1,4 +1,8 @@
   
+## [0.4.9]
+
+* Fix error about TargetPlatform.macOS
+
 ## [0.4.8]
 
 * Fix issue that the cursor returns to the top when deleting quickly in Multi-line text

@@ -1540,14 +1540,15 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   Rect get _getCaretPrototype {
     assert(defaultTargetPlatform != null);
     switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-        return Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight + 2);
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         return Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth,
             preferredLineHeight - 2.0 * _kCaretHeightOffset);
+      case TargetPlatform.iOS:
+      default:
+        return Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight + 2);
     }
-    return null;
+    //return null;
   }
 
   @override
