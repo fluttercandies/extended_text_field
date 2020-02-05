@@ -4,9 +4,9 @@
 // **************************************************************************
 
 import 'package:flutter/widgets.dart';
-import 'common/pic_swiper.dart';
 import 'pages/custom_toolbar.dart';
 import 'pages/main_page.dart';
+import 'pages/pic_swiper_page.dart';
 import 'pages/text_demo.dart';
 import 'pages/widget_span.dart';
 
@@ -14,7 +14,7 @@ RouteResult getRouteResult({String name, Map<String, dynamic> arguments}) {
   switch (name) {
     case "fluttercandies://picswiper":
       return RouteResult(
-        widget: PicSwiper(
+        widget: PicSwiperPage(
           index: arguments['index'],
           pics: arguments['pics'],
         ),

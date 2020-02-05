@@ -1,17 +1,23 @@
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_candies_demo_library/flutter_candies_demo_library.dart'
+    as demo;
 
 ///emoji/image text
-class EmojiText extends SpecialText {
-  static const String flag = "[";
-  final int start;
-  EmojiText(TextStyle textStyle, {this.start})
-      : super(EmojiText.flag, "]", textStyle);
+class EmojiText extends demo.EmojiText {
+  EmojiText(
+    TextStyle textStyle, {
+    int start,
+  }) : super(
+          textStyle,
+          start: start,
+        );
 
   @override
   InlineSpan finishText() {
     var key = toString();
-    if (EmojiUitl.instance.emojiMap.containsKey(key)) {
+    if (EmojiUitl.instance.emojiMap.containsKey(key) && !kIsWeb) {
       //fontsize id define image height
       //size = 30.0/26.0 * fontSize
       final double size = 20.0;
