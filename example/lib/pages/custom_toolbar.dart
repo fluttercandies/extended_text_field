@@ -1,8 +1,9 @@
-import 'package:example/common/my_extended_text_selection_controls.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:ff_annotation_route/ff_annotation_route.dart';
+import 'package:flutter_candies_demo_library/flutter_candies_demo_library.dart'
+    hide MySpecialTextSpanBuilder;
 
 ///
 ///  create by zmtzawqlp on 2019/7/31

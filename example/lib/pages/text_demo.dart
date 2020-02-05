@@ -1,23 +1,16 @@
 import 'dart:math';
-import 'package:example/common/my_extended_text_selection_controls.dart';
-import 'package:example/common/pic_swiper.dart';
 import 'package:example/common/toggle_button.dart';
-import 'package:example/common/tu_chong_repository.dart';
-import 'package:example/common/tu_chong_source.dart';
-import 'package:example/special_text/at_text.dart';
-import 'package:example/special_text/dollar_text.dart';
-import 'package:example/special_text/emoji_text.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
+import 'package:extended_list/extended_list.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:extended_image/extended_image.dart';
-import 'package:loading_more_list/loading_more_list.dart';
-import 'package:extended_list/extended_list.dart';
-
 import 'package:ff_annotation_route/ff_annotation_route.dart';
+import 'package:flutter_candies_demo_library/flutter_candies_demo_library.dart'
+    hide MySpecialTextSpanBuilder;
+import 'package:loading_more_list/loading_more_list.dart';
+import 'package:example/special_text/emoji_text.dart' as emoji;
 
 @FFRoute(
     name: "fluttercandies://TextDemo",
@@ -120,8 +113,8 @@ class _TextDemoState extends State<TextDemo> {
                           "index": images.indexOf(images.firstWhere(
                               (x) => x.imageUrl == value.toString())),
                           "pics": images
-                              .map<PicSwiperItem>((f) =>
-                                  PicSwiperItem(f.imageUrl, des: f.title))
+                              .map<PicSwiperItem>((f) => PicSwiperItem(
+                                  picUrl: f.imageUrl, des: f.title))
                               .toList(),
                         });
                   }
@@ -329,14 +322,15 @@ class _TextDemoState extends State<TextDemo> {
           crossAxisCount: 8, crossAxisSpacing: 10.0, mainAxisSpacing: 10.0),
       itemBuilder: (context, index) {
         return GestureDetector(
-          child: Image.asset(EmojiUitl.instance.emojiMap["[${index + 1}]"]),
+          child:
+              Image.asset(emoji.EmojiUitl.instance.emojiMap["[${index + 1}]"]),
           behavior: HitTestBehavior.translucent,
           onTap: () {
             insertText("[${index + 1}]");
           },
         );
       },
-      itemCount: EmojiUitl.instance.emojiMap.length,
+      itemCount: emoji.EmojiUitl.instance.emojiMap.length,
       padding: EdgeInsets.all(5.0),
     );
   }
