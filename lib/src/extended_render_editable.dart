@@ -325,7 +325,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         affinity: selection.affinity,
       ),
       effectiveOffset: effectiveOffset,
-      caretPrototype: _caretPrototype,
+      caretPrototype: Rect.zero,
       handleSpecialText: handleSpecialText,
     );
 
@@ -344,7 +344,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     final Offset endOffset = getCaretOffset(
       TextPosition(offset: selection.end, affinity: selection.affinity),
       effectiveOffset: effectiveOffset,
-      caretPrototype: _caretPrototype,
+      caretPrototype: Rect.zero,
       handleSpecialText: handleSpecialText,
     );
 

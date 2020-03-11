@@ -1,4 +1,8 @@
   
+## [0.5.0]
+
+* Fix error caret offset on ios.
+  
 ## [0.4.9]
 
 * Fix error about TargetPlatform.macOS
