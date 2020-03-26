@@ -108,14 +108,16 @@ class _TextDemoState extends State<TextDemo> {
                   }
                   //image
                   else {
+                    final item = images
+                        .firstWhere((x) => x.imageUrl == value.toString());
                     Navigator.pushNamed(context, "fluttercandies://picswiper",
                         arguments: {
-                          "index": images.indexOf(images.firstWhere(
-                              (x) => x.imageUrl == value.toString())),
-                          "pics": images
+                          "index": images.indexOf(item),
+                          "pics": item.images
                               .map<PicSwiperItem>((f) => PicSwiperItem(
                                   picUrl: f.imageUrl, des: f.title))
                               .toList(),
+                          'tuChongItem': item,
                         });
                   }
                 },
