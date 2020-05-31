@@ -5,54 +5,75 @@
 
 import 'package:flutter/widgets.dart';
 
+import 'package:flutter_candies_demo_library/flutter_candies_demo_library_route.dart';
 import 'pages/custom_toolbar.dart';
 import 'pages/main_page.dart';
-import 'pages/pic_swiper_page.dart';
 import 'pages/text_demo.dart';
 import 'pages/widget_span.dart';
 
+// ignore_for_file: argument_type_not_assignable
 RouteResult getRouteResult({String name, Map<String, dynamic> arguments}) {
   switch (name) {
-    case "fluttercandies://CustomToolBar":
+    case 'fluttercandies://CustomToolBar':
       return RouteResult(
+        name: name,
         widget: CustomToolBar(),
-        routeName: "custom toolbar",
-        description: "custom selection toolbar and handles for text field",
+        routeName: 'custom toolbar',
+        description: 'custom selection toolbar and handles for text field',
       );
-    case "fluttercandies://TextDemo":
+    case 'fluttercandies://TextDemo':
       return RouteResult(
+        name: name,
         widget: TextDemo(),
-        routeName: "text",
-        description: "build special text and inline image in text field",
+        routeName: 'text',
+        description: 'build special text and inline image in text field',
       );
-    case "fluttercandies://WidgetSpanDemo":
+    case 'fluttercandies://WidgetSpanDemo':
       return RouteResult(
+        name: name,
         widget: WidgetSpanDemo(),
-        routeName: "widget span",
-        description: "mailbox demo with widgetSpan",
+        routeName: 'widget span',
+        description: 'mailbox demo with widgetSpan',
       );
-    case "fluttercandies://mainpage":
+    case 'fluttercandies://mainpage':
       return RouteResult(
+        name: name,
         widget: MainPage(),
-        routeName: "MainPage",
+        routeName: 'MainPage',
       );
-    case "fluttercandies://picswiper":
+    case 'fluttercandies://picswiper':
       return RouteResult(
-        widget: PicSwiperPage(
+        name: name,
+        widget: PicSwiper(
           index: arguments['index'],
           pics: arguments['pics'],
           tuChongItem: arguments['tuChongItem'],
         ),
         showStatusBar: false,
-        routeName: "PicSwiper",
+        routeName: 'PicSwiper',
         pageRouteType: PageRouteType.transparent,
       );
     default:
-      return RouteResult();
+      return const RouteResult(name: 'flutterCandies://notfound');
   }
 }
 
 class RouteResult {
+  const RouteResult({
+    @required this.name,
+    this.widget,
+    this.showStatusBar = true,
+    this.routeName = '',
+    this.pageRouteType,
+    this.description = '',
+    this.exts,
+  });
+
+  /// The name of the route (e.g., "/settings").
+  ///
+  /// If null, the route is anonymous.
+  final String name;
+
   /// The Widget return base on route
   final Widget widget;
 
@@ -68,21 +89,12 @@ class RouteResult {
   /// The description of route
   final String description;
 
-  const RouteResult({
-    this.widget,
-    this.showStatusBar = true,
-    this.routeName = '',
-    this.pageRouteType,
-    this.description = '',
-  });
+  /// The extend arguments
+  final Map<String, dynamic> exts;
 }
 
-enum PageRouteType { material, cupertino, transparent }
-
-List<String> routeNames = [
-  "fluttercandies://CustomToolBar",
-  "fluttercandies://TextDemo",
-  "fluttercandies://WidgetSpanDemo",
-  "fluttercandies://mainpage",
-  "fluttercandies://picswiper"
-];
+enum PageRouteType {
+  material,
+  cupertino,
+  transparent,
+}

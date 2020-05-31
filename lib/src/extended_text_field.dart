@@ -1,16 +1,16 @@
+import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended_editable_text.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-///
-///  create by zmtzawqlp on 2019/4/22
-///  base on flutter sdk 1.12
-///
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+
+///
+///  create by zmtzawqlp on 2019/4/22
+///
 
 /// Signature for the [ExtendedTextField.buildCounter] callback.
 typedef InputCounterWidgetBuilder = Widget Function(
@@ -149,6 +149,8 @@ class ExtendedTextField extends StatefulWidget {
       this.autofocus = false,
       this.obscureText = false,
       this.autocorrect = true,
+      SmartDashesType smartDashesType,
+      SmartQuotesType smartQuotesType,
       this.enableSuggestions = true,
       this.maxLines = 1,
       this.minLines,
@@ -163,6 +165,8 @@ class ExtendedTextField extends StatefulWidget {
       this.cursorWidth = 2.0,
       this.cursorRadius,
       this.cursorColor,
+      this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+      this.selectionWidthStyle = ui.BoxWidthStyle.tight,
       this.keyboardAppearance,
       this.scrollPadding = const EdgeInsets.all(20.0),
       this.dragStartBehavior = DragStartBehavior.start,
@@ -178,11 +182,17 @@ class ExtendedTextField extends StatefulWidget {
         assert(autofocus != null),
         assert(obscureText != null),
         assert(autocorrect != null),
+        smartDashesType = smartDashesType ??
+            (obscureText ? SmartDashesType.disabled : SmartDashesType.enabled),
+        smartQuotesType = smartQuotesType ??
+            (obscureText ? SmartQuotesType.disabled : SmartQuotesType.enabled),
         assert(enableSuggestions != null),
         assert(enableInteractiveSelection != null),
         assert(maxLengthEnforced != null),
         assert(scrollPadding != null),
         assert(dragStartBehavior != null),
+        assert(selectionHeightStyle != null),
+        assert(selectionWidthStyle != null),
         assert(maxLines == null || maxLines > 0),
         assert(minLines == null || minLines > 0),
         assert(
@@ -292,7 +302,7 @@ class ExtendedTextField extends StatefulWidget {
   ///
   /// This text style is also used as the base style for the [decoration].
   ///
-  /// If null, defaults to the `subhead` text style from the current [Theme].
+  /// If null, defaults to the `subtitle1` text style from the current [Theme].
   final TextStyle style;
 
   /// {@macro flutter.widgets.editableText.strutStyle}
@@ -301,7 +311,7 @@ class ExtendedTextField extends StatefulWidget {
   /// {@macro flutter.widgets.editableText.textAlign}
   final TextAlign textAlign;
 
-  /// {@macro flutter.material.inputDecorator.textAlignVertical}
+  /// {@macro flutter.widgets.inputDecorator.textAlignVertical}
   final TextAlignVertical textAlignVertical;
 
   /// {@macro flutter.widgets.editableText.textDirection}
@@ -315,6 +325,12 @@ class ExtendedTextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.autocorrect}
   final bool autocorrect;
+
+  /// {@macro flutter.services.textInput.smartDashesType}
+  final SmartDashesType smartDashesType;
+
+  /// {@macro flutter.services.textInput.smartQuotesType}
+  final SmartQuotesType smartQuotesType;
 
   /// {@macro flutter.services.textInput.enableSuggestions}
   final bool enableSuggestions;
@@ -450,6 +466,16 @@ class ExtendedTextField extends StatefulWidget {
   /// depending on [ThemeData.platform].
   final Color cursorColor;
 
+  /// Controls how tall the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxHeightStyle] for details on available styles.
+  final ui.BoxHeightStyle selectionHeightStyle;
+
+  /// Controls how wide the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxWidthStyle] for details on available styles.
+  final ui.BoxWidthStyle selectionWidthStyle;
+
   /// The appearance of the keyboard.
   ///
   /// This setting is only honored on iOS devices.
@@ -501,7 +527,7 @@ class ExtendedTextField extends StatefulWidget {
   /// accessibility, but it also needs to be accessible itself.  For example,
   /// if returning a Text widget, set the [semanticsLabel] property.
   ///
-  /// {@tool sample}
+  /// {@tool snippet}
   /// ```dart
   /// Widget counter(
   ///   BuildContext context,
@@ -518,6 +544,9 @@ class ExtendedTextField extends StatefulWidget {
   /// }
   /// ```
   /// {@end-tool}
+  ///
+  /// If buildCounter returns null, then no counter and no Semantics widget will
+  /// be created at all.
   final InputCounterWidgetBuilder buildCounter;
 
   /// {@macro flutter.widgets.edtiableText.scrollPhysics}
@@ -619,8 +648,6 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       widget.decoration != null &&
       widget.decoration.counterText == null;
 
-  bool _shouldShowSelectionToolbar = true;
-
   bool _showSelectionHandles = false;
   CommonTextSelectionGestureDetectorBuilder _selectionGestureDetectorBuilder;
 
@@ -656,7 +683,9 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
 
     // No need to build anything if counter or counterText were given directly.
     if (effectiveDecoration.counter != null ||
-        effectiveDecoration.counterText != null) return effectiveDecoration;
+        effectiveDecoration.counterText != null) {
+      return effectiveDecoration;
+    }
 
     // If buildCounter was provided, use it to generate a counter widget.
     Widget counter;
@@ -665,16 +694,20 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         effectiveDecoration.counterText == null &&
         widget.buildCounter != null) {
       final bool isFocused = _effectiveFocusNode.hasFocus;
-      counter = Semantics(
-        container: true,
-        liveRegion: isFocused,
-        child: widget.buildCounter(
-          context,
-          currentLength: currentLength,
-          maxLength: widget.maxLength,
-          isFocused: isFocused,
-        ),
+      final Widget builtCounter = widget.buildCounter(
+        context,
+        currentLength: currentLength,
+        maxLength: widget.maxLength,
+        isFocused: isFocused,
       );
+      // If buildCounter returns null, don't add a counter widget to the field.
+      if (builtCounter != null) {
+        counter = Semantics(
+          container: true,
+          liveRegion: isFocused,
+          child: builtCounter,
+        );
+      }
       return effectiveDecoration.copyWith(counter: counter);
     }
 
@@ -689,7 +722,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       // Show the maxLength in the counter
       counterText += '/${widget.maxLength}';
       final int remaining =
-          (widget.maxLength - currentLength).clamp(0, widget.maxLength);
+          (widget.maxLength - currentLength).clamp(0, widget.maxLength) as int;
       semanticCounterText =
           localizations.remainingTextFieldCharacterCount(remaining);
 
@@ -763,16 +796,23 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   bool _shouldShowSelectionHandles(SelectionChangedCause cause) {
     // When the text field is activated by something that doesn't trigger the
     // selection overlay, we shouldn't show the handles either.
-    if (!_shouldShowSelectionToolbar) return false;
+    if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
+      return false;
 
-    if (cause == SelectionChangedCause.keyboard) return false;
+    if (cause == SelectionChangedCause.keyboard) {
+      return false;
+    }
 
     if (widget.readOnly && _effectiveController.selection.isCollapsed)
       return false;
 
-    if (cause == SelectionChangedCause.longPress) return true;
+    if (cause == SelectionChangedCause.longPress) {
+      return true;
+    }
 
-    if (_effectiveController.text.isNotEmpty) return true;
+    if (_effectiveController.text.isNotEmpty) {
+      return true;
+    }
 
     return false;
   }
@@ -786,17 +826,17 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       });
     }
     switch (Theme.of(context).platform) {
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-        // case TargetPlatform.macOS:
-        // Do nothing.
-        break;
       case TargetPlatform.iOS:
-      default:
+      case TargetPlatform.macOS:
         if (cause == SelectionChangedCause.longPress) {
           _editableText?.bringIntoView(selection.base);
         }
-        break;
+        return;
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+      // Do nothing.
     }
   }
 
@@ -810,7 +850,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   void _handleHover(bool hovering) {
     if (hovering != _isHovering) {
       setState(() {
-        return _isHovering = hovering;
+        _isHovering = hovering;
       });
     }
   }
@@ -818,7 +858,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterial(context));
-    // (jonahwilliams): uncomment out this check once we have migrated tests.
+    // TODO(jonahwilliams): uncomment out this check once we have migrated tests.
     // assert(debugCheckHasMaterialLocalizations(context));
     assert(debugCheckHasDirectionality(context));
     assert(
@@ -829,7 +869,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     );
 
     final ThemeData themeData = Theme.of(context);
-    final TextStyle style = themeData.textTheme.subhead.merge(widget.style);
+    final TextStyle style = themeData.textTheme.subtitle1.merge(widget.style);
     final Brightness keyboardAppearance =
         widget.keyboardAppearance ?? themeData.primaryColorBrightness;
     final TextEditingController controller = _effectiveController;
@@ -847,25 +887,27 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     Radius cursorRadius = widget.cursorRadius;
 
     switch (themeData.platform) {
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-        forcePressEnabled = false;
-        textSelectionControls ??= extendedMaterialTextSelectionControls;
-        paintCursorAboveText = false;
-        cursorOpacityAnimates = false;
-        cursorColor ??= themeData.cursorColor;
-        break;
       case TargetPlatform.iOS:
-      default:
-        //case TargetPlatform.macOS:
+      case TargetPlatform.macOS:
         forcePressEnabled = true;
-        textSelectionControls ??= extendedCupertinoTextSelectionControls;
+        textSelectionControls = extendedCupertinoTextSelectionControls;
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
         cursorColor ??= CupertinoTheme.of(context).primaryColor;
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
+        break;
+
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        forcePressEnabled = false;
+        textSelectionControls = extendedMaterialTextSelectionControls;
+        paintCursorAboveText = false;
+        cursorOpacityAnimates = false;
+        cursorColor ??= themeData.cursorColor;
         break;
     }
 
@@ -888,6 +930,8 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         autofocus: widget.autofocus,
         obscureText: widget.obscureText,
         autocorrect: widget.autocorrect,
+        smartDashesType: widget.smartDashesType,
+        smartQuotesType: widget.smartQuotesType,
         enableSuggestions: widget.enableSuggestions,
         maxLines: widget.maxLines,
         minLines: widget.minLines,
@@ -905,6 +949,8 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         cursorWidth: widget.cursorWidth,
         cursorRadius: cursorRadius,
         cursorColor: cursorColor,
+        selectionHeightStyle: widget.selectionHeightStyle,
+        selectionWidthStyle: widget.selectionWidthStyle,
         cursorOpacityAnimates: cursorOpacityAnimates,
         cursorOffset: cursorOffset,
         paintCursorAboveText: paintCursorAboveText,
