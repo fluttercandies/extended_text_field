@@ -1,7 +1,3 @@
-///  create by zmtzawqlp on 2019/4/25
-///  base on flutter sdk 1.7.8
-///
-
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -163,6 +159,10 @@ class ExtendedEditableText extends StatefulWidget {
     this.toolbarOptions = const ToolbarOptions(
         copy: true, cut: true, paste: true, selectAll: true),
     this.specialTextSpanBuilder,
+    this.smartDashesType,
+    this.smartQuotesType,
+    this.selectionHeightStyle,
+    this.selectionWidthStyle,
   })  : assert(controller != null),
         assert(focusNode != null),
         assert(obscureText != null),
@@ -287,6 +287,12 @@ class ExtendedEditableText extends StatefulWidget {
   /// Defaults to true. Cannot be null.
   /// {@endtemplate}
   final bool autocorrect;
+
+  /// {@macro flutter.services.textInput.smartDashesType}
+  final SmartDashesType smartDashesType;
+
+  /// {@macro flutter.services.textInput.smartQuotesType}
+  final SmartQuotesType smartQuotesType;
 
   /// {@macro flutter.services.textInput.enableSuggestions}
   final bool enableSuggestions;
@@ -632,6 +638,16 @@ class ExtendedEditableText extends StatefulWidget {
   ///{@macro flutter.rendering.editable.paintCursorOnTop}
   final bool paintCursorAboveText;
 
+  /// Controls how tall the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxHeightStyle] for details on available styles.
+  final ui.BoxHeightStyle selectionHeightStyle;
+
+  /// Controls how wide the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxWidthStyle] for details on available styles.
+  final ui.BoxWidthStyle selectionWidthStyle;
+
   /// The appearance of the keyboard.
   ///
   /// This setting is only honored on iOS devices.
@@ -647,7 +663,7 @@ class ExtendedEditableText extends StatefulWidget {
   /// then it will attempt to make itself visible by scrolling a surrounding [Scrollable], if one is present.
   /// This value controls how far from the edges of a [Scrollable] the TextField will be positioned after the scroll.
   ///
-  /// Defaults to EdgeInserts.all(20.0).
+  /// Defaults to EdgeInsets.all(20.0).
   /// {@endtemplate}
   final EdgeInsets scrollPadding;
 
@@ -754,7 +770,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   TextInputConnection _textInputConnection;
   ExtendedTextSelectionOverlay _selectionOverlay;
-  ScrollController _scrollController = ScrollController();
+  ScrollController _scrollController;
   AnimationController _cursorBlinkOpacityController;
 
   final LayerLink _toolbarLayerLink = LayerLink();
@@ -820,8 +836,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_didAutoFocus && widget.autofocus) {
-      FocusScope.of(context).autofocus(widget.focusNode);
       _didAutoFocus = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          FocusScope.of(context).autofocus(widget.focusNode);
+        }
+      });
     }
   }
 
@@ -847,17 +867,23 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (widget.readOnly) {
       _closeInputConnectionIfNeeded();
     } else {
-      if (oldWidget.readOnly && _hasFocus) _openInputConnection();
+      if (oldWidget.readOnly && _hasFocus) {
+        _openInputConnection();
+      }
     }
     if (widget.style != oldWidget.style) {
       final TextStyle style = widget.style;
-      _textInputConnection?.setStyle(
-        fontFamily: style.fontFamily,
-        fontSize: style.fontSize,
-        fontWeight: style.fontWeight,
-        textDirection: _textDirection,
-        textAlign: widget.textAlign,
-      );
+      // The _textInputConnection will pick up the new style when it attaches in
+      // _openInputConnection.
+      if (_textInputConnection != null && _textInputConnection.attached) {
+        _textInputConnection.setStyle(
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          textDirection: _textDirection,
+          textAlign: widget.textAlign,
+        );
+      }
     }
   }
 
@@ -879,7 +905,19 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   // TextInputClient implementation:
 
-  TextEditingValue _lastKnownRemoteTextEditingValue;
+  // _lastFormattedUnmodifiedTextEditingValue tracks the last value
+  // that the formatter ran on and is used to prevent double-formatting.
+  TextEditingValue _lastFormattedUnmodifiedTextEditingValue;
+  // _lastFormattedValue tracks the last post-format value, so that it can be
+  // reused without rerunning the formatter when the input value is repeated.
+  TextEditingValue _lastFormattedValue;
+  // _receivedRemoteTextEditingValue is the direct value last passed in
+  // updateEditingValue. This value does not get updated with the formatted
+  // version.
+  TextEditingValue _receivedRemoteTextEditingValue;
+
+  @override
+  TextEditingValue get currentTextEditingValue => _value;
 
   @override
   void updateEditingValue(TextEditingValue value) {
@@ -888,7 +926,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (widget.readOnly) {
       return;
     }
-
+    _receivedRemoteTextEditingValue = value;
     value = _handleSpecialTextSpan(value);
     if (value.text != _value.text) {
       _hideSelectionOverlayIfNeeded();
@@ -899,7 +937,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       }
     }
 
-    _lastKnownRemoteTextEditingValue = value;
     _formatAndSetValue(value);
 
     // To keep the cursor from blinking while typing, we want to restart the
@@ -914,15 +951,19 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       final bool textChanged = _value?.text != value?.text;
       final bool selectionChanged = _value?.selection != value?.selection;
       if (textChanged) {
-        var newTextSpan = widget.specialTextSpanBuilder.build(value?.text);
-        if (newTextSpan == null) return value;
+        final TextSpan newTextSpan =
+            widget.specialTextSpanBuilder.build(value?.text);
+        if (newTextSpan == null) {
+          return value;
+        }
 
-        var oldTextSpan = widget.specialTextSpanBuilder.build(_value?.text);
+        final TextSpan oldTextSpan =
+            widget.specialTextSpanBuilder.build(_value?.text);
         value = handleSpecialTextSpanDelete(
             value, _value, oldTextSpan, _textInputConnection);
 
         if (newTextSpan != null) {
-          var text = newTextSpan.toPlainText();
+          final String text = newTextSpan.toPlainText();
           //correct caret Offset
           //make sure caret is not in text when caretIn is false
           if (text != value.text || selectionChanged) {
@@ -943,7 +984,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         // If this is a multiline EditableText, do nothing for a "newline"
         // action; The newline is already inserted. Otherwise, finalize
         // editing.
-        if (!_isMultiline) _finalizeEditing(true);
+        if (!_isMultiline) {
+          _finalizeEditing(true);
+        }
         break;
       case TextInputAction.done:
       case TextInputAction.go:
@@ -1073,19 +1116,26 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       // Default behavior if the developer did not provide an
       // onEditingComplete callback: Finalize editing and remove focus.
       widget.controller.clearComposing();
-      if (shouldUnfocus) widget.focusNode.unfocus();
+      if (shouldUnfocus) {
+        widget.focusNode.unfocus();
+      }
     }
 
     // Invoke optional callback with the user's submitted content.
-    if (widget.onSubmitted != null) widget.onSubmitted(_value.text);
+    if (widget.onSubmitted != null) {
+      widget.onSubmitted(_value.text);
+    }
   }
 
   void _updateRemoteEditingValueIfNeeded() {
-    if (!_hasInputConnection) return;
+    if (!_hasInputConnection) {
+      return;
+    }
     final TextEditingValue localValue = _value;
-    if (localValue == _lastKnownRemoteTextEditingValue) return;
-    _lastKnownRemoteTextEditingValue = localValue;
-
+    if (localValue == _receivedRemoteTextEditingValue) {
+      return;
+    }
+    _receivedRemoteTextEditingValue=_value;
     _textInputConnection.setEditingState(localValue);
   }
 
@@ -1129,7 +1179,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       // Clamp the final results to prevent programmatically scrolling to
       // out-of-paragraph-bounds positions when encountering tall fonts/scripts that
       // extend past the ascent.
-      scrollOffset = scrollOffset.clamp(0.0, renderEditable.maxScrollExtent);
+      scrollOffset =
+          scrollOffset.clamp(0.0, renderEditable.maxScrollExtent) as double;
     }
     return scrollOffset;
   }
@@ -1151,13 +1202,21 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     }
     if (!_hasInputConnection) {
       final TextEditingValue localValue = _value;
-      _lastKnownRemoteTextEditingValue = localValue;
+      _lastFormattedUnmodifiedTextEditingValue = localValue;
       _textInputConnection = TextInput.attach(
         this,
         TextInputConfiguration(
           inputType: widget.keyboardType,
           obscureText: widget.obscureText,
           autocorrect: widget.autocorrect,
+          smartDashesType: widget.smartDashesType ??
+              (widget.obscureText
+                  ? SmartDashesType.disabled
+                  : SmartDashesType.enabled),
+          smartQuotesType: widget.smartQuotesType ??
+              (widget.obscureText
+                  ? SmartQuotesType.disabled
+                  : SmartQuotesType.enabled),
           enableSuggestions: widget.enableSuggestions,
           inputAction: widget.textInputAction ??
               (widget.keyboardType == TextInputType.multiline
@@ -1189,7 +1248,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (_hasInputConnection) {
       _textInputConnection.close();
       _textInputConnection = null;
-      _lastKnownRemoteTextEditingValue = null;
+      _lastFormattedUnmodifiedTextEditingValue = null;
+      _receivedRemoteTextEditingValue = null;
     }
   }
 
@@ -1207,7 +1267,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (_hasInputConnection) {
       _textInputConnection.connectionClosedReceived();
       _textInputConnection = null;
-      _lastKnownRemoteTextEditingValue = null;
+      _lastFormattedUnmodifiedTextEditingValue = null;
+      _receivedRemoteTextEditingValue = null;
       _finalizeEditing(true);
     }
   }
@@ -1245,8 +1306,15 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   void _handleSelectionChanged(
       TextSelection selection, SelectionChangedCause cause) {
+    // We return early if the selection is not valid. This can happen when the
+    // text of [EditableText] is updated at the same time as the selection is
+    // changed by a gesture event.
+    if (!widget.controller.isSelectionWithinTextBounds(selection)) {
+      return;
+    }
+
     if (renderEditable?.handleSpecialText ?? false) {
-      var value = correctCaretOffset(
+      final TextEditingValue value = correctCaretOffset(
           _value, renderEditable?.text, _textInputConnection,
           newSelection: selection);
 
@@ -1262,7 +1330,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     // if textChanged, text was changed by user,
     // _didChangeTextEditingValue setstate to change text of ExtendedRenderEditable
     // but still slower than this method.
-    if (!textChanged) widget.controller.selection = selection;
+    if (!textChanged) {
+      widget.controller.selection = selection;
+    }
 
     // This will show the keyboard for all selection changes on the
     // EditableWidget, not just changes triggered by user gestures.
@@ -1286,7 +1356,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   void createSelectionOverlay({
     ExtendedRenderEditable renderObject,
-    bool showHandles: true,
+    bool showHandles = true,
   }) {
     _selectionOverlay = ExtendedTextSelectionOverlay(
       context: context,
@@ -1302,7 +1372,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       onSelectionHandleTapped: widget.onSelectionHandleTapped,
     );
     _selectionOverlay.handlesVisible = widget.showSelectionHandles;
-    if (showHandles) _selectionOverlay.showHandles();
+    if (showHandles) {
+      _selectionOverlay.showHandles();
+    }
   }
 
   bool _textChangedSinceLastCaretUpdate = false;
@@ -1352,7 +1424,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
             .height;
         final double interactiveHandleHeight = max(
           handleHeight,
-          kExtendedMinInteractiveSize,
+          kMinInteractiveDimension,
         );
         final Offset anchor =
             _selectionOverlay.selectionControls.getHandleAnchor(
@@ -1390,23 +1462,56 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _lastBottomViewInset = WidgetsBinding.instance.window.viewInsets.bottom;
   }
 
-  void _formatAndSetValue(TextEditingValue value, {bool set: false}) {
+  _WhitespaceDirectionalityFormatter _whitespaceFormatter;
+  void _formatAndSetValue(TextEditingValue value) {
+    _whitespaceFormatter ??=
+        _WhitespaceDirectionalityFormatter(textDirection: _textDirection);
+    // Check if the new value is the same as the current local value, or is the same
+    // as the post-formatting value of the previous pass.
     final bool textChanged = _value?.text != value?.text;
+    final bool isRepeatText =
+        value?.text == _lastFormattedUnmodifiedTextEditingValue?.text;
+    final bool isRepeatSelection =
+        value?.selection == _lastFormattedUnmodifiedTextEditingValue?.selection;
+    final bool isRepeatComposing =
+        value?.composing == _lastFormattedUnmodifiedTextEditingValue?.composing;
+
     //https://github.com/flutter/flutter/issues/36048
     if (textChanged) {
       _hideSelectionOverlayIfNeeded();
     }
-    if (textChanged &&
+
+    // Only format when the text has changed and there are available formatters.
+    if (!isRepeatText &&
+        textChanged &&
         widget.inputFormatters != null &&
         widget.inputFormatters.isNotEmpty) {
-      for (TextInputFormatter formatter in widget.inputFormatters)
+      for (final TextInputFormatter formatter in widget.inputFormatters) {
         value = formatter.formatEditUpdate(_value, value);
-      _value = value;
-      _updateRemoteEditingValueIfNeeded();
-    } else {
-      _value = value;
+      }
+      // Always pass the text through the whitespace directionality formatter to
+      // maintain expected behavior with carets on trailing whitespace.
+      value = _whitespaceFormatter.formatEditUpdate(_value, value);
+      _lastFormattedValue = value;
     }
-    if (textChanged && widget.onChanged != null) widget.onChanged(value.text);
+
+    _value = value;
+    // Use the last formatted value when an identical repeat pass is detected.
+    if (isRepeatText &&
+        isRepeatSelection &&
+        isRepeatComposing &&
+        textChanged &&
+        _lastFormattedValue != null) {
+      _value = _lastFormattedValue;
+    }
+
+    // Always attempt to send the value. If the value has changed, then it will send,
+    // otherwise, it will short-circuit.
+    _updateRemoteEditingValueIfNeeded();
+    if (textChanged && widget.onChanged != null) {
+      widget.onChanged(value.text);
+    }
+    _lastFormattedUnmodifiedTextEditingValue = _receivedRemoteTextEditingValue;
   }
 
   void _onCursorColorTick() {
@@ -1467,7 +1572,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   void _startCursorTimer() {
     _targetCursorVisibility = true;
     _cursorBlinkOpacityController.value = 1.0;
-    if (ExtendedEditableText.debugDeterministicCursor) return;
+    if (ExtendedEditableText.debugDeterministicCursor) {
+      return;
+    }
     if (widget.cursorOpacityAnimates) {
       _cursorTimer =
           Timer.periodic(_kCursorBlinkWaitForStart, _cursorWaitForStart);
@@ -1481,8 +1588,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _cursorTimer = null;
     _targetCursorVisibility = false;
     _cursorBlinkOpacityController.value = 0.0;
-    if (ExtendedEditableText.debugDeterministicCursor) return;
-    if (resetCharTicks) _obscureShowCharTicksPending = 0;
+    if (ExtendedEditableText.debugDeterministicCursor) {
+      return;
+    }
+    if (resetCharTicks) {
+      _obscureShowCharTicksPending = 0;
+    }
     if (widget.cursorOpacityAnimates) {
       _cursorBlinkOpacityController.stop();
       _cursorBlinkOpacityController.value = 0.0;
@@ -1493,12 +1604,14 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (_cursorTimer == null && _hasFocus && _value.selection.isCollapsed)
       _startCursorTimer();
     else if (_cursorTimer != null &&
-        (!_hasFocus || !_value.selection.isCollapsed)) _stopCursorTimer();
+        (!_hasFocus || !_value.selection.isCollapsed)) {
+      _stopCursorTimer();
+    }
   }
 
   void _didChangeTextEditingValue() {
     final bool textChanged =
-        _value?.text != _lastKnownRemoteTextEditingValue?.text;
+        _value?.text != _lastFormattedUnmodifiedTextEditingValue?.text;
     //https://github.com/flutter/flutter/issues/36048
     if (textChanged) {
       _hideSelectionOverlayIfNeeded();
@@ -1507,7 +1620,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _startOrStopCursorTimerIfNeeded();
     _updateOrDisposeSelectionOverlayIfNeeded();
     _textChangedSinceLastCaretUpdate = true;
-    // (abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
+    // TODO(abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
     // to avoid this setState().
     setState(() {/* We use widget.controller.value in build(). */});
   }
@@ -1557,7 +1670,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   /// This property is typically used to notify the renderer of input gestures
   /// when [ignorePointer] is true. See [RenderEditable.ignorePointer].
   ExtendedRenderEditable get renderEditable =>
-      _editableKey.currentContext.findRenderObject();
+      _editableKey.currentContext.findRenderObject() as ExtendedRenderEditable;
 
   @override
   TextEditingValue get textEditingValue => _value;
@@ -1621,6 +1734,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   VoidCallback _semanticsOnCopy(TextSelectionControls controls) {
     return widget.selectionEnabled &&
+            copyEnabled &&
             _hasFocus &&
             controls?.canCopy(this) == true
         ? () => controls.handleCopy(this)
@@ -1629,6 +1743,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   VoidCallback _semanticsOnCut(TextSelectionControls controls) {
     return widget.selectionEnabled &&
+            cutEnabled &&
             _hasFocus &&
             controls?.canCut(this) == true
         ? () => controls.handleCut(this)
@@ -1637,6 +1752,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   VoidCallback _semanticsOnPaste(TextSelectionControls controls) {
     return widget.selectionEnabled &&
+            pasteEnabled &&
             _hasFocus &&
             controls?.canPaste(this) == true
         ? () => controls.handlePaste(this)
@@ -1662,8 +1778,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               offset.maxScrollExtent != null) {
             // pixels should >= minScrollExtent
             // pixels should <= maxScrollExtent
-            offset.correctPixels(offset.pixels
-                .clamp(offset.minScrollExtent, offset.maxScrollExtent));
+            offset.correctPixels(offset.pixels.clamp(
+                offset.minScrollExtent, offset.maxScrollExtent) as double);
           }
         }
 
@@ -1700,6 +1816,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               textWidthBasis: widget.textWidthBasis,
               obscureText: widget.obscureText,
               autocorrect: widget.autocorrect,
+              smartDashesType: widget.smartDashesType,
+              smartQuotesType: widget.smartQuotesType,
               enableSuggestions: widget.enableSuggestions,
               offset: offset,
               onSelectionChanged: _handleSelectionChanged,
@@ -1708,6 +1826,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               cursorWidth: widget.cursorWidth,
               cursorRadius: widget.cursorRadius,
               cursorOffset: widget.cursorOffset,
+              selectionHeightStyle: widget.selectionHeightStyle,
+              selectionWidthStyle: widget.selectionWidthStyle,
               paintCursorAboveText: widget.paintCursorAboveText,
               enableInteractiveSelection: widget.enableInteractiveSelection,
               textSelectionDelegate: this,
@@ -1725,21 +1845,31 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   /// By default makes text in composing range appear as underlined.
   /// Descendants can override this method to customize appearance of text.
   InlineSpan _buildTextSpan() {
-    if (!widget.obscureText && _value.composing.isValid && !widget.readOnly) {
+    if (widget.obscureText) {
+      String text = _value.text;
+      text = RenderEditable.obscuringCharacter * text.length;
+      final int o =
+          _obscureShowCharTicksPending > 0 ? _obscureLatestCharIndex : null;
+      if (o != null && o >= 0 && o < text.length)
+        text = text.replaceRange(o, o + 1, _value.text.substring(o, o + 1));
+      return TextSpan(style: widget.style, text: text);
+    }
+
+    if (_value.composing.isValid && !widget.readOnly) {
       final TextStyle composingStyle = widget.style.merge(
         const TextStyle(decoration: TextDecoration.underline),
       );
-      var beforeText = _value.composing.textBefore(_value.text);
-      var insideText = _value.composing.textInside(_value.text);
-      var afterText = _value.composing.textAfter(_value.text);
+      final String beforeText = _value.composing.textBefore(_value.text);
+      final String insideText = _value.composing.textInside(_value.text);
+      final String afterText = _value.composing.textAfter(_value.text);
 
       if (supportSpecialText) {
-        var before = widget.specialTextSpanBuilder
+        final TextSpan before = widget.specialTextSpanBuilder
             .build(beforeText, textStyle: widget.style);
-        var after = widget.specialTextSpanBuilder
+        final TextSpan after = widget.specialTextSpanBuilder
             .build(afterText, textStyle: widget.style);
 
-        List<InlineSpan> children = List<InlineSpan>();
+        final List<InlineSpan> children = <InlineSpan>[];
 
         if (before != null) {
           children.add(before);
@@ -1767,17 +1897,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       ]);
     }
 
-    String text = _value.text;
-    if (widget.obscureText) {
-      text = RenderEditable.obscuringCharacter * text.length;
-      final int o =
-          _obscureShowCharTicksPending > 0 ? _obscureLatestCharIndex : null;
-      if (o != null && o >= 0 && o < text.length)
-        text = text.replaceRange(o, o + 1, _value.text.substring(o, o + 1));
-    }
+    final String text = _value.text;
 
     if (supportSpecialText) {
-      var specialTextSpan =
+      final TextSpan specialTextSpan =
           widget.specialTextSpanBuilder?.build(text, textStyle: widget.style);
       if (specialTextSpan != null) {
         return specialTextSpan;
@@ -1786,9 +1909,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
     return TextSpan(style: widget.style, text: text);
   }
-
-  @override
-  TextEditingValue get currentTextEditingValue => _value;
 }
 
 class _Editable extends MultiChildRenderObjectWidget {
@@ -1816,6 +1936,8 @@ class _Editable extends MultiChildRenderObjectWidget {
     this.locale,
     this.obscureText,
     this.autocorrect,
+    this.smartDashesType,
+    this.smartQuotesType,
     this.enableSuggestions,
     this.offset,
     this.onSelectionChanged,
@@ -1824,9 +1946,11 @@ class _Editable extends MultiChildRenderObjectWidget {
     this.cursorWidth,
     this.cursorRadius,
     this.cursorOffset,
+    this.paintCursorAboveText,
+    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
     this.enableInteractiveSelection = true,
     this.textSelectionDelegate,
-    this.paintCursorAboveText,
     this.devicePixelRatio,
     this.supportSpecialText,
   })  : assert(textDirection != null),
@@ -1868,6 +1992,8 @@ class _Editable extends MultiChildRenderObjectWidget {
   final bool obscureText;
   final TextWidthBasis textWidthBasis;
   final bool autocorrect;
+  final SmartDashesType smartDashesType;
+  final SmartQuotesType smartQuotesType;
   final bool enableSuggestions;
   final ViewportOffset offset;
   final TextSelectionChangedHandler onSelectionChanged;
@@ -1876,10 +2002,12 @@ class _Editable extends MultiChildRenderObjectWidget {
   final double cursorWidth;
   final Radius cursorRadius;
   final Offset cursorOffset;
+  final bool paintCursorAboveText;
+  final ui.BoxHeightStyle selectionHeightStyle;
+  final ui.BoxWidthStyle selectionWidthStyle;
   final bool enableInteractiveSelection;
   final TextSelectionDelegate textSelectionDelegate;
   final double devicePixelRatio;
-  final bool paintCursorAboveText;
   final bool supportSpecialText;
 
   @override
@@ -1915,6 +2043,8 @@ class _Editable extends MultiChildRenderObjectWidget {
       cursorRadius: cursorRadius,
       cursorOffset: cursorOffset,
       paintCursorAboveText: paintCursorAboveText,
+      selectionHeightStyle: selectionHeightStyle,
+      selectionWidthStyle: selectionWidthStyle,
       enableInteractiveSelection: enableInteractiveSelection,
       textSelectionDelegate: textSelectionDelegate,
       devicePixelRatio: devicePixelRatio,
@@ -1953,8 +2083,189 @@ class _Editable extends MultiChildRenderObjectWidget {
       ..cursorWidth = cursorWidth
       ..cursorRadius = cursorRadius
       ..cursorOffset = cursorOffset
+      ..selectionHeightStyle = selectionHeightStyle
+      ..selectionWidthStyle = selectionWidthStyle
       ..textSelectionDelegate = textSelectionDelegate
       ..devicePixelRatio = devicePixelRatio
       ..paintCursorAboveText = paintCursorAboveText;
+  }
+}
+
+// This formatter inserts [Unicode.RLM] and [Unicode.LRM] into the
+// string in order to preserve expected caret behavior when trailing
+// whitespace is inserted.
+//
+// When typing in a direction that opposes the base direction
+// of the paragraph, un-enclosed whitespace gets the directionality
+// of the paragraph. This is often at odds with what is immeditely
+// being typed causing the caret to jump to the wrong side of the text.
+// This formatter makes use of the RLM and LRM to cause the text
+// shaper to inherently treat the whitespace as being surrounded
+// by the directionality of the previous non-whitespace codepoint.
+class _WhitespaceDirectionalityFormatter extends TextInputFormatter {
+  // The [textDirection] should be the base directionality of the
+  // paragraph/editable.
+  _WhitespaceDirectionalityFormatter({TextDirection textDirection})
+      : _baseDirection = textDirection,
+        _previousNonWhitespaceDirection = textDirection;
+
+  // Using regex here instead of ICU is suboptimal, but is enough
+  // to produce the correct results for any reasonable input where this
+  // is even relevant. Using full ICU would be a much heavier change,
+  // requiring exposure of the C++ ICU API.
+  //
+  // LTR covers most scripts and symbols, including but not limited to Latin,
+  // ideographic scripts (Chinese, Japanese, etc), Cyrilic, Indic, and
+  // SE Asian scripts.
+  final RegExp _ltrRegExp = RegExp(
+      r'[A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02B8\u0300-\u0590\u0800-\u1FFF\u2C00-\uFB1C\uFDFE-\uFE6F\uFEFD-\uFFFF]');
+  // RTL covers Arabic, Hebrew, and other RTL languages such as Urdu,
+  // Aramic, Farsi, Dhivehi.
+  final RegExp _rtlRegExp =
+      RegExp(r'[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]');
+  // Although whitespaces are not the only codepoints that have weak directionality,
+  // these are the primary cause of the caret being misplaced.
+  final RegExp _whitespaceRegExp = RegExp(r'\s');
+
+  final TextDirection _baseDirection;
+  // Tracks the directionality of the most recently encountered
+  // codepoint that was not whitespace. This becomes the direction of
+  // marker inserted to fully surround ambiguous whitespace.
+  TextDirection _previousNonWhitespaceDirection;
+
+  // Prevents the formatter from attempting more expensive formatting
+  // operations mixed directionality is found.
+  bool _hasOpposingDirection = false;
+
+  // See [Unicode.RLM] and [Unicode.LRM].
+  //
+  // We do not directly use the [Unicode] constants since they are strings.
+  static const int _rlm = 0x200F;
+  static const int _lrm = 0x200E;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Skip formatting (which can be more expensive) if there are no cases of
+    // mixing directionality. Once a case of mixed directionality is found,
+    // always perform the formatting.
+    if (!_hasOpposingDirection) {
+      _hasOpposingDirection = _baseDirection == TextDirection.ltr
+          ? _rtlRegExp.hasMatch(newValue.text)
+          : _ltrRegExp.hasMatch(newValue.text);
+    }
+
+    if (_hasOpposingDirection) {
+      _previousNonWhitespaceDirection = _baseDirection;
+
+      final List<int> outputCodepoints = <int>[];
+
+      // We add/subtract from these as we insert/remove markers.
+      int selectionBase = newValue.selection.baseOffset;
+      int selectionExtent = newValue.selection.extentOffset;
+      int composingStart = newValue.composing.start;
+      int composingEnd = newValue.composing.end;
+
+      void addToLength() {
+        selectionBase += outputCodepoints.length <= selectionBase ? 1 : 0;
+        selectionExtent += outputCodepoints.length <= selectionExtent ? 1 : 0;
+
+        composingStart += outputCodepoints.length <= composingStart ? 1 : 0;
+        composingEnd += outputCodepoints.length <= composingEnd ? 1 : 0;
+      }
+
+      void subtractFromLength() {
+        selectionBase -= outputCodepoints.length < selectionBase ? 1 : 0;
+        selectionExtent -= outputCodepoints.length < selectionExtent ? 1 : 0;
+
+        composingStart -= outputCodepoints.length < composingStart ? 1 : 0;
+        composingEnd -= outputCodepoints.length < composingEnd ? 1 : 0;
+      }
+
+      bool previousWasWhitespace = false;
+      bool previousWasDirectionalityMarker = false;
+      int previousNonWhitespaceCodepoint;
+      for (final int codepoint in newValue.text.runes) {
+        if (isWhitespace(codepoint)) {
+          // Only compute the directionality of the non-whitespace
+          // when the value is needed.
+          if (!previousWasWhitespace &&
+              previousNonWhitespaceCodepoint != null) {
+            _previousNonWhitespaceDirection =
+                getDirection(previousNonWhitespaceCodepoint);
+          }
+          // If we already added directionality for this run of whitespace,
+          // "shift" the marker added to the end of the whitespace run.
+          if (previousWasWhitespace) {
+            subtractFromLength();
+            outputCodepoints.removeLast();
+          }
+          outputCodepoints.add(codepoint);
+          addToLength();
+          outputCodepoints.add(
+              _previousNonWhitespaceDirection == TextDirection.rtl
+                  ? _rlm
+                  : _lrm);
+
+          previousWasWhitespace = true;
+          previousWasDirectionalityMarker = false;
+        } else if (isDirectionalityMarker(codepoint)) {
+          // Handle pre-existing directionality markers. Use pre-existing marker
+          // instead of the one we add.
+          if (previousWasWhitespace) {
+            subtractFromLength();
+            outputCodepoints.removeLast();
+          }
+          outputCodepoints.add(codepoint);
+
+          previousWasWhitespace = false;
+          previousWasDirectionalityMarker = true;
+        } else {
+          // If the whitespace was already enclosed by the same directionality,
+          // we can remove the artifically added marker.
+          if (!previousWasDirectionalityMarker &&
+              previousWasWhitespace &&
+              getDirection(codepoint) == _previousNonWhitespaceDirection) {
+            subtractFromLength();
+            outputCodepoints.removeLast();
+          }
+          // Normal character, track its codepoint add it to the string.
+          previousNonWhitespaceCodepoint = codepoint;
+          outputCodepoints.add(codepoint);
+
+          previousWasWhitespace = false;
+          previousWasDirectionalityMarker = false;
+        }
+      }
+      final String formatted = String.fromCharCodes(outputCodepoints);
+      return TextEditingValue(
+        text: formatted,
+        selection: TextSelection(
+            baseOffset: selectionBase,
+            extentOffset: selectionExtent,
+            affinity: newValue.selection.affinity,
+            isDirectional: newValue.selection.isDirectional),
+        composing: TextRange(start: composingStart, end: composingEnd),
+      );
+    }
+    return newValue;
+  }
+
+  bool isWhitespace(int value) {
+    return _whitespaceRegExp.hasMatch(String.fromCharCode(value));
+  }
+
+  bool isDirectionalityMarker(int value) {
+    return value == _rlm || value == _lrm;
+  }
+
+  TextDirection getDirection(int value) {
+    // Use the LTR version as short-circuiting will be more efficient since
+    // there are more LTR codepoints.
+    return _ltrRegExp.hasMatch(String.fromCharCode(value))
+        ? TextDirection.ltr
+        : TextDirection.rtl;
   }
 }

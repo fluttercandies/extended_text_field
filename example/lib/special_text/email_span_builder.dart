@@ -8,15 +8,17 @@ import 'email_text.dart';
 ///
 
 class EmailSpanBuilder extends SpecialTextSpanBuilder {
+  EmailSpanBuilder(this.controller, this.context);
   final TextEditingController controller;
   final BuildContext context;
-  EmailSpanBuilder(this.controller, this.context);
   @override
   SpecialText createSpecialText(String flag,
-      {TextStyle textStyle, onTap, int index}) {
-    if (flag == null || flag == "") return null;
+      {TextStyle textStyle,SpecialTextGestureTapCallback onTap, int index}) {
+    if (flag == null || flag == '') {
+      return null;
+    }
 
-    if (!flag.startsWith(" ") && !flag.startsWith("@")) {
+    if (!flag.startsWith(' ') && !flag.startsWith('@')) {
       return EmailText(textStyle, onTap,
           start: index,
           context: context,

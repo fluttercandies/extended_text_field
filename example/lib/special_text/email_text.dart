@@ -1,19 +1,18 @@
+import 'dart:ui' as ui show PlaceholderAlignment;
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui show PlaceholderAlignment;
 
 class EmailText extends SpecialText {
+  EmailText(TextStyle textStyle, SpecialTextGestureTapCallback onTap,
+      {this.start, this.controller, this.context, String startFlag})
+      : super(startFlag, ' ', textStyle, onTap: onTap);
   final TextEditingController controller;
   final int start;
   final BuildContext context;
-  EmailText(TextStyle textStyle, SpecialTextGestureTapCallback onTap,
-      {this.start, this.controller, this.context, String startFlag})
-      : super(startFlag, " ", textStyle, onTap: onTap);
-
   @override
   bool isEnd(String value) {
-    var index = value.indexOf("@");
-    var index1 = value.indexOf(".");
+    final int index = value.indexOf('@');
+    final int index1 = value.indexOf('.');
 
     return index >= 0 &&
         index1 >= 0 &&
@@ -31,11 +30,11 @@ class EmailText extends SpecialText {
       alignment: ui.PlaceholderAlignment.middle,
       child: GestureDetector(
         child: Padding(
-          padding: EdgeInsets.only(right: 5.0, top: 2.0, bottom: 2.0),
+          padding: const EdgeInsets.only(right: 5.0, top: 2.0, bottom: 2.0),
           child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderRadius: const BorderRadius.all(Radius.circular(5.0)),
               child: Container(
-                padding: EdgeInsets.all(5.0),
+                padding: const EdgeInsets.all(5.0),
                 color: Colors.orange,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -45,7 +44,7 @@ class EmailText extends SpecialText {
                       text.trim(),
                       //style: textStyle?.copyWith(color: Colors.orange),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 5.0,
                     ),
                     InkWell(
@@ -56,7 +55,7 @@ class EmailText extends SpecialText {
                       onTap: () {
                         controller.value = controller.value.copyWith(
                             text: controller.text
-                                .replaceRange(start, start + text.length, ""),
+                                .replaceRange(start, start + text.length, ''),
                             selection: TextSelection.fromPosition(
                                 TextPosition(offset: start)));
                       },
@@ -66,11 +65,11 @@ class EmailText extends SpecialText {
               )),
         ),
         onTap: () {
-          showDialog(
+          showDialog<void>(
               context: context,
               barrierDismissible: true,
-              builder: (c) {
-                TextEditingController textEditingController =
+              builder: (BuildContext c) {
+                final TextEditingController textEditingController =
                     TextEditingController()..text = text.trim();
                 return Column(
                   children: <Widget>[
@@ -79,22 +78,22 @@ class EmailText extends SpecialText {
                     ),
                     Material(
                         child: Padding(
-                      padding: EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(10.0),
                       child: TextField(
                         controller: textEditingController,
                         decoration: InputDecoration(
                             suffixIcon: FlatButton(
-                          child: Text("OK"),
+                          child: const Text('OK'),
                           onPressed: () {
                             controller.value = controller.value.copyWith(
                                 text: controller.text.replaceRange(
                                     start,
                                     start + text.length,
-                                    textEditingController.text + " "),
+                                    textEditingController.text + ' '),
                                 selection: TextSelection.fromPosition(
                                     TextPosition(
                                         offset: start +
-                                            (textEditingController.text + " ")
+                                            (textEditingController.text + ' ')
                                                 .length)));
 
                             Navigator.pop(context);

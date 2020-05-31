@@ -16,11 +16,11 @@ class EmojiText extends demo.EmojiText {
 
   @override
   InlineSpan finishText() {
-    var key = toString();
+    final String key = toString();
     if (EmojiUitl.instance.emojiMap.containsKey(key) && !kIsWeb) {
       //fontsize id define image height
       //size = 30.0/26.0 * fontSize
-      final double size = 20.0;
+      const double size = 20.0;
 
       ///fontSize 26 and text height =30.0
       //final double fontSize = 26.0;
@@ -31,7 +31,7 @@ class EmojiText extends demo.EmojiText {
           imageHeight: size,
           start: start,
           fit: BoxFit.fill,
-          margin: EdgeInsets.only(left: 2.0, right: 2.0));
+          margin: const EdgeInsets.only(left: 2.0, right: 2.0));
     }
 
     return TextSpan(text: toString(), style: textStyle);
@@ -39,21 +39,21 @@ class EmojiText extends demo.EmojiText {
 }
 
 class EmojiUitl {
-  final Map<String, String> _emojiMap = new Map<String, String>();
+  EmojiUitl._() {
+    for (int i = 1; i < 49; i++) {
+      _emojiMap['[$i]'] = '$_emojiFilePath/$i.png';
+    }
+  }
+
+  final Map<String, String> _emojiMap = <String, String>{};
 
   Map<String, String> get emojiMap => _emojiMap;
 
-  final String _emojiFilePath = "assets";
+  final String _emojiFilePath = 'assets';
 
   static EmojiUitl _instance;
   static EmojiUitl get instance {
-    if (_instance == null) _instance = new EmojiUitl._();
+    _instance ??= EmojiUitl._();
     return _instance;
-  }
-
-  EmojiUitl._() {
-    for (int i = 1; i < 49; i++) {
-      _emojiMap["[$i]"] = "$_emojiFilePath/$i.png";
-    }
   }
 }
