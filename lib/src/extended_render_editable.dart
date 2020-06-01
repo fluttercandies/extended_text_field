@@ -318,14 +318,15 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     ///
 
     final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
-
+    
+    //getCaretOffset ready has effectiveOffset
     final Offset startOffset = getCaretOffset(
       TextPosition(
         offset: selection.start,
         affinity: selection.affinity,
       ),
       effectiveOffset: effectiveOffset,
-      caretPrototype: Rect.zero,
+      caretPrototype: _caretPrototype,
       handleSpecialText: handleSpecialText,
     );
 
@@ -339,18 +340,19 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     const double visibleRegionSlop = 0.5;
     _selectionStartInViewport.value = visibleRegion
         .inflate(visibleRegionSlop)
-        .contains(startOffset + effectiveOffset);
-
+        .contains(startOffset);
+    
+    //getCaretOffset ready has effectiveOffset
     final Offset endOffset = getCaretOffset(
       TextPosition(offset: selection.end, affinity: selection.affinity),
       effectiveOffset: effectiveOffset,
-      caretPrototype: Rect.zero,
+      caretPrototype: _caretPrototype,
       handleSpecialText: handleSpecialText,
     );
 
     _selectionEndInViewport.value = visibleRegion
         .inflate(visibleRegionSlop)
-        .contains(endOffset + effectiveOffset);
+        .contains(endOffset);
   }
 
   ///some times _visibleRegionMinY will lower than 0.0;

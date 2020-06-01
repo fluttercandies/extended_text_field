@@ -1,3 +1,6 @@
+## [0.5.1]
+
+* Fix wrong calculation about selection handles.
   
 ## [0.5.0]
 
