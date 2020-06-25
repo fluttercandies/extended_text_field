@@ -1,5 +1,8 @@
 import 'dart:math';
 import 'package:example/common/toggle_button.dart';
+import 'package:example/special_text/at_text.dart';
+import 'package:example/special_text/dollar_text.dart';
+import 'package:example/special_text/my_extended_text_selection_controls.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_list/extended_list.dart';
 import 'package:extended_text/extended_text.dart';
@@ -7,10 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
 import 'package:ff_annotation_route/ff_annotation_route.dart';
-import 'package:flutter_candies_demo_library/flutter_candies_demo_library.dart'
-    hide MySpecialTextSpanBuilder;
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:example/special_text/emoji_text.dart' as emoji;
+import 'package:url_launcher/url_launcher.dart';
 
 @FFRoute(
     name: 'fluttercandies://TextDemo',
@@ -22,7 +24,6 @@ class TextDemo extends StatefulWidget {
 }
 
 class _TextDemoState extends State<TextDemo> {
-  TuChongRepository tuChongRepository;
   final TextEditingController _textEditingController = TextEditingController();
   final MyExtendedMaterialTextSelectionControls
       _myExtendedMaterialTextSelectionControls =
@@ -31,16 +32,13 @@ class _TextDemoState extends State<TextDemo> {
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
 
-  List<TuChongItem> images = <TuChongItem>[];
-
   final FocusNode _focusNode = FocusNode();
   double _keyboardHeight = 267.0;
   bool get showCustomKeyBoard =>
-      activeEmojiGird || activeAtGrid || activeDollarGrid || activeImageGrid;
+      activeEmojiGird || activeAtGrid || activeDollarGrid;
   bool activeEmojiGird = false;
   bool activeAtGrid = false;
   bool activeDollarGrid = false;
-  bool activeImageGrid = false;
   List<String> sessions = <String>[
     '[44] @Dota2 CN dota best dota',
     'yes, you are right [36].',
@@ -50,17 +48,6 @@ class _TextDemoState extends State<TextDemo> {
     'error 0 [45] warning 0',
   ];
 
-  @override
-  void initState() {
-    tuChongRepository = TuChongRepository();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    tuChongRepository.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +55,7 @@ class _TextDemoState extends State<TextDemo> {
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     if (keyboardHeight > 0) {
       activeEmojiGird =
-          activeAtGrid = activeDollarGrid = activeImageGrid = false;
+          activeAtGrid = activeDollarGrid = false;
     }
 
     _keyboardHeight = max(_keyboardHeight, keyboardHeight);
@@ -106,21 +93,6 @@ class _TextDemoState extends State<TextDemo> {
                     launch('https://github.com/fluttercandies');
                   } else if (value.toString().startsWith('@')) {
                     launch('mailto:zmtzawqlp@live.com');
-                  }
-                  //image
-                  else {
-                    final TuChongItem item = images.firstWhere(
-                        (TuChongItem x) => x.imageUrl == value.toString());
-                    Navigator.pushNamed(context, 'fluttercandies://picswiper',
-                        arguments: <String, dynamic>{
-                          'index': images.indexOf(item),
-                          'pics': item.images
-                              .map<PicSwiperItem>((ImageItem f) =>
-                                  PicSwiperItem(
-                                      picUrl: f.imageUrl, des: f.title))
-                              .toList(),
-                          'tuChongItem': item,
-                        });
                   }
                 },
               );
@@ -191,7 +163,7 @@ class _TextDemoState extends State<TextDemo> {
                           setState(() {
                             if (active) {
                               activeAtGrid =
-                                  activeDollarGrid = activeImageGrid = false;
+                                  activeDollarGrid  = false;
                               FocusScope.of(context).requestFocus(_focusNode);
                             }
                             activeEmojiGird = active;
@@ -226,7 +198,7 @@ class _TextDemoState extends State<TextDemo> {
                             setState(() {
                               if (active) {
                                 activeEmojiGird =
-                                    activeDollarGrid = activeImageGrid = false;
+                                    activeDollarGrid  = false;
                                 FocusScope.of(context).requestFocus(_focusNode);
                               }
                               activeAtGrid = active;
@@ -246,7 +218,7 @@ class _TextDemoState extends State<TextDemo> {
                             setState(() {
                               if (active) {
                                 activeEmojiGird =
-                                    activeAtGrid = activeImageGrid = false;
+                                    activeAtGrid  = false;
                                 FocusScope.of(context).requestFocus(_focusNode);
                               }
                               activeDollarGrid = active;
@@ -255,26 +227,6 @@ class _TextDemoState extends State<TextDemo> {
                           update(change);
                         },
                         active: activeDollarGrid),
-                    ToggleButton(
-                        activeWidget: Icon(
-                          Icons.picture_in_picture,
-                          color: Colors.orange,
-                        ),
-                        unActiveWidget: Icon(Icons.picture_in_picture),
-                        activeChanged: (bool active) {
-                          final Function change = () {
-                            setState(() {
-                              if (active) {
-                                activeEmojiGird =
-                                    activeAtGrid = activeDollarGrid = false;
-                                FocusScope.of(context).requestFocus(_focusNode);
-                              }
-                              activeImageGrid = active;
-                            });
-                          };
-                          update(change);
-                        },
-                        active: activeImageGrid),
                     Container(
                       width: 20.0,
                     )
@@ -326,11 +278,6 @@ class _TextDemoState extends State<TextDemo> {
     if (activeDollarGrid) {
       return buildDollarGrid();
     }
-    if (activeImageGrid)
-      return ImageGrid((TuChongItem item, String text) {
-        images.add(item);
-        insertText(text);
-      }, tuChongRepository);
     return Container();
   }
 
@@ -454,45 +401,4 @@ class _TextDemoState extends State<TextDemo> {
 
     _textEditingController.value = value;
   }
-}
-
-class ImageGrid extends StatefulWidget {
-  const ImageGrid(this.insertText, this.tuChongRepository);
-  final Function(TuChongItem item, String text) insertText;
-  final TuChongRepository tuChongRepository;
-  @override
-  _ImageGridState createState() => _ImageGridState();
-}
-
-class _ImageGridState extends State<ImageGrid>
-    with AutomaticKeepAliveClientMixin<ImageGrid> {
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-
-    return LoadingMoreList<TuChongItem>(ListConfig<TuChongItem>(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, crossAxisSpacing: 2.0, mainAxisSpacing: 2.0),
-        itemBuilder: (BuildContext context, TuChongItem item, int index) {
-          final String url = item.imageUrl;
-
-          ///<img src=‘http://pic2016.5442.com:82/2016/0513/12/3.jpg!960.jpg’/>
-          return GestureDetector(
-            child: ExtendedImage.network(
-              url,
-              fit: BoxFit.scaleDown,
-            ),
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              widget.insertText?.call(item,
-                  '<img src=\'$url\' width=\'${item.imageSize.width}\' height=\'${item.imageSize.height}\'/>');
-            },
-          );
-        },
-        padding: const EdgeInsets.all(5.0),
-        sourceList: widget.tuChongRepository));
-  }
-
-  @override
-  bool get wantKeepAlive => true;
 }

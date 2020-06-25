@@ -4,8 +4,6 @@
 // **************************************************************************
 
 import 'package:flutter/widgets.dart';
-
-import 'package:flutter_candies_demo_library/flutter_candies_demo_library_route.dart';
 import 'pages/custom_toolbar.dart';
 import 'pages/main_page.dart';
 import 'pages/text_demo.dart';
@@ -40,18 +38,6 @@ RouteResult getRouteResult({String name, Map<String, dynamic> arguments}) {
         name: name,
         widget: MainPage(),
         routeName: 'MainPage',
-      );
-    case 'fluttercandies://picswiper':
-      return RouteResult(
-        name: name,
-        widget: PicSwiper(
-          index: arguments['index'],
-          pics: arguments['pics'],
-          tuChongItem: arguments['tuChongItem'],
-        ),
-        showStatusBar: false,
-        routeName: 'PicSwiper',
-        pageRouteType: PageRouteType.transparent,
       );
     default:
       return const RouteResult(name: 'flutterCandies://notfound');

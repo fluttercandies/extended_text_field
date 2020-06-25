@@ -1,16 +1,21 @@
+## [2.0.0]
+
+* Breaking change: extended_text_library has changed to support OverFlowWidget [ExtendedText]
+* Fix textSelectionControls is not working.
+
 ## [1.0.1]
 
 * Fix wrong calculation about selection handles.
-  
+
 ## [1.0.0]
 
 * Merge code from 1.17.0
 * Fix analysis_options
-  
+
 ## [0.5.0]
 
 * Fix error caret offset on ios.
-  
+
 ## [0.4.9]
 
 * Fix error about TargetPlatform.macOS
@@ -26,10 +31,10 @@
 * Set limitation of flutter sdk >=1.12.13 <1.12.16
 * Add demo that how to delete text with code
 * Fix issue that not showing text while entering text from keyboard
-  
+
 ## [0.4.6]
 
-* Remove TargetPlatform.macOS 
+* Remove TargetPlatform.macOS
 
 ## [0.4.5]
 
@@ -38,7 +43,7 @@
 ## [0.4.4]
 
 * Fix wrong caret hegiht and postion
-* Make Ios/Android caret the same height 
+* Make Ios/Android caret the same height
 
 ## [0.4.3]
 

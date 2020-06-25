@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:extended_image/extended_image.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart' hide Element;
 import 'package:html/dom.dart' hide Text;
@@ -76,47 +75,10 @@ class ImageText extends SpecialText {
             onTap: () {
               onTap?.call(url);
             },
-            child: ExtendedImage.network(url,
+            child: Image.network(url,
                 width: width,
                 height: height,
                 fit: fit,
-                loadStateChanged: loadStateChanged)));
-  }
-
-  Widget loadStateChanged(ExtendedImageState state) {
-    switch (state.extendedImageLoadState) {
-      case LoadState.loading:
-        return Container(
-          color: Colors.grey,
-        );
-      case LoadState.completed:
-        return null;
-      case LoadState.failed:
-        state.imageProvider.evict();
-        return GestureDetector(
-          child: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              Image.asset(
-                'assets/failed.jpg',
-                fit: BoxFit.fill,
-              ),
-              const Positioned(
-                bottom: 0.0,
-                left: 0.0,
-                right: 0.0,
-                child: Text(
-                  'load image failed, click to reload',
-                  textAlign: TextAlign.center,
-                ),
-              )
-            ],
-          ),
-          onTap: () {
-            state.reLoadImage();
-          },
-        );
-    }
-    return null;
+                )));
   }
 }
