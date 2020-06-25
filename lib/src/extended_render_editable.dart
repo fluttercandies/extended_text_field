@@ -318,7 +318,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     ///
 
     final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
-    
+
     //getCaretOffset ready has effectiveOffset
     final Offset startOffset = getCaretOffset(
       TextPosition(
@@ -341,7 +341,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     _selectionStartInViewport.value = visibleRegion
         .inflate(visibleRegionSlop)
         .contains(startOffset);
-    
+
     //getCaretOffset ready has effectiveOffset
     final Offset endOffset = getCaretOffset(
       TextPosition(offset: selection.end, affinity: selection.affinity),
@@ -2013,4 +2013,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   @override
   Offset get effectiveOffset => _effectiveOffset;
+
+  @override
+  Widget get overFlowWidget => null;
 }

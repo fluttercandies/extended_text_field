@@ -867,6 +867,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
         break;
+
     }
 
     Widget child = RepaintBoundary(
