@@ -1,8 +1,6 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_candies_demo_library/flutter_candies_demo_library.dart';
 import 'package:oktoast/oktoast.dart';
 
 import 'example_route.dart';
@@ -14,9 +12,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp() {
-    clearDiskCachedImages(duration: const Duration(days: 7));
-  }
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -29,7 +24,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       builder: (BuildContext c, Widget w) {
-        ScreenUtil.init(width: 750, height: 1334, allowFontScaling: true);
         // ScreenUtil.instance =
         //     ScreenUtil(width: 750, height: 1334, allowFontScaling: true)
         //       ..init(c);

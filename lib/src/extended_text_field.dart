@@ -890,7 +890,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         forcePressEnabled = true;
-        textSelectionControls = extendedCupertinoTextSelectionControls;
+        textSelectionControls ??= extendedCupertinoTextSelectionControls;
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
         cursorColor ??= CupertinoTheme.of(context).primaryColor;
@@ -904,7 +904,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       case TargetPlatform.linux:
       case TargetPlatform.windows:
         forcePressEnabled = false;
-        textSelectionControls = extendedMaterialTextSelectionControls;
+        textSelectionControls ??= extendedMaterialTextSelectionControls;
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
         cursorColor ??= themeData.cursorColor;
