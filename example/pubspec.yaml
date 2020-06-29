@@ -30,7 +30,7 @@ dependencies:
   loading_more_list: any
   url_launcher: 5.3.0
   oktoast: ^2.1.4
-  extended_text: ^2.0.0
+  extended_text: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
