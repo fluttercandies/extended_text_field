@@ -2015,5 +2015,5 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   Offset get effectiveOffset => _effectiveOffset;
 
   @override
-  Widget get overFlowWidget => null;
+  Widget get overflowWidget => null;
 }

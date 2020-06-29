@@ -1,3 +1,7 @@
+## [3.0.0]
+
+* Breaking change: fix typos [OverflowWidget].
+
 ## [2.0.0]
 
 * Breaking change: extended_text_library has changed to support OverFlowWidget [ExtendedText]
