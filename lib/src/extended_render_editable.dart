@@ -323,13 +323,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   void _updateSelectionExtentsVisibility(
       Offset effectiveOffset, TextSelection selection) {
-    ///final Rect visibleRegion = Offset.zero & size;
-
     ///zmt
     ///caret may be less than 0, because it's bigger than text
-    ///
-
-    final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
+    // ///
+    // issue: #49
+    // final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
+    final Rect visibleRegion = Offset.zero & size;
 
     //getCaretOffset ready has effectiveOffset
     final Offset startOffset = getCaretOffset(
@@ -350,9 +349,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     // _applyFloatingPointHack. Ideally, the rounding mismatch will be fixed and
     // this can be changed to be a strict check instead of an approximation.
     const double visibleRegionSlop = 0.5;
-    _selectionStartInViewport.value = visibleRegion
-        .inflate(visibleRegionSlop)
-        .contains(startOffset);
+    _selectionStartInViewport.value =
+        visibleRegion.inflate(visibleRegionSlop).contains(startOffset);
 
     //getCaretOffset ready has effectiveOffset
     final Offset endOffset = getCaretOffset(
@@ -362,15 +360,14 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       handleSpecialText: handleSpecialText,
     );
 
-    _selectionEndInViewport.value = visibleRegion
-        .inflate(visibleRegionSlop)
-        .contains(endOffset);
+    _selectionEndInViewport.value =
+        visibleRegion.inflate(visibleRegionSlop).contains(endOffset);
   }
 
   ///some times _visibleRegionMinY will lower than 0.0;
   ///that the _selectionStartInViewport and _selectionEndInViewport will not right.
   ///
-  final double _visibleRegionMinY = -_kCaretHeightOffset;
+  //final double _visibleRegionMinY = -_kCaretHeightOffset;
 
 //   ///zmt
 //   void _updateVisibleRegionMinY() {
@@ -1549,11 +1546,18 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   double get preferredLineHeight => _textPainter.preferredLineHeight;
 
   double _preferredHeight(double width) {
+    final bool singleLine = maxLines == 1;
+
+    // issue: #67,#76
+    if (singleLine) {
+      //preferredLineHeight is not right for WidgetSpan.
+      return _textPainter.size.height;
+    }
     // Lock height to maxLines if needed
     final bool lockedMax = maxLines != null && minLines == null;
     final bool lockedBoth = minLines != null && minLines == maxLines;
-    final bool singleLine = maxLines == 1;
-    if (singleLine || lockedMax || lockedBoth) {
+
+    if (lockedMax || lockedBoth) {
       return preferredLineHeight * maxLines;
     }
 

@@ -1,3 +1,8 @@
+## [3.0.1]
+
+* Fix issue that text is clipped when maxLine is 1 and width is more than maxWidth.(#67,#76)
+* Fix issue that handles are not shown when the height of TextStyle is big than 1.0.(#49)
+
 ## [3.0.0]
 
 * Breaking change: fix typos [OverflowWidget].
