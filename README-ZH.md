@@ -4,8 +4,6 @@
 
 官方输入框的扩展组件，支持图片，@某人，自定义文字背景。也支持自定义菜单和选择器。
 
-基于Flutter SDK 1.7.8
-
 文档语言: [English](README.md) | [中文简体](README-ZH.md)
 
 - [extended_text_field](#extendedtextfield)
@@ -516,3 +514,7 @@ class EmailText extends SpecialText {
 ```
 
 [more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)
+
+## ☕️Buy me a coffee
+
+![img](http://zmtzawqlp.gitee.io/my_images/images/qrcode.png)
