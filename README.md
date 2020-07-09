@@ -4,8 +4,6 @@
 
 Extended official text field to build special text like inline image, @somebody, custom background etc quickly.It also support to build custom seleciton toolbar and handles.
 
-base on flutter sdk 1.7.8
-
 Language: [English](README.md) | [中文简体](README-ZH.md)
 
 - [extended_text_field](#extendedtextfield)
@@ -511,3 +509,7 @@ class EmailText extends SpecialText {
 ```
 
 [more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)
+
+## ☕️Buy me a coffee
+
+![img](http://zmtzawqlp.gitee.io/my_images/images/qrcode.png)
