@@ -48,7 +48,7 @@ class EmailText extends SpecialText {
                       width: 5.0,
                     ),
                     InkWell(
-                      child: Icon(
+                      child: const Icon(
                         Icons.close,
                         size: 15.0,
                       ),

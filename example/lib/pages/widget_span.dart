@@ -38,7 +38,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
         title: const Text('E-mail'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: () {},
           )
         ],
@@ -61,9 +61,10 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                   maxLines: null,
                   decoration: InputDecoration(
                       suffixIcon: IconButton(
-                        icon: Icon(Icons.add),
+                        icon: const Icon(Icons.add),
                         onPressed: () {
-                          final TextSelection selection = controller.selection.copyWith();
+                          final TextSelection selection =
+                              controller.selection.copyWith();
                           showDialog<void>(
                               context: context,
                               barrierDismissible: true,
@@ -86,8 +87,8 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                                                       selection);
                                                   Navigator.pop(context);
                                                 },
-                                                child:
-                                                    const Text('zmtzawqlp@live.com')),
+                                                child: const Text(
+                                                    'zmtzawqlp@live.com')),
                                             FlatButton(
                                                 onPressed: () {
                                                   insertEmail(
@@ -95,8 +96,8 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                                                       selection);
                                                   Navigator.pop(context);
                                                 },
-                                                child:
-                                                    const Text('410496936@qq.com')),
+                                                child: const Text(
+                                                    '410496936@qq.com')),
                                           ],
                                         ),
                                       )),
@@ -127,7 +128,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                 child: ExtendedTextField(
                   controller: controller1,
                   maxLines: null,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       border: InputBorder.none, hintText: 'input topic here'),
                 ),
               )
@@ -139,8 +140,8 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
               controller: controller2,
               maxLines: null,
               specialTextSpanBuilder: MySpecialTextSpanBuilder(),
-              decoration: InputDecoration(
-                  border: InputBorder.none, contentPadding: const EdgeInsets.all(10)),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, contentPadding: EdgeInsets.all(10)),
             ),
           )
         ],

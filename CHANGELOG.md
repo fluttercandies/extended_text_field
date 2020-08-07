@@ -1,3 +1,8 @@
+## [4.0.0]
+
+* Merge from Flutter v1.20
+* Support Autofill
+
 ## [3.0.1]
 
 * Fix issue that text is clipped when maxLine is 1 and width is more than maxWidth.(#67,#76)

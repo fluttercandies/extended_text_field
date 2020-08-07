@@ -15,7 +15,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=2.6.0 <3.0.0"
-
+  flutter: ">=1.20.0"
 dependencies:
   flutter:
     sdk: flutter
@@ -25,12 +25,12 @@ dependencies:
   cupertino_icons: ^0.1.2
   extended_text_field:
     path: ../
-#  extended_text: ^1.0.0
   extended_list: any
   loading_more_list: any
   url_launcher: 5.3.0
   oktoast: ^2.1.4
-  extended_text: ^3.0.0
+  extended_text: ^4.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

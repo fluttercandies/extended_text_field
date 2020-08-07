@@ -134,7 +134,9 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     this.ignorePointer = false,
     bool readOnly = false,
     bool forceLine = true,
+    TextHeightBehavior textHeightBehavior,
     TextWidthBasis textWidthBasis = TextWidthBasis.parent,
+    String obscuringCharacter = '•',
     bool obscureText = false,
     Locale locale,
     double cursorWidth = 1.0,
@@ -147,6 +149,9 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     bool enableInteractiveSelection,
     EdgeInsets floatingCursorAddedMargin =
         const EdgeInsets.fromLTRB(4, 4, 4, 5),
+    TextRange promptRectRange,
+    Color promptRectColor,
+    Clip clipBehavior = Clip.hardEdge,
     @required this.textSelectionDelegate,
     this.supportSpecialText,
     List<RenderBox> children,
@@ -159,7 +164,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         assert(endHandleLayerLink != null),
         assert(
           (maxLines == null) || (minLines == null) || (maxLines >= minLines),
-          'minLines can\'t be greater than maxLines',
+          "minLines can't be greater than maxLines",
         ),
         assert(expands != null),
         assert(
@@ -171,6 +176,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         assert(ignorePointer != null),
         assert(textWidthBasis != null),
         assert(paintCursorAboveText != null),
+        assert(obscuringCharacter != null &&
+            obscuringCharacter.characters.length == 1),
         assert(obscureText != null),
         assert(textSelectionDelegate != null),
         assert(cursorWidth != null && cursorWidth >= 0.0),
@@ -179,6 +186,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         assert(devicePixelRatio != null),
         assert(selectionHeightStyle != null),
         assert(selectionWidthStyle != null),
+        assert(clipBehavior != null),
         _handleSpecialText = hasSpecialText(text),
         _textPainter = TextPainter(
           text: text,
@@ -187,6 +195,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
           textScaleFactor: textScaleFactor,
           locale: locale,
           strutStyle: strutStyle,
+          textHeightBehavior: textHeightBehavior,
           textWidthBasis: textWidthBasis,
 //              supportSpecialText && hasSpecialText(text) ? null : strutStyle,
         ),
@@ -210,14 +219,20 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         _selectionWidthStyle = selectionWidthStyle,
         _startHandleLayerLink = startHandleLayerLink,
         _endHandleLayerLink = endHandleLayerLink,
+        _obscuringCharacter = obscuringCharacter,
         _obscureText = obscureText,
         _readOnly = readOnly,
-        _forceLine = forceLine {
+        _forceLine = forceLine,
+        _promptRectRange = promptRectRange,
+        _clipBehavior = clipBehavior {
     assert(_showCursor != null);
     assert(!_showCursor.value || cursorColor != null);
     this.hasFocus = hasFocus ?? false;
     addAll(children);
     extractPlaceholderSpans(text);
+    if (promptRectColor != null) {
+      _promptRectPaint.color = promptRectColor;
+    }
   }
 
   ///whether to support build SpecialText
@@ -226,9 +241,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   bool _handleSpecialText = false;
   @override
   bool get handleSpecialText => supportSpecialText && _handleSpecialText;
-
-  /// Character used to obscure text if [obscureText] is true.
-  static const String obscuringCharacter = '•';
 
   /// Called when the selection changes.
   ///
@@ -245,6 +257,16 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   ///
   /// The default value of this property is false.
   bool ignorePointer;
+
+  /// {@macro flutter.dart:ui.textHeightBehavior}
+  TextHeightBehavior get textHeightBehavior => _textPainter.textHeightBehavior;
+  set textHeightBehavior(TextHeightBehavior value) {
+    if (_textPainter.textHeightBehavior == value) {
+      return;
+    }
+    _textPainter.textHeightBehavior = value;
+    markNeedsTextLayout();
+  }
 
   /// {@macro flutter.widgets.text.DefaultTextStyle.textWidthBasis}
   TextWidthBasis get textWidthBasis => _textPainter.textWidthBasis;
@@ -268,6 +290,20 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     }
     _devicePixelRatio = value;
     markNeedsTextLayout();
+  }
+
+  /// Character used for obscuring text if [obscureText] is true.
+  ///
+  /// Cannot be null, and must have a length of exactly one.
+  String get obscuringCharacter => _obscuringCharacter;
+  String _obscuringCharacter;
+  set obscuringCharacter(String value) {
+    if (_obscuringCharacter == value) {
+      return;
+    }
+    assert(value != null && value.characters.length == 1);
+    _obscuringCharacter = value;
+    markNeedsLayout();
   }
 
   /// Whether to hide the text being edited (e.g., for passwords).
@@ -505,6 +541,75 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     }
   }
 
+  /// Returns the index into the string of the next character boundary after the
+  /// given index.
+  ///
+  /// The character boundary is determined by the characters package, so
+  /// surrogate pairs and extended grapheme clusters are considered.
+  ///
+  /// The index must be between 0 and string.length, inclusive. If given
+  /// string.length, string.length is returned.
+  ///
+  /// Setting includeWhitespace to false will only return the index of non-space
+  /// characters.
+  @visibleForTesting
+  static int nextCharacter(int index, String string,
+      [bool includeWhitespace = true]) {
+    assert(index >= 0 && index <= string.length);
+    if (index == string.length) {
+      return string.length;
+    }
+
+    int count = 0;
+    final Characters remaining =
+        string.characters.skipWhile((String currentString) {
+      if (count <= index) {
+        count += currentString.length;
+        return true;
+      }
+      if (includeWhitespace) {
+        return false;
+      }
+      return _isWhitespace(currentString.codeUnitAt(0));
+    });
+    return string.length - remaining.toString().length;
+  }
+
+  /// Returns the index into the string of the previous character boundary
+  /// before the given index.
+  ///
+  /// The character boundary is determined by the characters package, so
+  /// surrogate pairs and extended grapheme clusters are considered.
+  ///
+  /// The index must be between 0 and string.length, inclusive. If index is 0,
+  /// 0 will be returned.
+  ///
+  /// Setting includeWhitespace to false will only return the index of non-space
+  /// characters.
+  @visibleForTesting
+  static int previousCharacter(int index, String string,
+      [bool includeWhitespace = true]) {
+    assert(index >= 0 && index <= string.length);
+    if (index == 0) {
+      return 0;
+    }
+
+    int count = 0;
+    int lastNonWhitespace;
+    for (final String currentString in string.characters) {
+      if (!includeWhitespace &&
+          !_isWhitespace(
+              currentString.characters.first.toString().codeUnitAt(0))) {
+        lastNonWhitespace = count;
+      }
+      if (count + currentString.length >= index) {
+        return includeWhitespace ? count : lastNonWhitespace ?? 0;
+      }
+      count += currentString.length;
+    }
+    return 0;
+  }
+
   void _handleMovement(
     LogicalKeyboardKey key, {
     @required bool wordModifier,
@@ -523,24 +628,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     final bool upArrow = key == LogicalKeyboardKey.arrowUp;
     final bool downArrow = key == LogicalKeyboardKey.arrowDown;
 
-    // Find the previous non-whitespace character
-    int previousNonWhitespace(int extent) {
-      int result = math.max(extent - 1, 0);
-      while (result > 0 && _isWhitespace(plainText.codeUnitAt(result))) {
-        result -= 1;
-      }
-      return result;
-    }
-
-    int nextNonWhitespace(int extent) {
-      int result = math.min(extent + 1, plainText.length);
-      while (result < plainText.length &&
-          _isWhitespace(plainText.codeUnitAt(result))) {
-        result += 1;
-      }
-      return result;
-    }
-
     if ((rightArrow || leftArrow) && !(rightArrow && leftArrow)) {
       // Jump to begin/end of word.
       if (wordModifier) {
@@ -552,7 +639,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
           // boundary, since _selectWordAtOffset finds the word boundaries without
           // including whitespace.
           final int startPoint =
-              previousNonWhitespace(newSelection.extentOffset);
+              previousCharacter(newSelection.extentOffset, plainText, false);
           final TextSelection textSelection =
               selectWordAtOffset(TextPosition(offset: startPoint));
           newSelection =
@@ -562,7 +649,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
           // so we go forward to the first non-whitespace character before asking
           // for the word bounds, since _selectWordAtOffset finds the word
           // boundaries without including whitespace.
-          final int startPoint = nextNonWhitespace(newSelection.extentOffset);
+          final int startPoint =
+              nextCharacter(newSelection.extentOffset, plainText, false);
           final TextSelection textSelection =
               selectWordAtOffset(TextPosition(offset: startPoint));
           newSelection =
@@ -577,17 +665,17 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
           // bounds, since _selectLineAtOffset finds the line boundaries without
           // including whitespace (like the newline).
           final int startPoint =
-              previousNonWhitespace(newSelection.extentOffset);
+              previousCharacter(newSelection.extentOffset, plainText, false);
           final TextSelection textSelection =
               _selectLineAtOffset(TextPosition(offset: startPoint));
-          newSelection =
-              newSelection.copyWith(extentOffset: textSelection.baseOffset);
+          newSelection.copyWith(extentOffset: textSelection.baseOffset);
         } else {
           // When going right, we want to skip over any whitespace after the line,
           // so we go forward to the first non-whitespace character before asking
           // for the line bounds, since _selectLineAtOffset finds the line
           // boundaries without including whitespace (like the newline).
-          final int startPoint = nextNonWhitespace(newSelection.extentOffset);
+          final int startPoint =
+              nextCharacter(newSelection.extentOffset, plainText, false);
           final TextSelection textSelection =
               _selectLineAtOffset(TextPosition(offset: startPoint));
           newSelection =
@@ -595,16 +683,20 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         }
       } else {
         if (rightArrow && newSelection.extentOffset < plainText.length) {
-          newSelection = newSelection.copyWith(
-              extentOffset: newSelection.extentOffset + 1);
+          final int nextExtent =
+              nextCharacter(newSelection.extentOffset, plainText);
+          final int distance = nextExtent - newSelection.extentOffset;
+          newSelection = newSelection.copyWith(extentOffset: nextExtent);
           if (shift) {
-            _cursorResetLocation += 1;
+            _cursorResetLocation += distance;
           }
         } else if (leftArrow && newSelection.extentOffset > 0) {
-          newSelection = newSelection.copyWith(
-              extentOffset: newSelection.extentOffset - 1);
+          final int previousExtent =
+              previousCharacter(newSelection.extentOffset, plainText);
+          final int distance = newSelection.extentOffset - previousExtent;
+          newSelection = newSelection.copyWith(extentOffset: previousExtent);
           if (shift) {
-            _cursorResetLocation -= 1;
+            _cursorResetLocation -= distance;
           }
         }
       }
@@ -730,10 +822,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   }
 
   void _handleDelete() {
-    if (selection.textAfter(plainText).isNotEmpty) {
+    final String textAfter = selection.textAfter(plainText);
+    if (textAfter.isNotEmpty) {
+      final int deleteCount = nextCharacter(0, textAfter);
       textSelectionDelegate.textEditingValue = TextEditingValue(
         text: selection.textBefore(plainText) +
-            selection.textAfter(plainText).substring(1),
+            selection.textAfter(plainText).substring(deleteCount),
         selection: TextSelection.collapsed(offset: selection.start),
       );
     } else {
@@ -1011,15 +1105,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     if (_selection == value) {
       return;
     }
-    // Use the _fallbackAffinity when the set selection has a null
-    // affinity. This happens when the platform does not supply affinity,
-    // in which case using the fallback affinity computed from dart:ui will
-    // be superior to simply defaulting to TextAffinity.downstream.
-    if (value.affinity == null) {
-      _selection = value.copyWith(affinity: fallbackAffinity);
-    } else {
-      _selection = value;
-    }
+    _selection = value;
     _selectionRects = null;
     markNeedsPaint();
     markNeedsSemanticsUpdate();
@@ -1210,6 +1296,43 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     return enableInteractiveSelection ?? !obscureText;
   }
 
+  /// The color used to paint the prompt rectangle.
+  ///
+  /// The prompt rectangle will only be requested on non-web iOS applications.
+  Color get promptRectColor => _promptRectPaint.color;
+  set promptRectColor(Color newValue) {
+    // Painter.color can not be null.
+    if (newValue == null) {
+      setPromptRectRange(null);
+      return;
+    }
+
+    if (promptRectColor == newValue) {
+      return;
+    }
+
+    _promptRectPaint.color = newValue;
+    if (_promptRectRange != null) {
+      markNeedsPaint();
+    }
+  }
+
+  TextRange _promptRectRange;
+
+  /// Dismisses the currently displayed prompt rectangle and displays a new prompt rectangle
+  /// over [newRange] in the given color [promptRectColor].
+  ///
+  /// The prompt rectangle will only be requested on non-web iOS applications.
+  ///
+  /// When set to null, the currently displayed prompt rectangle (if any) will be dismissed.
+  void setPromptRectRange(TextRange newRange) {
+    // ignore: always_put_control_body_on_new_line
+    if (_promptRectRange == newRange) return;
+
+    _promptRectRange = newRange;
+    markNeedsPaint();
+  }
+
   /// The maximum amount the text is allowed to scroll.
   ///
   /// This value is only valid after layout and can change as additional
@@ -1219,6 +1342,21 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   double _maxScrollExtent = 0;
 
   double get _caretMargin => _kCaretGap + cursorWidth;
+
+  /// {@macro flutter.widgets.Clip}
+  ///
+  /// Defaults to [Clip.hardEdge], and must not be null.
+  Clip get clipBehavior => _clipBehavior;
+  Clip _clipBehavior = Clip.hardEdge;
+  set clipBehavior(Clip value) {
+    assert(value != null);
+    if (value != _clipBehavior) {
+      _clipBehavior = value;
+      markNeedsPaint();
+      markNeedsSemanticsUpdate();
+    }
+  }
+
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
     super.describeSemanticsConfiguration(config);
@@ -1602,13 +1740,23 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   @override
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
-    if (ignorePointer) {
-      return;
-    }
     assert(debugHandleEvent(event, entry));
-    if (event is PointerDownEvent && onSelectionChanged != null) {
-      _tap.addPointer(event);
-      _longPress.addPointer(event);
+    if (event is PointerDownEvent) {
+      assert(!debugNeedsLayout);
+      // Checks if there is any gesture recognizer in the text span.
+      final Offset offset = entry.localPosition;
+      final TextPosition position = _textPainter.getPositionForOffset(offset);
+      final InlineSpan span = _textPainter.text.getSpanForPosition(position);
+      if (span != null && span is TextSpan) {
+        final TextSpan textSpan = span;
+        textSpan.recognizer?.addPointer(event);
+      }
+
+      if (!ignorePointer && onSelectionChanged != null) {
+        // Propagates the pointer event to selection handlers.
+        _tap.addPointer(event);
+        _longPress.addPointer(event);
+      }
     }
   }
 
@@ -1965,6 +2113,24 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     return adjustedOffset;
   }
 
+  final Paint _promptRectPaint = Paint();
+  void _paintPromptRectIfNeeded(Canvas canvas, Offset effectiveOffset) {
+    if (_promptRectRange == null || promptRectColor == null) {
+      return;
+    }
+
+    final List<TextBox> boxes = _textPainter.getBoxesForSelection(
+      TextSelection(
+        baseOffset: _promptRectRange.start,
+        extentOffset: _promptRectRange.end,
+      ),
+    );
+
+    for (final TextBox box in boxes) {
+      canvas.drawRect(box.toRect().shift(effectiveOffset), _promptRectPaint);
+    }
+  }
+
   void _paintContents(PaintingContext context, Offset offset) {
     assert(
         textLayoutLastMaxWidth == constraints.maxWidth &&
@@ -2000,6 +2166,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
     ///zmt
     _paintSpecialText(context, effectiveOffset);
+    _paintPromptRectIfNeeded(context.canvas, effectiveOffset);
 
     // On iOS, the cursor is painted over the text, on Android, it's painted
     // under it.
