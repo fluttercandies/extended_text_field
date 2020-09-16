@@ -148,6 +148,7 @@ class ExtendedEditableText extends StatefulWidget {
     this.onChanged,
     this.onEditingComplete,
     this.onSubmitted,
+    this.onAppPrivateCommand,
     this.onSelectionChanged,
     this.onSelectionHandleTapped,
     List<TextInputFormatter> inputFormatters,
@@ -633,6 +634,11 @@ class ExtendedEditableText extends StatefulWidget {
   /// field.
   /// {@endtemplate}
   final ValueChanged<String> onSubmitted;
+
+  /// {@template flutter.widgets.editableText.onAppPrivateCommand}
+  /// Called when the result of an app private command is received.
+  /// {@endtemplate}
+  final AppPrivateCommandCallback onAppPrivateCommand;
 
   /// Called when the user changes the selection of text (including the cursor
   /// location).
@@ -1288,6 +1294,11 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         _finalizeEditing(false);
         break;
     }
+  }
+
+  @override
+  void performPrivateCommand(String action, Map<String, dynamic> data) {
+    widget.onAppPrivateCommand?.call(action, data);
   }
 
   // The original position of the caret on FloatingCursorDragState.start.
