@@ -188,6 +188,7 @@ class ExtendedTextField extends StatefulWidget {
     this.autofillHints,
     this.specialTextSpanBuilder,
     this.textSelectionControls,
+    this.onAppPrivateCommand,
     this.restorationId,
   })  : assert(textAlign != null),
         assert(readOnly != null),
@@ -617,6 +618,12 @@ class ExtendedTextField extends StatefulWidget {
   /// {@macro flutter.widgets.editableText.autofillHints}
   /// {@macro flutter.services.autofill.autofillHints}
   final Iterable<String> autofillHints;
+
+  /// {@template flutter.widgets.editableText.onAppPrivateCommand}
+  /// Called when the result of an app private command is received.
+  /// {@endtemplate}
+  final AppPrivateCommandCallback onAppPrivateCommand;
+
 
   /// {@template flutter.material.textfield.restorationId}
   /// Restoration ID to save and restore the state of the text field.
@@ -1091,6 +1098,61 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     }
 
     Widget child = RepaintBoundary(
+      child: ExtendedEditableText(
+        key: editableTextKey,
+        specialTextSpanBuilder: widget.specialTextSpanBuilder,
+        readOnly: widget.readOnly || !_isEnabled,
+        toolbarOptions: widget.toolbarOptions,
+        showCursor: widget.showCursor,
+        showSelectionHandles: _showSelectionHandles,
+        controller: controller,
+        focusNode: focusNode,
+        keyboardType: widget.keyboardType,
+        textInputAction: widget.textInputAction,
+        textCapitalization: widget.textCapitalization,
+        style: style,
+        strutStyle: widget.strutStyle,
+        textAlign: widget.textAlign,
+        textDirection: widget.textDirection,
+        autofocus: widget.autofocus,
+        obscuringCharacter: widget.obscuringCharacter,
+        obscureText: widget.obscureText,
+        autocorrect: widget.autocorrect,
+        smartDashesType: widget.smartDashesType,
+        smartQuotesType: widget.smartQuotesType,
+        enableSuggestions: widget.enableSuggestions,
+        maxLines: widget.maxLines,
+        minLines: widget.minLines,
+        expands: widget.expands,
+        selectionColor: themeData.textSelectionColor,
+        selectionControls:
+            widget.selectionEnabled ? textSelectionControls : null,
+        onChanged: widget.onChanged,
+        onSelectionChanged: _handleSelectionChanged,
+        onEditingComplete: widget.onEditingComplete,
+        onSubmitted: widget.onSubmitted,
+        onSelectionHandleTapped: _handleSelectionHandleTapped,
+        inputFormatters: formatters,
+        rendererIgnoresPointer: true,
+        cursorWidth: widget.cursorWidth,
+        cursorRadius: cursorRadius,
+        cursorColor: cursorColor,
+        selectionHeightStyle: widget.selectionHeightStyle,
+        selectionWidthStyle: widget.selectionWidthStyle,
+        cursorOpacityAnimates: cursorOpacityAnimates,
+        cursorOffset: cursorOffset,
+        paintCursorAboveText: paintCursorAboveText,
+        backgroundCursorColor: CupertinoColors.inactiveGray,
+        scrollPadding: widget.scrollPadding,
+        keyboardAppearance: keyboardAppearance,
+        enableInteractiveSelection: widget.enableInteractiveSelection,
+        dragStartBehavior: widget.dragStartBehavior,
+        scrollController: widget.scrollController,
+        scrollPhysics: widget.scrollPhysics,
+        mouseCursor: MouseCursor.defer, // TextField will handle the cursor
+        autofillHints: widget.autofillHints,
+        autocorrectionTextRectColor: autocorrectionTextRectColor,
+        onAppPrivateCommand: widget.onAppPrivateCommand,
       child: UnmanagedRestorationScope(
         bucket: bucket,
         child: ExtendedEditableText(

@@ -177,6 +177,7 @@ class ExtendedEditableText extends StatefulWidget {
     ),
     this.autofillHints,
     this.clipBehavior = Clip.hardEdge,
+    this.onAppPrivateCommand,
     this.restorationId,
   })  : assert(controller != null),
         assert(focusNode != null),
@@ -973,6 +974,12 @@ class ExtendedEditableText extends StatefulWidget {
   ///
   /// Defaults to [Clip.hardEdge].
   final Clip clipBehavior;
+
+  /// {@template flutter.widgets.editableText.onAppPrivateCommand}
+  /// Called when the result of an app private command is received.
+  /// {@endtemplate}
+  final AppPrivateCommandCallback onAppPrivateCommand;
+
 
   /// Restoration ID to save and restore the scroll offset of the
   /// [EditableText].
@@ -2558,6 +2565,11 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     );
 
     //return TextSpan(style: widget.style, text: text);
+  }
+
+  @override
+  void performPrivateCommand(String action, Map<String, dynamic> data) {
+    widget.onAppPrivateCommand(action, data);
   }
 }
 
