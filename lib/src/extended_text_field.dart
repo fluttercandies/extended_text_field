@@ -1,3 +1,5 @@
+// @dart = 2.8
+
 import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended_editable_text.dart';
 import 'package:extended_text_library/extended_text_library.dart';
@@ -167,9 +169,11 @@ class ExtendedTextField extends StatefulWidget {
     this.onChanged,
     this.onEditingComplete,
     this.onSubmitted,
+    this.onAppPrivateCommand,
     this.inputFormatters,
     this.enabled,
     this.cursorWidth = 2.0,
+    this.cursorHeight,
     this.cursorRadius,
     this.cursorColor,
     this.selectionHeightStyle = ui.BoxHeightStyle.tight,
@@ -186,6 +190,7 @@ class ExtendedTextField extends StatefulWidget {
     this.autofillHints,
     this.specialTextSpanBuilder,
     this.textSelectionControls,
+    this.restorationId,
   })  : assert(textAlign != null),
         assert(readOnly != null),
         assert(autofocus != null),
@@ -463,6 +468,9 @@ class ExtendedTextField extends StatefulWidget {
   ///    [TextInputAction.previous] for [textInputAction].
   final ValueChanged<String> onSubmitted;
 
+  /// {@macro flutter.widgets.editableText.onAppPrivateCommand}
+  final AppPrivateCommandCallback onAppPrivateCommand;
+
   /// {@macro flutter.widgets.editableText.inputFormatters}
   final List<TextInputFormatter> inputFormatters;
 
@@ -470,19 +478,34 @@ class ExtendedTextField extends StatefulWidget {
   /// [decoration] is rendered in grey.
   ///
   /// If non-null this property overrides the [decoration]'s
-  /// [Decoration.enabled] property.
+  /// [InputDecoration.enabled] property.
   final bool enabled;
 
   /// {@macro flutter.widgets.editableText.cursorWidth}
   final double cursorWidth;
 
+  /// {@macro flutter.widgets.editableText.cursorHeight}
+  final double cursorHeight;
+
   /// {@macro flutter.widgets.editableText.cursorRadius}
   final Radius cursorRadius;
 
-  /// The color to use when painting the cursor.
+  /// The color of the cursor.
   ///
-  /// Defaults to [ThemeData.cursorColor] or [CupertinoTheme.primaryColor]
-  /// depending on [ThemeData.platform].
+  /// The cursor indicates the current location of text insertion point in
+  /// the field.
+  ///
+  /// If this is null it will default to a value based on the following:
+  ///
+  /// * If the ambient [ThemeData.useTextSelectionTheme] is true then it
+  ///   will use the value of the ambient [TextSelectionThemeData.cursorColor].
+  ///   If that is null then if the [ThemeData.platform] is [TargetPlatform.iOS]
+  ///   or [TargetPlatform.macOS] then it will use [CupertinoThemeData.primaryColor].
+  ///   Otherwise it will use the value of [ColorScheme.primary] of [ThemeData.colorScheme].
+  ///
+  /// * If the ambient [ThemeData.useTextSelectionTheme] is false then it
+  ///   will use either [ThemeData.cursorColor] or [CupertinoThemeData.primaryColor]
+  ///   depending on [ThemeData.platform].
   final Color cursorColor;
 
   /// Controls how tall the selection highlight boxes are computed to be.
@@ -511,7 +534,7 @@ class ExtendedTextField extends StatefulWidget {
   /// {@macro flutter.widgets.scrollable.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
 
-  /// {@macro flutter.rendering.editable.selectionEnabled}
+  /// {@macro flutter.widgets.editableText.selectionEnabled}
   bool get selectionEnabled => enableInteractiveSelection;
 
   /// {@template flutter.material.textfield.onTap}
@@ -555,15 +578,15 @@ class ExtendedTextField extends StatefulWidget {
   /// the editing position.
   final MouseCursor mouseCursor;
 
-  /// Callback that generates a custom [InputDecorator.counter] widget.
+  /// Callback that generates a custom [InputDecoration.counter] widget.
   ///
   /// See [InputCounterWidgetBuilder] for an explanation of the passed in
   /// arguments.  The returned widget will be placed below the line in place of
-  /// the default widget built when [counterText] is specified.
+  /// the default widget built when [InputDecoration.counterText] is specified.
   ///
   /// The returned widget will be wrapped in a [Semantics] widget for
   /// accessibility, but it also needs to be accessible itself.  For example,
-  /// if returning a Text widget, set the [semanticsLabel] property.
+  /// if returning a Text widget, set the [Text.semanticsLabel] property.
   ///
   /// {@tool snippet}
   /// ```dart
@@ -587,7 +610,7 @@ class ExtendedTextField extends StatefulWidget {
   /// be created at all.
   final InputCounterWidgetBuilder buildCounter;
 
-  /// {@macro flutter.widgets.edtiableText.scrollPhysics}
+  /// {@macro flutter.widgets.editableText.scrollPhysics}
   final ScrollPhysics scrollPhysics;
 
   /// {@macro flutter.widgets.editableText.scrollController}
@@ -596,6 +619,25 @@ class ExtendedTextField extends StatefulWidget {
   /// {@macro flutter.widgets.editableText.autofillHints}
   /// {@macro flutter.services.autofill.autofillHints}
   final Iterable<String> autofillHints;
+
+  /// {@template flutter.material.textfield.restorationId}
+  /// Restoration ID to save and restore the state of the text field.
+  ///
+  /// If non-null, the text field will persist and restore its current scroll
+  /// offset and - if no [controller] has been provided - the content of the
+  /// text field. If a [controller] has been provided, it is the responsibility
+  /// of the owner of that controller to persist and restore it, e.g. by using
+  /// a [RestorableTextEditingController].
+  ///
+  /// The state of this widget is persisted in a [RestorationBucket] claimed
+  /// from the surrounding [RestorationScope] using the provided restoration ID.
+  ///
+  /// See also:
+  ///
+  ///  * [RestorationManager], which explains how state restoration works in
+  ///    Flutter.
+  /// {@endtemplate}
+  final String restorationId;
   @override
   _ExtendedTextFieldState createState() => _ExtendedTextFieldState();
 
@@ -661,6 +703,8 @@ class ExtendedTextField extends StatefulWidget {
         defaultValue: null));
     properties
         .add(DoubleProperty('cursorWidth', cursorWidth, defaultValue: 2.0));
+    properties
+        .add(DoubleProperty('cursorHeight', cursorHeight, defaultValue: null));
     properties.add(DiagnosticsProperty<Radius>('cursorRadius', cursorRadius,
         defaultValue: null));
     properties
@@ -685,10 +729,11 @@ class ExtendedTextField extends StatefulWidget {
 }
 
 class _ExtendedTextFieldState extends State<ExtendedTextField>
+    with RestorationMixin
     implements ExtendedTextSelectionGestureDetectorBuilderDelegate {
-  TextEditingController _controller;
+  RestorableTextEditingController _controller;
   TextEditingController get _effectiveController =>
-      widget.controller ?? _controller;
+      widget.controller ?? _controller.value;
 
   FocusNode _focusNode;
   FocusNode get _effectiveFocusNode =>
@@ -819,7 +864,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       requestKeyboard: _requestKeyboard,
     );
     if (widget.controller == null) {
-      _controller = TextEditingController();
+      _createLocalController();
     }
     _effectiveFocusNode.canRequestFocus = _isEnabled;
   }
@@ -847,10 +892,13 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   @override
   void didUpdateWidget(ExtendedTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.controller == null && oldWidget.controller != null)
-      _controller = TextEditingController.fromValue(oldWidget.controller.value);
-    else if (widget.controller != null && oldWidget.controller == null)
+    if (widget.controller == null && oldWidget.controller != null) {
+      _createLocalController(oldWidget.controller.value);
+    } else if (widget.controller != null && oldWidget.controller == null) {
+      unregisterFromRestoration(_controller);
+      _controller.dispose();
       _controller = null;
+    }
     _effectiveFocusNode.canRequestFocus = _canRequestFocus;
     if (_effectiveFocusNode.hasFocus && widget.readOnly != oldWidget.readOnly) {
       if (_effectiveController.selection.isCollapsed) {
@@ -860,8 +908,33 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   }
 
   @override
+  void restoreState(RestorationBucket oldBucket, bool initialRestore) {
+    if (_controller != null) {
+      _registerController();
+    }
+  }
+
+  void _registerController() {
+    assert(_controller != null);
+    registerForRestoration(_controller, 'controller');
+  }
+
+  void _createLocalController([TextEditingValue value]) {
+    assert(_controller == null);
+    _controller = value == null
+        ? RestorableTextEditingController()
+        : RestorableTextEditingController.fromValue(value);
+    if (!restorePending) {
+      _registerController();
+    }
+  }
+
+  @override
+  String get restorationId => widget.restorationId;
+  @override
   void dispose() {
     _focusNode?.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -901,6 +974,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   void _handleSelectionChanged(
       TextSelection selection, SelectionChangedCause cause) {
     final bool willShowSelectionHandles = _shouldShowSelectionHandles(cause);
+
     if (willShowSelectionHandles != _showSelectionHandles) {
       setState(() {
         _showSelectionHandles = willShowSelectionHandles;
@@ -936,11 +1010,15 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     }
   }
 
+  Color _defaultSelectionColor(BuildContext context, Color primary) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return primary.withOpacity(isDark ? 0.40 : 0.12);
+  }
+
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterial(context));
-    // TODO(jonahwilliams): uncomment out this check once we have migrated tests.
-    // assert(debugCheckHasMaterialLocalizations(context));
+    assert(debugCheckHasMaterialLocalizations(context));
     assert(debugCheckHasDirectionality(context));
     assert(
       !(widget.style != null &&
@@ -949,10 +1027,12 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       'inherit false style must supply fontSize and textBaseline',
     );
 
-    final ThemeData themeData = Theme.of(context);
-    final TextStyle style = themeData.textTheme.subtitle1.merge(widget.style);
+    final ThemeData theme = Theme.of(context);
+    final TextSelectionThemeData selectionTheme =
+        TextSelectionTheme.of(context);
+    final TextStyle style = theme.textTheme.subtitle1.merge(widget.style);
     final Brightness keyboardAppearance =
-        widget.keyboardAppearance ?? themeData.primaryColorBrightness;
+        widget.keyboardAppearance ?? theme.primaryColorBrightness;
     final TextEditingController controller = _effectiveController;
     final FocusNode focusNode = _effectiveFocusNode;
     final List<TextInputFormatter> formatters =
@@ -965,21 +1045,31 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     bool cursorOpacityAnimates;
     Offset cursorOffset;
     Color cursorColor = widget.cursorColor;
+    Color selectionColor;
     Color autocorrectionTextRectColor;
     Radius cursorRadius = widget.cursorRadius;
 
-    switch (themeData.platform) {
+    switch (theme.platform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         forcePressEnabled = true;
         textSelectionControls ??= extendedCupertinoTextSelectionControls;
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
-        cursorColor ??= CupertinoTheme.of(context).primaryColor;
+        if (theme.useTextSelectionTheme) {
+          cursorColor ??= selectionTheme.cursorColor ??
+              CupertinoTheme.of(context).primaryColor;
+          selectionColor = selectionTheme.selectionColor ??
+              _defaultSelectionColor(
+                  context, CupertinoTheme.of(context).primaryColor);
+        } else {
+          cursorColor ??= CupertinoTheme.of(context).primaryColor;
+          selectionColor = theme.textSelectionColor;
+        }
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
-        autocorrectionTextRectColor = themeData.textSelectionColor;
+        autocorrectionTextRectColor = selectionColor;
         break;
 
       case TargetPlatform.android:
@@ -990,65 +1080,80 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         textSelectionControls ??= extendedMaterialTextSelectionControls;
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
-        cursorColor ??= themeData.cursorColor;
+        if (theme.useTextSelectionTheme) {
+          cursorColor ??=
+              selectionTheme.cursorColor ?? theme.colorScheme.primary;
+          selectionColor = selectionTheme.selectionColor ??
+              _defaultSelectionColor(context, theme.colorScheme.primary);
+        } else {
+          cursorColor ??= theme.cursorColor;
+          selectionColor = theme.textSelectionColor;
+        }
         break;
     }
 
     Widget child = RepaintBoundary(
-      child: ExtendedEditableText(
-        key: editableTextKey,
-        specialTextSpanBuilder: widget.specialTextSpanBuilder,
-        readOnly: widget.readOnly || !_isEnabled,
-        toolbarOptions: widget.toolbarOptions,
-        showCursor: widget.showCursor,
-        showSelectionHandles: _showSelectionHandles,
-        controller: controller,
-        focusNode: focusNode,
-        keyboardType: widget.keyboardType,
-        textInputAction: widget.textInputAction,
-        textCapitalization: widget.textCapitalization,
-        style: style,
-        strutStyle: widget.strutStyle,
-        textAlign: widget.textAlign,
-        textDirection: widget.textDirection,
-        autofocus: widget.autofocus,
-        obscuringCharacter: widget.obscuringCharacter,
-        obscureText: widget.obscureText,
-        autocorrect: widget.autocorrect,
-        smartDashesType: widget.smartDashesType,
-        smartQuotesType: widget.smartQuotesType,
-        enableSuggestions: widget.enableSuggestions,
-        maxLines: widget.maxLines,
-        minLines: widget.minLines,
-        expands: widget.expands,
-        selectionColor: themeData.textSelectionColor,
-        selectionControls:
-            widget.selectionEnabled ? textSelectionControls : null,
-        onChanged: widget.onChanged,
-        onSelectionChanged: _handleSelectionChanged,
-        onEditingComplete: widget.onEditingComplete,
-        onSubmitted: widget.onSubmitted,
-        onSelectionHandleTapped: _handleSelectionHandleTapped,
-        inputFormatters: formatters,
-        rendererIgnoresPointer: true,
-        cursorWidth: widget.cursorWidth,
-        cursorRadius: cursorRadius,
-        cursorColor: cursorColor,
-        selectionHeightStyle: widget.selectionHeightStyle,
-        selectionWidthStyle: widget.selectionWidthStyle,
-        cursorOpacityAnimates: cursorOpacityAnimates,
-        cursorOffset: cursorOffset,
-        paintCursorAboveText: paintCursorAboveText,
-        backgroundCursorColor: CupertinoColors.inactiveGray,
-        scrollPadding: widget.scrollPadding,
-        keyboardAppearance: keyboardAppearance,
-        enableInteractiveSelection: widget.enableInteractiveSelection,
-        dragStartBehavior: widget.dragStartBehavior,
-        scrollController: widget.scrollController,
-        scrollPhysics: widget.scrollPhysics,
-        mouseCursor: MouseCursor.defer, // TextField will handle the cursor
-        autofillHints: widget.autofillHints,
-        autocorrectionTextRectColor: autocorrectionTextRectColor,
+      child: UnmanagedRestorationScope(
+        bucket: bucket,
+        child: ExtendedEditableText(
+          key: editableTextKey,
+          specialTextSpanBuilder: widget.specialTextSpanBuilder,
+          readOnly: widget.readOnly || !_isEnabled,
+          toolbarOptions: widget.toolbarOptions,
+          showCursor: widget.showCursor,
+          showSelectionHandles: _showSelectionHandles,
+          controller: controller,
+          focusNode: focusNode,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          textCapitalization: widget.textCapitalization,
+          style: style,
+          strutStyle: widget.strutStyle,
+          textAlign: widget.textAlign,
+          textDirection: widget.textDirection,
+          autofocus: widget.autofocus,
+          obscuringCharacter: widget.obscuringCharacter,
+          obscureText: widget.obscureText,
+          autocorrect: widget.autocorrect,
+          smartDashesType: widget.smartDashesType,
+          smartQuotesType: widget.smartQuotesType,
+          enableSuggestions: widget.enableSuggestions,
+          maxLines: widget.maxLines,
+          minLines: widget.minLines,
+          expands: widget.expands,
+          selectionColor: selectionColor,
+
+          selectionControls:
+              widget.selectionEnabled ? textSelectionControls : null,
+          onChanged: widget.onChanged,
+          onSelectionChanged: _handleSelectionChanged,
+          onEditingComplete: widget.onEditingComplete,
+          onSubmitted: widget.onSubmitted,
+          onAppPrivateCommand: widget.onAppPrivateCommand,
+          onSelectionHandleTapped: _handleSelectionHandleTapped,
+          inputFormatters: formatters,
+          rendererIgnoresPointer: true,
+          mouseCursor: MouseCursor.defer, // TextField will handle the cursor
+          cursorWidth: widget.cursorWidth,
+          cursorHeight: widget.cursorHeight,
+          cursorRadius: cursorRadius,
+          cursorColor: cursorColor,
+          selectionHeightStyle: widget.selectionHeightStyle,
+          selectionWidthStyle: widget.selectionWidthStyle,
+          cursorOpacityAnimates: cursorOpacityAnimates,
+          cursorOffset: cursorOffset,
+          paintCursorAboveText: paintCursorAboveText,
+          backgroundCursorColor: CupertinoColors.inactiveGray,
+          scrollPadding: widget.scrollPadding,
+          keyboardAppearance: keyboardAppearance,
+          enableInteractiveSelection: widget.enableInteractiveSelection,
+          dragStartBehavior: widget.dragStartBehavior,
+          scrollController: widget.scrollController,
+          scrollPhysics: widget.scrollPhysics,
+          autofillHints: widget.autofillHints,
+          autocorrectionTextRectColor: autocorrectionTextRectColor,
+          restorationId: 'editable',
+        ),
       ),
     );
 

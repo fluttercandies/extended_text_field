@@ -6,16 +6,17 @@
 
 文档语言: [English](README.md) | [中文简体](README-ZH.md)
 
-- [extended_text_field](#extendedtextfield)
-  - [限制](#%e9%99%90%e5%88%b6)
-  - [特殊文本](#%e7%89%b9%e6%ae%8a%e6%96%87%e6%9c%ac)
-    - [创建特殊文本](#%e5%88%9b%e5%bb%ba%e7%89%b9%e6%ae%8a%e6%96%87%e6%9c%ac)
-    - [特殊文本Builder](#%e7%89%b9%e6%ae%8a%e6%96%87%e6%9c%acbuilder)
-  - [图片](#%e5%9b%be%e7%89%87)
+- [extended_text_field](#extended_text_field)
+  - [限制](#限制)
+  - [特殊文本](#特殊文本)
+    - [创建特殊文本](#创建特殊文本)
+    - [特殊文本Builder](#特殊文本builder)
+  - [图片](#图片)
     - [ImageSpan](#imagespan)
-    - [缓存图片](#%e7%bc%93%e5%ad%98%e5%9b%be%e7%89%87)
-  - [文本选择控制器](#%e6%96%87%e6%9c%ac%e9%80%89%e6%8b%a9%e6%8e%a7%e5%88%b6%e5%99%a8)
+    - [缓存图片](#缓存图片)
+  - [文本选择控制器](#文本选择控制器)
   - [WidgetSpan](#widgetspan)
+  - [☕️Buy me a coffee](#️buy-me-a-coffee)
 
 ## 限制
 
@@ -131,8 +132,6 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
 ```
 其实你也不是一定要用这套代码将字符串转换为TextSpan，你可以有自己的方法，给最后的TextSpan就可以了。
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
-
 ## 图片
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_image.gif)
@@ -226,8 +225,6 @@ ExtendedNetworkImageProvider(
 ///  <param name="duration">timespan to compute whether file has expired or not</param>
 Future<bool> clearDiskCachedImages({Duration duration}) async
 ```
-
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
 
 ## 文本选择控制器
 
@@ -390,8 +387,6 @@ class _TextSelectionToolbar extends StatelessWidget {
 
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/custom_toolbar.dart)
-
 ## WidgetSpan
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/widget_span.gif)
@@ -512,8 +507,6 @@ class EmailText extends SpecialText {
   }
 }
 ```
-
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)
 
 ## ☕️Buy me a coffee
 

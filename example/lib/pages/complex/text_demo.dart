@@ -15,9 +15,14 @@ import 'package:example/special_text/emoji_text.dart' as emoji;
 import 'package:url_launcher/url_launcher.dart';
 
 @FFRoute(
-    name: 'fluttercandies://TextDemo',
-    routeName: 'text',
-    description: 'build special text and inline image in text field')
+  name: 'fluttercandies://TextDemo',
+  routeName: 'text',
+  description: 'build special text and inline image in text field',
+  exts: <String, dynamic>{
+    'group': 'Complex',
+    'order': 0,
+  },
+)
 class TextDemo extends StatefulWidget {
   @override
   _TextDemoState createState() => _TextDemoState();

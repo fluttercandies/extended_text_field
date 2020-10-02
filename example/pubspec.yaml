@@ -15,7 +15,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=2.6.0 <3.0.0"
-  flutter: ">=1.20.0"
+  flutter: ">=1.22.0"
 dependencies:
   flutter:
     sdk: flutter
@@ -25,8 +25,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   extended_text_field:
     path: ../
-  extended_list: any
-  loading_more_list: any
+  loading_more_list: ^3.1.1
   url_launcher: 5.3.0
   oktoast: ^2.1.4
   extended_text: ^4.0.0
@@ -34,7 +33,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  ff_annotation_route: any
+  ff_annotation_route: ^4.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

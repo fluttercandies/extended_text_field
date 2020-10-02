@@ -6,7 +6,7 @@ Extended official text field to build special text like inline image, @somebody,
 
 Language: [English](README.md) | [中文简体](README-ZH.md)
 
-- [extended_text_field](#extendedtextfield)
+- [extended_text_field](#extended_text_field)
   - [Limitation](#limitation)
   - [Speical Text](#speical-text)
     - [Create Speical Text](#create-speical-text)
@@ -126,8 +126,6 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
 }
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
-
 ## Image
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field_image.gif)
@@ -221,8 +219,6 @@ ExtendedNetworkImageProvider(
 ///  <param name="duration">timespan to compute whether file has expired or not</param>
 Future<bool> clearDiskCachedImages({Duration duration}) async
 ```
-
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
 
 ## TextSelectionControls
 
@@ -385,8 +381,6 @@ class _TextSelectionToolbar extends StatelessWidget {
 
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/custom_toolbar.dart)
-
 ## WidgetSpan
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/widget_span.gif)
@@ -508,8 +502,5 @@ class EmailText extends SpecialText {
 }
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)
 
-## ☕️Buy me a coffee
 
-![img](http://zmtzawqlp.gitee.io/my_images/images/qrcode.png)

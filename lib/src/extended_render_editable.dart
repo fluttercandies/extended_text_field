@@ -1,3 +1,4 @@
+// @dart = 2.8
 import 'dart:async';
 
 // Copyright 2015 The Chromium Authors. All rights reserved.
@@ -140,6 +141,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     bool obscureText = false,
     Locale locale,
     double cursorWidth = 1.0,
+    double cursorHeight,
     Radius cursorRadius,
     bool paintCursorAboveText = false,
     Offset cursorOffset,
@@ -181,6 +183,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         assert(obscureText != null),
         assert(textSelectionDelegate != null),
         assert(cursorWidth != null && cursorWidth >= 0.0),
+       assert(cursorHeight == null || cursorHeight >= 0.0),
         assert(readOnly != null),
         assert(forceLine != null),
         assert(devicePixelRatio != null),
@@ -209,6 +212,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         _selection = selection,
         _offset = offset,
         _cursorWidth = cursorWidth,
+       _cursorHeight = cursorHeight,
         _cursorRadius = cursorRadius,
         _paintCursorOnTop = paintCursorAboveText,
         _cursorOffset = cursorOffset,
@@ -620,6 +624,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       // If both modifiers are down, nothing happens on any of the platforms.
       return;
     }
+    assert(selection != null);
 
     TextSelection newSelection = selection;
 
@@ -1141,6 +1146,22 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       return;
     }
     _cursorWidth = value;
+    markNeedsLayout();
+  }
+
+  /// How tall the cursor will be.
+  ///
+  /// This can be null, in which case the getter will actually return [preferredLineHeight].
+  ///
+  /// Setting this to itself fixes the value to the current [preferredLineHeight]. Setting
+  /// this to null returns the behaviour of deferring to [preferredLineHeight].
+  // TODO(ianh): This is a confusing API. We should have a separate getter for the effective cursor height.
+  double get cursorHeight => _cursorHeight ?? preferredLineHeight;
+  double _cursorHeight;
+  set cursorHeight(double value) {
+    if (_cursorHeight == value)
+      return;
+    _cursorHeight = value;
     markNeedsLayout();
   }
 
@@ -1842,20 +1863,20 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// On iOS, the cursor is taller than the cursor on Android. The height
   /// of the cursor for iOS is approximate and obtained through an eyeball
   /// comparison.
-  Rect get _getCaretPrototype {
+  void _computeCaretPrototype() {
     assert(defaultTargetPlatform != null);
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
-        return Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight + 2);
+        _caretPrototype = Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight + 2);
+        break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
-        return Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth,
-            preferredLineHeight - 2.0 * _kCaretHeightOffset);
+        _caretPrototype = Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth, cursorHeight - 2.0 * _kCaretHeightOffset);
+        break;
     }
-    return null;
   }
 
   @override
@@ -1866,7 +1887,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         maxWidth: constraints.maxWidth,
         forceLayout: true);
     setParentData();
-    _caretPrototype = _getCaretPrototype;
+     _computeCaretPrototype();
     _selectionRects = null;
     // We grab _textPainter.size here because assigning to `size` on the next
     // line will trigger us to validate our intrinsic sizes, which will change

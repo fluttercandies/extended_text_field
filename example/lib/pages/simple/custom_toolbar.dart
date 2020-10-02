@@ -9,9 +9,14 @@ import 'package:ff_annotation_route/ff_annotation_route.dart';
 ///
 
 @FFRoute(
-    name: 'fluttercandies://CustomToolBar',
-    routeName: 'custom toolbar',
-    description: 'custom selection toolbar and handles for text field')
+  name: 'fluttercandies://CustomToolBar',
+  routeName: 'custom toolbar',
+  description: 'custom selection toolbar and handles for text field',
+  exts: <String, dynamic>{
+    'group': 'Simple',
+    'order': 0,
+  },
+)
 class CustomToolBar extends StatefulWidget {
   @override
   _CustomToolBarState createState() => _CustomToolBarState();
