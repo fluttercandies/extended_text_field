@@ -1158,7 +1158,9 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   double get cursorHeight => _cursorHeight ?? preferredLineHeight;
   double _cursorHeight;
   set cursorHeight(double value) {
-    if (_cursorHeight == value) return;
+    if (_cursorHeight == value) {
+      return;
+    }
     _cursorHeight = value;
     markNeedsLayout();
   }
