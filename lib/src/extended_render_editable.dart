@@ -1,4 +1,3 @@
-// @dart = 2.8
 import 'dart:async';
 
 // Copyright 2015 The Chromium Authors. All rights reserved.

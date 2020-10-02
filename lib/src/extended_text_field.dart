@@ -1,5 +1,3 @@
-// @dart = 2.8
-
 import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended_editable_text.dart';
 import 'package:extended_text_library/extended_text_library.dart';
