@@ -183,7 +183,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         assert(obscureText != null),
         assert(textSelectionDelegate != null),
         assert(cursorWidth != null && cursorWidth >= 0.0),
-       assert(cursorHeight == null || cursorHeight >= 0.0),
+        assert(cursorHeight == null || cursorHeight >= 0.0),
         assert(readOnly != null),
         assert(forceLine != null),
         assert(devicePixelRatio != null),
@@ -212,7 +212,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         _selection = selection,
         _offset = offset,
         _cursorWidth = cursorWidth,
-       _cursorHeight = cursorHeight,
+        _cursorHeight = cursorHeight,
         _cursorRadius = cursorRadius,
         _paintCursorOnTop = paintCursorAboveText,
         _cursorOffset = cursorOffset,
@@ -1159,8 +1159,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   double get cursorHeight => _cursorHeight ?? preferredLineHeight;
   double _cursorHeight;
   set cursorHeight(double value) {
-    if (_cursorHeight == value)
-      return;
+    if (_cursorHeight == value) return;
     _cursorHeight = value;
     markNeedsLayout();
   }
@@ -1868,13 +1867,15 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
-        _caretPrototype = Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight + 2);
+        _caretPrototype =
+            Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight + 2);
         break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
-        _caretPrototype = Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth, cursorHeight - 2.0 * _kCaretHeightOffset);
+        _caretPrototype = Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth,
+            cursorHeight - 2.0 * _kCaretHeightOffset);
         break;
     }
   }
@@ -1887,7 +1888,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         maxWidth: constraints.maxWidth,
         forceLayout: true);
     setParentData();
-     _computeCaretPrototype();
+    _computeCaretPrototype();
     _selectionRects = null;
     // We grab _textPainter.size here because assigning to `size` on the next
     // line will trigger us to validate our intrinsic sizes, which will change

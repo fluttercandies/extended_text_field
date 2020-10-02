@@ -8,13 +8,14 @@ import 'package:ff_annotation_route/ff_annotation_route.dart';
 ///  create by zmtzawqlp on 2019/8/4
 ///
 @FFRoute(
-    name: 'fluttercandies://WidgetSpanDemo',
-    routeName: 'widget span',
-    description: 'mailbox demo with widgetSpan',
+  name: 'fluttercandies://WidgetSpanDemo',
+  routeName: 'widget span',
+  description: 'mailbox demo with widgetSpan',
   exts: <String, dynamic>{
     'group': 'Simple',
     'order': 1,
-  },)
+  },
+)
 class WidgetSpanDemo extends StatefulWidget {
   @override
   _WidgetSpanDemoState createState() => _WidgetSpanDemoState();
