@@ -8,8 +8,8 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 
 - [extended_text_field](#extended_text_field)
   - [Limitation](#limitation)
-  - [Speical Text](#speical-text)
-    - [Create Speical Text](#create-speical-text)
+  - [Special Text](#special-text)
+    - [Create Special Text](#create-special-text)
     - [SpecialTextSpanBuilder](#specialtextspanbuilder)
   - [Image](#image)
     - [ImageSpan](#imagespan)
@@ -25,15 +25,15 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 
 - Not support:it won't handle special text when obscureText is true.
 
-## Speical Text
+## Special Text
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
-### Create Speical Text
+### Create Special Text
 
-extended text helps to convert your text to speical textSpan quickly.
+extended text helps to convert your text to special textSpan quickly.
 
-for example, follwing code show how to create @xxxx speical textSpan.
+for example, follwing code show how to create @xxxx special textSpan.
 
 ```dart
 class AtText extends SpecialText {
