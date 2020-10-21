@@ -21,7 +21,7 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 
 - Not support: it won't handle special text when TextDirection.rtl.
 
-  Image position calculated by TextPainter is strange.
+- Image position calculated by TextPainter is strange.
 
 - Not support:it won't handle special text when obscureText is true.
 
