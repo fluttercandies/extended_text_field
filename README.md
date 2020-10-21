@@ -226,7 +226,7 @@ Future<bool> clearDiskCachedImages({Duration duration}) async
 
 default value of textSelectionControls are MaterialExtendedTextSelectionControls/CupertinoExtendedTextSelectionControls
 
-override buildToolbar or buildHandle to custom your toolbar widget or handle widget
+override buildToolbar or buildHandle to customize your toolbar widget or handle widget
 
 ```dart
 class MyExtendedMaterialTextSelectionControls
