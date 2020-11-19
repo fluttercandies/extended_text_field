@@ -889,6 +889,11 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       return;
     }
 
+    // 如果上一个系统更新的值和这次的值相等，不做更新处理，华为p系列手机会连续调2次updateEditingValue
+    // 不能用text直接拦截，还需要考虑composing和selection
+    if (_lastKnownRemoteTextEditingValue != null && value == _lastKnownRemoteTextEditingValue)
+      return;
+
     value = _handleSpecialTextSpan(value);
     if (value.text != _value.text) {
       _hideSelectionOverlayIfNeeded();
