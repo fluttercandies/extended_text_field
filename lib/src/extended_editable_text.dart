@@ -1592,7 +1592,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
             .calculateBoundedFloatingCursorOffset(rawCursorOffset);
         _lastTextPosition = renderEditable.getPositionForPoint(renderEditable
             .localToGlobal(_lastBoundedOffset + _floatingCursorOffset));
-        if (renderEditable?.handleSpecialText ?? false) {
+        if (renderEditable?.hasSpecialInlineSpanBase ?? false) {
           _lastTextPosition = makeSureCaretNotInSpecialText(
               renderEditable.text, _lastTextPosition);
         }
@@ -1876,7 +1876,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       return;
     }
 
-    if (renderEditable?.handleSpecialText ?? false) {
+    if (renderEditable?.hasSpecialInlineSpanBase ?? false) {
       final TextEditingValue value = correctCaretOffset(
           _value, renderEditable?.text, _textInputConnection,
           newSelection: selection);

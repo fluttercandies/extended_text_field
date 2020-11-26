@@ -189,7 +189,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         assert(selectionHeightStyle != null),
         assert(selectionWidthStyle != null),
         assert(clipBehavior != null),
-        _handleSpecialText = hasSpecialText(text),
         _textPainter = TextPainter(
           text: text,
           textAlign: textAlign,
@@ -241,9 +240,9 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   ///whether to support build SpecialText
 
   bool supportSpecialText = false;
-  bool _handleSpecialText = false;
   @override
-  bool get handleSpecialText => supportSpecialText && _handleSpecialText;
+  bool get hasSpecialInlineSpanBase =>
+      supportSpecialText && super.hasSpecialInlineSpanBase;
 
   /// Called when the selection changes.
   ///
@@ -377,7 +376,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       ),
       effectiveOffset: effectiveOffset,
       caretPrototype: _caretPrototype,
-      handleSpecialText: handleSpecialText,
     );
 
     // (justinmc): https://github.com/flutter/flutter/issues/31495
@@ -396,7 +394,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       TextPosition(offset: selection.end, affinity: selection.affinity),
       effectiveOffset: effectiveOffset,
       caretPrototype: _caretPrototype,
-      handleSpecialText: handleSpecialText,
     );
 
     _selectionEndInViewport.value =
@@ -861,7 +858,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     _textPainter.text = value;
     _cachedPlainText = null;
     extractPlaceholderSpans(value);
-    _handleSpecialText = hasSpecialText(value);
     markNeedsTextLayout();
     markNeedsSemanticsUpdate();
   }
@@ -1618,7 +1614,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     final Offset effectiveOffset = _effectiveOffset;
 
     TextSelection textPainterSelection = selection;
-    if (handleSpecialText) {
+    if (hasSpecialInlineSpanBase) {
       textPainterSelection =
           convertTextInputSelectionToTextPainterSelection(text, selection);
     }
@@ -1637,7 +1633,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         caretHeightCallBack: caretHeightCallBack,
         effectiveOffset: effectiveOffset,
         caretPrototype: _caretPrototype,
-        handleSpecialText: handleSpecialText,
       );
 
       final Offset start =
@@ -1844,7 +1839,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       selection = TextSelection(baseOffset: line.start, extentOffset: line.end);
     }
 
-    return handleSpecialText
+    return hasSpecialInlineSpanBase
         ? convertTextPainterSelectionToTextInputSelection(text, selection,
             selectWord: true)
         : selection;
@@ -1945,7 +1940,6 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       caretHeightCallBack: caretHeightCallBack,
       effectiveOffset: effectiveOffset,
       caretPrototype: _caretPrototype,
-      handleSpecialText: handleSpecialText,
     );
 
     Rect caretRect = _caretPrototype.shift(caretOffset);
@@ -2165,7 +2159,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     bool showCaret = false;
 
     ///zmt
-    final TextSelection actualSelection = handleSpecialText
+    final TextSelection actualSelection = hasSpecialInlineSpanBase
         ? convertTextInputSelectionToTextPainterSelection(text, _selection)
         : _selection;
 
@@ -2235,7 +2229,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   }
 
   void _paintSpecialText(PaintingContext context, Offset offset) {
-    if (!handleSpecialText) {
+    if (!hasSpecialInlineSpanBase) {
       return;
     }
 
