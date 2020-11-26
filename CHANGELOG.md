@@ -2,6 +2,7 @@
 
 * change handleSpecialText to hasSpecialInlineSpanBase(extended_text_library)
 * add hasPlaceholderSpan(extended_text_library)
+  
 ## 5.0.0
 
 * Merge from Flutter v1.22
