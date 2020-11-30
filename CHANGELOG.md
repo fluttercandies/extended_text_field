@@ -1,3 +1,7 @@
+## 5.0.2
+
+* Fix wrong position of caret
+  
 ## 5.0.1
 
 * change handleSpecialText to hasSpecialInlineSpanBase(extended_text_library)
