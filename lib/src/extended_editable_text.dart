@@ -1470,14 +1470,14 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       final bool textChanged = _value?.text != value?.text;
       final bool selectionChanged = _value?.selection != value?.selection;
       if (textChanged) {
-        final TextSpan newTextSpan =
-            widget.specialTextSpanBuilder.build(value?.text);
+        final TextSpan newTextSpan = widget.specialTextSpanBuilder
+            .build(value?.text, textStyle: widget.style);
         if (newTextSpan == null) {
           return value;
         }
 
-        final TextSpan oldTextSpan =
-            widget.specialTextSpanBuilder.build(_value?.text);
+        final TextSpan oldTextSpan = widget.specialTextSpanBuilder
+            .build(_value?.text, textStyle: widget.style);
         value = handleSpecialTextSpanDelete(
             value, _value, oldTextSpan, _textInputConnection);
 
@@ -2551,6 +2551,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         return specialTextSpan;
       }
     }
+
     // Read only mode should not paint text composing.
     return widget.controller.buildTextSpan(
       style: widget.style,

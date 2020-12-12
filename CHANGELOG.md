@@ -1,3 +1,7 @@
+## 5.0.3
+
+* Fix miss TextStyle for specialTextSpanBuilder #89
+  
 ## 5.0.2
 
 * Fix wrong position of caret
