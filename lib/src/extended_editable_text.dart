@@ -2175,12 +2175,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   void _didChangeTextEditingValue() {
-    final bool textChanged =
-        _value?.text != _lastFormattedUnmodifiedTextEditingValue?.text;
-    //https://github.com/flutter/flutter/issues/36048
-    if (textChanged) {
-      _hideSelectionOverlayIfNeeded();
-    }
     _updateRemoteEditingValueIfNeeded();
     _startOrStopCursorTimerIfNeeded();
     _updateOrDisposeSelectionOverlayIfNeeded();

@@ -1,3 +1,7 @@
+## 5.0.4
+
+* Fix toolbar is not show after some behaviour #107
+  
 ## 5.0.3
 
 * Fix miss TextStyle for specialTextSpanBuilder #89
