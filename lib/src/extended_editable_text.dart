@@ -2398,9 +2398,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         dragStartBehavior: widget.dragStartBehavior,
         restorationId: widget.restorationId,
         viewportBuilder: (BuildContext context, ViewportOffset offset) {
-          if (offset != null && offset is ScrollPosition) {
-            if (offset.minScrollExtent != null &&
-                offset.maxScrollExtent != null) {
+            // https://github.com/flutter/flutter/issues/66250
+          if (offset is ScrollPosition) {
+            if (offset.hasContentDimensions) {
               // pixels should >= minScrollExtent
               // pixels should <= maxScrollExtent
               offset.correctPixels(offset.pixels.clamp(
