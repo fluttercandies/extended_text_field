@@ -33,8 +33,6 @@ dependencies:
 
 
 dev_dependencies:
-
-  ff_annotation_route: ^4.0.2
   flutter_test:
     sdk: flutter  
 

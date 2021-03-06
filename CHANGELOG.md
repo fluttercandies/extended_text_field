@@ -1,3 +1,7 @@
+## 6.0.0
+
+* support null-safety
+
 ## 5.0.4
 
 * Fix toolbar is not show after some behaviour #107
