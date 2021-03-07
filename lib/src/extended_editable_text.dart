@@ -1188,7 +1188,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   TextInputConnection? _textInputConnection;
   ExtendedTextSelectionOverlay? _selectionOverlay;
-  ScrollController? _scrollController;
+  late ScrollController _scrollController;
   late AnimationController _cursorBlinkOpacityController;
 
   final LayerLink _toolbarLayerLink = LayerLink();
@@ -1267,9 +1267,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _focusAttachment = widget.focusNode.attach(context);
     widget.focusNode.addListener(_handleFocusChanged);
     _scrollController = widget.scrollController ?? ScrollController();
-    _scrollController!.addListener(() {
-      _selectionOverlay?.updateForScroll();
-    });
+    _scrollController.addListener(_updateForScroll);
     _cursorBlinkOpacityController =
         AnimationController(vsync: this, duration: _fadeDuration);
     _cursorBlinkOpacityController.addListener(_onCursorColorTick);
@@ -1349,6 +1347,13 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         widget.selectionControls?.canPaste(this) == true) {
       _clipboardStatus?.update();
     }
+
+    if (widget.scrollController != null &&
+        widget.scrollController != oldWidget.scrollController) {
+      _scrollController.removeListener(_updateForScroll);
+      _scrollController = widget.scrollController ?? ScrollController();
+      _scrollController.addListener(_updateForScroll);
+    }
   }
 
   @override
@@ -1368,6 +1373,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     WidgetsBinding.instance!.removeObserver(this);
     _clipboardStatus?.removeListener(_onChangedClipboardStatus);
     _clipboardStatus?.dispose();
+    _scrollController.removeListener(_updateForScroll);
+    _scrollController.dispose();
     super.dispose();
     assert(_batchEditDepth <= 0, 'unfinished batch edits: $_batchEditDepth');
   }
@@ -1706,8 +1713,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   // `renderEditable.preferredLineHeight`, before the target scroll offset is
   // calculated.
   RevealedOffset _getOffsetToRevealCaret(Rect? rect) {
-    if (!_scrollController!.position.allowImplicitScrolling)
-      return RevealedOffset(offset: _scrollController!.offset, rect: rect!);
+    if (!_scrollController.position.allowImplicitScrolling)
+      return RevealedOffset(offset: _scrollController.offset, rect: rect!);
 
     final Size editableSize = renderEditable.size;
     double additionalOffset;
@@ -1741,12 +1748,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     // No overscrolling when encountering tall fonts/scripts that extend past
     // the ascent.
     final double targetOffset =
-        (additionalOffset + _scrollController!.offset).clamp(
-      _scrollController!.position.minScrollExtent,
-      _scrollController!.position.maxScrollExtent,
+        (additionalOffset + _scrollController.offset).clamp(
+      _scrollController.position.minScrollExtent,
+      _scrollController.position.maxScrollExtent,
     );
 
-    final double offsetDelta = _scrollController!.offset - targetOffset;
+    final double offsetDelta = _scrollController.offset - targetOffset;
     return RevealedOffset(
         rect: rect.shift(unitOffset * offsetDelta), offset: targetOffset);
   }
@@ -1865,7 +1872,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
     if (renderEditable.hasSpecialInlineSpanBase) {
       final TextEditingValue value = correctCaretOffset(
-          _value, renderEditable.text!, _textInputConnection!,
+          _value, renderEditable.text!, _textInputConnection,
           newSelection: selection);
 
       ///change
@@ -1958,7 +1965,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _showCaretOnScreenScheduled = true;
     SchedulerBinding.instance!.addPostFrameCallback((Duration _) {
       _showCaretOnScreenScheduled = false;
-      if (_currentCaretRect == null || !_scrollController!.hasClients) {
+      if (_currentCaretRect == null || !_scrollController.hasClients) {
         return;
       }
 
@@ -1993,7 +2000,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       final RevealedOffset targetOffset =
           _getOffsetToRevealCaret(_currentCaretRect);
 
-      _scrollController!.animateTo(
+      _scrollController.animateTo(
         targetOffset.offset,
         duration: _caretAnimationDuration,
         curve: _caretAnimationCurve,
@@ -2273,10 +2280,15 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   @override
   void bringIntoView(TextPosition position) {
-    final Rect localRect = renderEditable.getLocalRectForCaret(position);
-    final RevealedOffset targetOffset = _getOffsetToRevealCaret(localRect);
+    if (supportSpecialText) {
+      position = convertTextInputPostionToTextPainterPostion(
+          renderEditable.text!, position);
+    }
 
-    _scrollController!.jumpTo(targetOffset.offset);
+    final Rect localRect = renderEditable.getLocalRectForCaret(position);
+
+    final RevealedOffset targetOffset = _getOffsetToRevealCaret(localRect);
+    _scrollController.jumpTo(targetOffset.offset);
     renderEditable.showOnScreen(rect: targetOffset.rect);
   }
 
@@ -2554,6 +2566,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
     //return TextSpan(style: widget.style, text: text);
   }
+
+  void _updateForScroll() {
+    _selectionOverlay?.updateForScroll();
+  }
 }
 
 class _Editable extends MultiChildRenderObjectWidget {
@@ -2600,7 +2616,7 @@ class _Editable extends MultiChildRenderObjectWidget {
     this.enableInteractiveSelection = true,
     required this.textSelectionDelegate,
     required this.devicePixelRatio,
-    this.supportSpecialText,
+    this.supportSpecialText = false,
     this.promptRectRange,
     this.promptRectColor,
     required this.clipBehavior,
@@ -2621,7 +2637,7 @@ class _Editable extends MultiChildRenderObjectWidget {
     return result;
   }
 
-  final bool? supportSpecialText;
+  final bool supportSpecialText;
   final InlineSpan textSpan;
   final TextEditingValue value;
   final Color? cursorColor;

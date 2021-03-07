@@ -1,8 +1,9 @@
 import 'package:example/special_text/email_span_builder.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_text_field/extended_text_field.dart';
+import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
-import 'package:ff_annotation_route/ff_annotation_route.dart';
+
 
 ///
 ///  create by zmtzawqlp on 2019/8/4
@@ -85,7 +86,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                                         padding: const EdgeInsets.all(10.0),
                                         child: Column(
                                           children: <Widget>[
-                                            FlatButton(
+                                            TextButton(
                                                 onPressed: () {
                                                   insertEmail(
                                                       'zmtzawqlp@live.com ',
@@ -94,7 +95,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                                                 },
                                                 child: const Text(
                                                     'zmtzawqlp@live.com')),
-                                            FlatButton(
+                                            TextButton(
                                                 onPressed: () {
                                                   insertEmail(
                                                       '410496936@qq.com ',

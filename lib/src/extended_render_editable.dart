@@ -111,7 +111,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     Color? promptRectColor,
     Clip clipBehavior = Clip.hardEdge,
     required this.textSelectionDelegate,
-    this.supportSpecialText,
+    this.supportSpecialText = false,
     List<RenderBox>? children,
   })  : assert(maxLines == null || maxLines > 0),
         assert(minLines == null || minLines > 0),
@@ -176,10 +176,10 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   ///whether to support build SpecialText
 
-  bool? supportSpecialText = false;
+  bool supportSpecialText = false;
   @override
   bool get hasSpecialInlineSpanBase =>
-      supportSpecialText! && super.hasSpecialInlineSpanBase;
+      supportSpecialText && super.hasSpecialInlineSpanBase;
 
   /// Called when the selection changes.
   ///
@@ -1208,8 +1208,15 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   ///    [TextPainter] object.
   Rect getLocalRectForCaret(TextPosition caretPosition) {
     layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
-    final Offset caretOffset =
-        _textPainter.getOffsetForCaret(caretPosition, _caretPrototype);
+    //  final  Offset caretOffset =
+    //       _textPainter.getOffsetForCaret(caretPosition, _caretPrototype);
+
+    final Offset caretOffset = getCaretOffset(
+      caretPosition,
+      caretPrototype: _caretPrototype,
+      // effectiveOffset: effectiveOffset,
+    );
+
     // This rect is the same as _caretPrototype but without the vertical padding.
     Rect rect = Rect.fromLTWH(0.0, 0.0, cursorWidth!, preferredLineHeight)
         .shift(caretOffset + paintOffset);

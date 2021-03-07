@@ -6,10 +6,10 @@ import 'package:example/special_text/my_extended_text_selection_controls.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_list/extended_list.dart';
 import 'package:extended_text/extended_text.dart';
+import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
-import 'package:ff_annotation_route/ff_annotation_route.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:example/special_text/emoji_text.dart' as emoji;
 import 'package:url_launcher/url_launcher.dart';
@@ -30,9 +30,9 @@ class TextDemo extends StatefulWidget {
 
 class _TextDemoState extends State<TextDemo> {
   final TextEditingController _textEditingController = TextEditingController();
-  final MyExtendedMaterialTextSelectionControls
+  final MyTextSelectionControls
       _myExtendedMaterialTextSelectionControls =
-      MyExtendedMaterialTextSelectionControls();
+      MyTextSelectionControls();
   final GlobalKey _key = GlobalKey();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
@@ -67,7 +67,7 @@ class _TextDemoState extends State<TextDemo> {
       appBar: AppBar(
         title: const Text('special text'),
         actions: <Widget>[
-          FlatButton(
+          TextButton(
             child: const Icon(Icons.backspace),
             onPressed: manualDelete,
           )
@@ -128,7 +128,7 @@ class _TextDemoState extends State<TextDemo> {
               showAtBackground: true,
             ),
             controller: _textEditingController,
-            textSelectionControls: _myExtendedMaterialTextSelectionControls,
+            selectionControls: _myExtendedMaterialTextSelectionControls,
             maxLines: null,
             focusNode: _focusNode,
             decoration: InputDecoration(

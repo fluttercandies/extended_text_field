@@ -188,7 +188,7 @@ class ExtendedTextField extends StatefulWidget {
     this.scrollPhysics,
     this.autofillHints,
     this.specialTextSpanBuilder,
-    this.textSelectionControls,
+    this.selectionControls,
     this.restorationId,
   })  : assert(obscuringCharacter.length == 1),
         smartDashesType = smartDashesType ??
@@ -234,7 +234,7 @@ class ExtendedTextField extends StatefulWidget {
 
   /// An interface for building the selection UI, to be provided by the
   /// implementor of the toolbar widget or handle widget
-  final TextSelectionControls? textSelectionControls;
+  final TextSelectionControls? selectionControls;
 
   ///build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
@@ -1022,7 +1022,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         ),
     ];
 
-    TextSelectionControls? textSelectionControls = widget.textSelectionControls;
+    TextSelectionControls? textSelectionControls = widget.selectionControls;
     late bool paintCursorAboveText;
     late bool cursorOpacityAnimates;
     Offset? cursorOffset;
