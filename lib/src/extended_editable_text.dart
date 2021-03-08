@@ -1862,7 +1862,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   void _handleSelectionChanged(
-      TextSelection selection, SelectionChangedCause cause) {
+      TextSelection selection, SelectionChangedCause? cause) {
     // We return early if the selection is not valid. This can happen when the
     // text of [EditableText] is updated at the same time as the selection is
     // changed by a gesture event.
@@ -2207,8 +2207,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       _showCaretOnScreen();
       if (!_value.selection.isValid) {
         // Place cursor at the end if the selection is invalid when we receive focus.
-        widget.controller.selection =
-            TextSelection.collapsed(offset: _value.text.length);
+        _handleSelectionChanged(
+            TextSelection.collapsed(offset: _value.text.length), null);
       }
     } else {
       WidgetsBinding.instance!.removeObserver(this);

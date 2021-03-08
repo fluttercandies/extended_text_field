@@ -30,8 +30,7 @@ class TextDemo extends StatefulWidget {
 
 class _TextDemoState extends State<TextDemo> {
   final TextEditingController _textEditingController = TextEditingController();
-  final MyTextSelectionControls
-      _myExtendedMaterialTextSelectionControls =
+  final MyTextSelectionControls _myExtendedMaterialTextSelectionControls =
       MyTextSelectionControls();
   final GlobalKey _key = GlobalKey();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
@@ -122,6 +121,7 @@ class _TextDemoState extends State<TextDemo> {
             height: 2.0,
             color: Colors.blue,
           ),
+          //EditableText(controller: controller, focusNode: focusNode, style: style, cursorColor: cursorColor, backgroundCursorColor: backgroundCursorColor)
           ExtendedTextField(
             key: _key,
             specialTextSpanBuilder: MySpecialTextSpanBuilder(

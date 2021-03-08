@@ -23,8 +23,7 @@ class CustomToolBar extends StatefulWidget {
 }
 
 class _CustomToolBarState extends State<CustomToolBar> {
-  final MyTextSelectionControls
-      _myExtendedMaterialTextSelectionControls =
+  final MyTextSelectionControls _myExtendedMaterialTextSelectionControls =
       MyTextSelectionControls();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();

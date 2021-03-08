@@ -1,6 +1,11 @@
+## 6.0.1
+
+* Fix issue that toolbar is not shown when double tap 
+* Fix throw exception when selectWordAtOffset
+
 ## 6.0.0
 
-* support null-safety
+* Support null-safety
 
 ## 5.0.4
 
