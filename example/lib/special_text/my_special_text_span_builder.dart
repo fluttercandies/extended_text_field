@@ -30,14 +30,12 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
     }
 
     ///index is end index of start flag, so text start index should be index-(flag.length-1)
-     if (isStart(flag, EmojiText.flag)) {
-      return EmojiText(textStyle,
-          start: index - (EmojiText.flag.length - 1));
+    if (isStart(flag, EmojiText.flag)) {
+      return EmojiText(textStyle, start: index - (EmojiText.flag.length - 1));
     } else if (isStart(flag, ImageText.flag)) {
       return ImageText(textStyle,
           start: index - (ImageText.flag.length - 1), onTap: onTap);
-    }
-    else if (isStart(flag, AtText.flag)) {
+    } else if (isStart(flag, AtText.flag)) {
       return AtText(
         textStyle,
         onTap,

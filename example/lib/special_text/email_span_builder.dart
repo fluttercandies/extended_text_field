@@ -13,7 +13,7 @@ class EmailSpanBuilder extends SpecialTextSpanBuilder {
   final BuildContext context;
   @override
   SpecialText createSpecialText(String flag,
-      {TextStyle textStyle,SpecialTextGestureTapCallback onTap, int index}) {
+      {TextStyle textStyle, SpecialTextGestureTapCallback onTap, int index}) {
     if (flag == null || flag == '') {
       return null;
     }

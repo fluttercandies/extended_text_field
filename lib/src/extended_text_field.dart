@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended_editable_text.dart';
 import 'package:extended_text_library/extended_text_library.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,14 +19,14 @@ typedef InputCounterWidgetBuilder = Widget Function(
   BuildContext context, {
 
   /// The length of the string currently in the input.
-  @required int currentLength,
+  required int currentLength,
 
   /// The maximum string length that can be entered into the TextField.
-  @required int maxLength,
+  required int? maxLength,
 
   /// Whether or not the TextField is currently focused.  Mainly provided for
   /// the [liveRegion] parameter in the [Semantics] widget for accessibility.
-  @required bool isFocused,
+  required bool isFocused,
 });
 
 /// A material design text field.
@@ -122,84 +123,84 @@ class ExtendedTextField extends StatefulWidget {
   /// The text cursor is not shown if [showCursor] is false or if [showCursor]
   /// is null (the default) and [readOnly] is true.
   ///
+  /// The [selectionHeightStyle] and [selectionWidthStyle] properties allow
+  /// changing the shape of the selection highlighting. These properties default
+  /// to [ui.BoxHeightStyle.tight] and [ui.BoxWidthStyle.tight] respectively and
+  /// must not be null.
+  ///
   /// The [textAlign], [autofocus], [obscureText], [readOnly], [autocorrect],
-  /// [maxLengthEnforced], [scrollPadding], [maxLines], [maxLength], and
+  /// [maxLengthEnforced], [scrollPadding], [maxLines], [maxLength],
+  /// [selectionHeightStyle], [selectionWidthStyle], and [enableSuggestions]
   /// [enableSuggestions] arguments must not be null.
   ///
   /// See also:
   ///
   ///  * [maxLength], which discusses the precise meaning of "number of
   ///    characters" and how it may differ from the intuitive meaning.
-  const ExtendedTextField(
-      {Key key,
-      this.controller,
-      this.focusNode,
-      this.decoration = const InputDecoration(),
-      TextInputType keyboardType,
-      this.textInputAction,
-      this.textCapitalization = TextCapitalization.none,
-      this.style,
-      this.strutStyle,
-      this.textAlign = TextAlign.start,
-      this.textAlignVertical,
-      this.textDirection,
-      this.readOnly = false,
-      ToolbarOptions toolbarOptions,
-      this.showCursor,
-      this.autofocus = false,
-      this.obscureText = false,
-      this.autocorrect = true,
-      SmartDashesType smartDashesType,
-      SmartQuotesType smartQuotesType,
-      this.enableSuggestions = true,
-      this.maxLines = 1,
-      this.minLines,
-      this.expands = false,
-      this.maxLength,
-      this.maxLengthEnforced = true,
-      this.onChanged,
-      this.onEditingComplete,
-      this.onSubmitted,
-      this.inputFormatters,
-      this.enabled,
-      this.cursorWidth = 2.0,
-      this.cursorRadius,
-      this.cursorColor,
-      this.selectionHeightStyle = ui.BoxHeightStyle.tight,
-      this.selectionWidthStyle = ui.BoxWidthStyle.tight,
-      this.keyboardAppearance,
-      this.scrollPadding = const EdgeInsets.all(20.0),
-      this.dragStartBehavior = DragStartBehavior.start,
-      this.enableInteractiveSelection = true,
-      this.onTap,
-      this.buildCounter,
-      this.scrollController,
-      this.scrollPhysics,
-      this.specialTextSpanBuilder,
-      this.textSelectionControls})
-      : assert(textAlign != null),
-        assert(readOnly != null),
-        assert(autofocus != null),
-        assert(obscureText != null),
-        assert(autocorrect != null),
+  const ExtendedTextField({
+    Key? key,
+    this.controller,
+    this.focusNode,
+    this.decoration = const InputDecoration(),
+    TextInputType? keyboardType,
+    this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
+    this.style,
+    this.strutStyle,
+    this.textAlign = TextAlign.start,
+    this.textAlignVertical,
+    this.textDirection,
+    this.readOnly = false,
+    ToolbarOptions? toolbarOptions,
+    this.showCursor,
+    this.autofocus = false,
+    this.obscuringCharacter = '•',
+    this.obscureText = false,
+    this.autocorrect = true,
+    SmartDashesType? smartDashesType,
+    SmartQuotesType? smartQuotesType,
+    this.enableSuggestions = true,
+    this.maxLines = 1,
+    this.minLines,
+    this.expands = false,
+    this.maxLength,
+    this.maxLengthEnforcement,
+    this.onChanged,
+    this.onEditingComplete,
+    this.onSubmitted,
+    this.onAppPrivateCommand,
+    this.inputFormatters,
+    this.enabled,
+    this.cursorWidth = 2.0,
+    this.cursorHeight,
+    this.cursorRadius,
+    this.cursorColor,
+    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
+    this.keyboardAppearance,
+    this.scrollPadding = const EdgeInsets.all(20.0),
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.enableInteractiveSelection = true,
+    this.onTap,
+    this.mouseCursor,
+    this.buildCounter,
+    this.scrollController,
+    this.scrollPhysics,
+    this.autofillHints,
+    this.specialTextSpanBuilder,
+    this.selectionControls,
+    this.restorationId,
+  })  : assert(obscuringCharacter.length == 1),
         smartDashesType = smartDashesType ??
             (obscureText ? SmartDashesType.disabled : SmartDashesType.enabled),
         smartQuotesType = smartQuotesType ??
             (obscureText ? SmartQuotesType.disabled : SmartQuotesType.enabled),
-        assert(enableSuggestions != null),
-        assert(enableInteractiveSelection != null),
-        assert(maxLengthEnforced != null),
-        assert(scrollPadding != null),
-        assert(dragStartBehavior != null),
-        assert(selectionHeightStyle != null),
-        assert(selectionWidthStyle != null),
         assert(maxLines == null || maxLines > 0),
         assert(minLines == null || minLines > 0),
         assert(
           (maxLines == null) || (minLines == null) || (maxLines >= minLines),
-          'minLines can\'t be greater than maxLines',
+          "minLines can't be greater than maxLines",
         ),
-        assert(expands != null),
         assert(
           !expands || (maxLines == null && minLines == null),
           'minLines and maxLines must be null when expands is true.',
@@ -209,6 +210,12 @@ class ExtendedTextField extends StatefulWidget {
         assert(maxLength == null ||
             maxLength == TextField.noMaxLength ||
             maxLength > 0),
+        // Assert the following instead of setting it directly to avoid surprising the user by silently changing the value they set.
+        assert(
+            !identical(textInputAction, TextInputAction.newline) ||
+                maxLines == 1 ||
+                !identical(keyboardType, TextInputType.text),
+            'Use keyboardType TextInputType.multiline when using TextInputAction.newline on a multiline TextField.'),
         keyboardType = keyboardType ??
             (maxLines == 1 ? TextInputType.text : TextInputType.multiline),
         toolbarOptions = toolbarOptions ??
@@ -227,15 +234,15 @@ class ExtendedTextField extends StatefulWidget {
 
   /// An interface for building the selection UI, to be provided by the
   /// implementor of the toolbar widget or handle widget
-  final TextSelectionControls textSelectionControls;
+  final TextSelectionControls? selectionControls;
 
   ///build your ccustom text span
-  final SpecialTextSpanBuilder specialTextSpanBuilder;
+  final SpecialTextSpanBuilder? specialTextSpanBuilder;
 
   /// Controls the text being edited.
   ///
   /// If null, this widget will create its own [TextEditingController].
-  final TextEditingController controller;
+  final TextEditingController? controller;
 
   /// Defines the keyboard focus for this widget.
   ///
@@ -275,7 +282,7 @@ class ExtendedTextField extends StatefulWidget {
   ///
   /// This widget builds an [EditableText] and will ensure that the keyboard is
   /// showing when it is tapped by calling [EditableTextState.requestKeyboard()].
-  final FocusNode focusNode;
+  final FocusNode? focusNode;
 
   /// The decoration to show around the text field.
   ///
@@ -284,7 +291,7 @@ class ExtendedTextField extends StatefulWidget {
   ///
   /// Specify null to remove the decoration entirely (including the
   /// extra padding introduced by the decoration to save space for the labels).
-  final InputDecoration decoration;
+  final InputDecoration? decoration;
 
   /// {@macro flutter.widgets.editableText.keyboardType}
   final TextInputType keyboardType;
@@ -293,7 +300,7 @@ class ExtendedTextField extends StatefulWidget {
   ///
   /// Defaults to [TextInputAction.newline] if [keyboardType] is
   /// [TextInputType.multiline] and [TextInputAction.done] otherwise.
-  final TextInputAction textInputAction;
+  final TextInputAction? textInputAction;
 
   /// {@macro flutter.widgets.editableText.textCapitalization}
   final TextCapitalization textCapitalization;
@@ -303,22 +310,25 @@ class ExtendedTextField extends StatefulWidget {
   /// This text style is also used as the base style for the [decoration].
   ///
   /// If null, defaults to the `subtitle1` text style from the current [Theme].
-  final TextStyle style;
+  final TextStyle? style;
 
   /// {@macro flutter.widgets.editableText.strutStyle}
-  final StrutStyle strutStyle;
+  final StrutStyle? strutStyle;
 
   /// {@macro flutter.widgets.editableText.textAlign}
   final TextAlign textAlign;
 
   /// {@macro flutter.widgets.inputDecorator.textAlignVertical}
-  final TextAlignVertical textAlignVertical;
+  final TextAlignVertical? textAlignVertical;
 
   /// {@macro flutter.widgets.editableText.textDirection}
-  final TextDirection textDirection;
+  final TextDirection? textDirection;
 
   /// {@macro flutter.widgets.editableText.autofocus}
   final bool autofocus;
+
+  /// {@macro flutter.widgets.editableText.obscuringCharacter}
+  final String obscuringCharacter;
 
   /// {@macro flutter.widgets.editableText.obscureText}
   final bool obscureText;
@@ -336,10 +346,10 @@ class ExtendedTextField extends StatefulWidget {
   final bool enableSuggestions;
 
   /// {@macro flutter.widgets.editableText.maxLines}
-  final int maxLines;
+  final int? maxLines;
 
   /// {@macro flutter.widgets.editableText.minLines}
-  final int minLines;
+  final int? minLines;
 
   /// {@macro flutter.widgets.editableText.expands}
   final bool expands;
@@ -355,7 +365,7 @@ class ExtendedTextField extends StatefulWidget {
   final ToolbarOptions toolbarOptions;
 
   /// {@macro flutter.widgets.editableText.showCursor}
-  final bool showCursor;
+  final bool? showCursor;
 
   /// If [maxLength] is set to this value, only the "current input length"
   /// part of the character counter is shown.
@@ -412,15 +422,13 @@ class ExtendedTextField extends StatefulWidget {
   ///
   ///  * [LengthLimitingTextInputFormatter] for more information on how it
   ///    counts characters, and how it may differ from the intuitive meaning.
-  final int maxLength;
+  final int? maxLength;
 
   /// If true, prevents the field from allowing more than [maxLength]
   /// characters.
   ///
-  /// If [maxLength] is set, [maxLengthEnforced] indicates whether or not to
-  /// enforce the limit, or merely provide a character counter and warning when
-  /// [maxLength] is exceeded.
-  final bool maxLengthEnforced;
+  /// {@macro flutter.services.textFormatter.maxLengthEnforcement}
+  final MaxLengthEnforcement? maxLengthEnforcement;
 
   /// {@macro flutter.widgets.editableText.onChanged}
   ///
@@ -430,10 +438,10 @@ class ExtendedTextField extends StatefulWidget {
   ///    runs and can validate and change ("format") the input value.
   ///  * [onEditingComplete], [onSubmitted], [onSelectionChanged]:
   ///    which are more specialized input change notifications.
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onChanged;
 
   /// {@macro flutter.widgets.editableText.onEditingComplete}
-  final VoidCallback onEditingComplete;
+  final VoidCallback? onEditingComplete;
 
   /// {@macro flutter.widgets.editableText.onSubmitted}
   ///
@@ -442,29 +450,47 @@ class ExtendedTextField extends StatefulWidget {
   ///  * [EditableText.onSubmitted] for an example of how to handle moving to
   ///    the next/previous field when using [TextInputAction.next] and
   ///    [TextInputAction.previous] for [textInputAction].
-  final ValueChanged<String> onSubmitted;
+  final ValueChanged<String>? onSubmitted;
+
+  /// {@macro flutter.widgets.editableText.onAppPrivateCommand}
+  final AppPrivateCommandCallback? onAppPrivateCommand;
 
   /// {@macro flutter.widgets.editableText.inputFormatters}
-  final List<TextInputFormatter> inputFormatters;
+  final List<TextInputFormatter>? inputFormatters;
 
   /// If false the text field is "disabled": it ignores taps and its
   /// [decoration] is rendered in grey.
   ///
   /// If non-null this property overrides the [decoration]'s
-  /// [Decoration.enabled] property.
-  final bool enabled;
+  /// [InputDecoration.enabled] property.
+  final bool? enabled;
 
   /// {@macro flutter.widgets.editableText.cursorWidth}
   final double cursorWidth;
 
-  /// {@macro flutter.widgets.editableText.cursorRadius}
-  final Radius cursorRadius;
+  /// {@macro flutter.widgets.editableText.cursorHeight}
+  final double? cursorHeight;
 
-  /// The color to use when painting the cursor.
+  /// {@macro flutter.widgets.editableText.cursorRadius}
+  final Radius? cursorRadius;
+
+  /// The color of the cursor.
   ///
-  /// Defaults to [ThemeData.cursorColor] or [CupertinoTheme.primaryColor]
-  /// depending on [ThemeData.platform].
-  final Color cursorColor;
+  /// The cursor indicates the current location of text insertion point in
+  /// the field.
+  ///
+  /// If this is null it will default to a value based on the following:
+  ///
+  /// * If the ambient [TextSelectionTheme.useTextSelectionTheme] is true then it
+  ///   will use the value of the ambient [TextSelectionThemeData.cursorColor].
+  ///   If that is null then if the [ThemeData.platform] is [TargetPlatform.iOS]
+  ///   or [TargetPlatform.macOS] then it will use [CupertinoThemeData.primaryColor].
+  ///   Otherwise it will use the value of [ColorScheme.primary] of [ThemeData.colorScheme].
+  ///
+  /// * If the ambient [TextSelectionTheme.useTextSelectionTheme] is false then it
+  ///   will use either [TextSelectionTheme.cursorColor] or [CupertinoThemeData.primaryColor]
+  ///   depending on [ThemeData.platform].
+  final Color? cursorColor;
 
   /// Controls how tall the selection highlight boxes are computed to be.
   ///
@@ -481,7 +507,7 @@ class ExtendedTextField extends StatefulWidget {
   /// This setting is only honored on iOS devices.
   ///
   /// If unset, defaults to the brightness of [ThemeData.primaryColorBrightness].
-  final Brightness keyboardAppearance;
+  final Brightness? keyboardAppearance;
 
   /// {@macro flutter.widgets.editableText.scrollPadding}
   final EdgeInsets scrollPadding;
@@ -492,7 +518,7 @@ class ExtendedTextField extends StatefulWidget {
   /// {@macro flutter.widgets.scrollable.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
 
-  /// {@macro flutter.rendering.editable.selectionEnabled}
+  /// {@macro flutter.widgets.editableText.selectionEnabled}
   bool get selectionEnabled => enableInteractiveSelection;
 
   /// {@template flutter.material.textfield.onTap}
@@ -515,17 +541,36 @@ class ExtendedTextField extends StatefulWidget {
   /// To listen to arbitrary pointer events without competing with the
   /// text field's internal gesture detector, use a [Listener].
   /// {@endtemplate}
-  final GestureTapCallback onTap;
+  final GestureTapCallback? onTap;
 
-  /// Callback that generates a custom [InputDecorator.counter] widget.
+  /// The cursor for a mouse pointer when it enters or is hovering over the
+  /// widget.
+  ///
+  /// If [mouseCursor] is a [MaterialStateProperty<MouseCursor>],
+  /// [MaterialStateProperty.resolve] is used for the following [MaterialState]s:
+  ///
+  ///  * [MaterialState.error].
+  ///  * [MaterialState.hovered].
+  ///  * [MaterialState.focused].
+  ///  * [MaterialState.disabled].
+  ///
+  /// If this property is null, [MaterialStateMouseCursor.textable] will be used.
+  ///
+  /// The [mouseCursor] is the only property of [TextField] that controls the
+  /// appearance of the mouse pointer. All other properties related to "cursor"
+  /// stand for the text cursor, which is usually a blinking vertical line at
+  /// the editing position.
+  final MouseCursor? mouseCursor;
+
+  /// Callback that generates a custom [InputDecoration.counter] widget.
   ///
   /// See [InputCounterWidgetBuilder] for an explanation of the passed in
   /// arguments.  The returned widget will be placed below the line in place of
-  /// the default widget built when [counterText] is specified.
+  /// the default widget built when [InputDecoration.counterText] is specified.
   ///
   /// The returned widget will be wrapped in a [Semantics] widget for
   /// accessibility, but it also needs to be accessible itself.  For example,
-  /// if returning a Text widget, set the [semanticsLabel] property.
+  /// if returning a Text widget, set the [Text.semanticsLabel] property.
   ///
   /// {@tool snippet}
   /// ```dart
@@ -547,13 +592,36 @@ class ExtendedTextField extends StatefulWidget {
   ///
   /// If buildCounter returns null, then no counter and no Semantics widget will
   /// be created at all.
-  final InputCounterWidgetBuilder buildCounter;
+  final InputCounterWidgetBuilder? buildCounter;
 
-  /// {@macro flutter.widgets.edtiableText.scrollPhysics}
-  final ScrollPhysics scrollPhysics;
+  /// {@macro flutter.widgets.editableText.scrollPhysics}
+  final ScrollPhysics? scrollPhysics;
 
   /// {@macro flutter.widgets.editableText.scrollController}
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
+
+  /// {@macro flutter.widgets.editableText.autofillHints}
+  /// {@macro flutter.services.autofill.autofillHints}
+  final Iterable<String>? autofillHints;
+
+  /// {@template flutter.material.textfield.restorationId}
+  /// Restoration ID to save and restore the state of the text field.
+  ///
+  /// If non-null, the text field will persist and restore its current scroll
+  /// offset and - if no [controller] has been provided - the content of the
+  /// text field. If a [controller] has been provided, it is the responsibility
+  /// of the owner of that controller to persist and restore it, e.g. by using
+  /// a [RestorableTextEditingController].
+  ///
+  /// The state of this widget is persisted in a [RestorationBucket] claimed
+  /// from the surrounding [RestorationScope] using the provided restoration ID.
+  ///
+  /// See also:
+  ///
+  ///  * [RestorationManager], which explains how state restoration works in
+  ///    Flutter.
+  /// {@endtemplate}
+  final String? restorationId;
   @override
   _ExtendedTextFieldState createState() => _ExtendedTextFieldState();
 
@@ -577,10 +645,21 @@ class ExtendedTextField extends StatefulWidget {
         DiagnosticsProperty<TextStyle>('style', style, defaultValue: null));
     properties.add(
         DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false));
+    properties.add(DiagnosticsProperty<String>(
+        'obscuringCharacter', obscuringCharacter,
+        defaultValue: '•'));
     properties.add(DiagnosticsProperty<bool>('obscureText', obscureText,
         defaultValue: false));
     properties.add(DiagnosticsProperty<bool>('autocorrect', autocorrect,
         defaultValue: true));
+    properties.add(EnumProperty<SmartDashesType>(
+        'smartDashesType', smartDashesType,
+        defaultValue:
+            obscureText ? SmartDashesType.disabled : SmartDashesType.enabled));
+    properties.add(EnumProperty<SmartQuotesType>(
+        'smartQuotesType', smartQuotesType,
+        defaultValue:
+            obscureText ? SmartQuotesType.disabled : SmartQuotesType.enabled));
     properties.add(DiagnosticsProperty<bool>(
         'enableSuggestions', enableSuggestions,
         defaultValue: true));
@@ -589,10 +668,6 @@ class ExtendedTextField extends StatefulWidget {
     properties.add(
         DiagnosticsProperty<bool>('expands', expands, defaultValue: false));
     properties.add(IntProperty('maxLength', maxLength, defaultValue: null));
-    properties.add(FlagProperty('maxLengthEnforced',
-        value: maxLengthEnforced,
-        defaultValue: true,
-        ifFalse: 'maxLength not enforced'));
     properties.add(EnumProperty<TextInputAction>(
         'textInputAction', textInputAction,
         defaultValue: null));
@@ -608,6 +683,8 @@ class ExtendedTextField extends StatefulWidget {
         defaultValue: null));
     properties
         .add(DoubleProperty('cursorWidth', cursorWidth, defaultValue: 2.0));
+    properties
+        .add(DoubleProperty('cursorHeight', cursorHeight, defaultValue: null));
     properties.add(DiagnosticsProperty<Radius>('cursorRadius', cursorRadius,
         defaultValue: null));
     properties
@@ -632,35 +709,41 @@ class ExtendedTextField extends StatefulWidget {
 }
 
 class _ExtendedTextFieldState extends State<ExtendedTextField>
+    with RestorationMixin
     implements ExtendedTextSelectionGestureDetectorBuilderDelegate {
-  TextEditingController _controller;
+  RestorableTextEditingController? _controller;
   TextEditingController get _effectiveController =>
-      widget.controller ?? _controller;
+      widget.controller ?? _controller!.value;
 
-  FocusNode _focusNode;
+  FocusNode? _focusNode;
   FocusNode get _effectiveFocusNode =>
       widget.focusNode ?? (_focusNode ??= FocusNode());
 
+  MaxLengthEnforcement get _effectiveMaxLengthEnforcement =>
+      widget.maxLengthEnforcement ??
+      LengthLimitingTextInputFormatter.getDefaultMaxLengthEnforcement(
+          Theme.of(context).platform);
   bool _isHovering = false;
 
   bool get needsCounter =>
       widget.maxLength != null &&
       widget.decoration != null &&
-      widget.decoration.counterText == null;
+      widget.decoration!.counterText == null;
 
   bool _showSelectionHandles = false;
-  CommonTextSelectionGestureDetectorBuilder _selectionGestureDetectorBuilder;
+  late CommonTextSelectionGestureDetectorBuilder
+      _selectionGestureDetectorBuilder;
 
   // API for TextSelectionGestureDetectorBuilderDelegate.
   @override
-  bool forcePressEnabled;
+  late bool forcePressEnabled;
 
   final GlobalKey<ExtendedEditableTextState> editableTextKey =
       GlobalKey<ExtendedEditableTextState>();
 
   @override
   ExtendedTextSelectionRenderObject get renderEditable =>
-      editableTextKey.currentState.renderEditable;
+      editableTextKey.currentState!.renderEditable;
 
   @override
   bool get selectionEnabled => widget.selectionEnabled;
@@ -668,7 +751,13 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
 
   bool get _isEnabled => widget.enabled ?? widget.decoration?.enabled ?? true;
 
-  int get _currentLength => _effectiveController.value.text.runes.length;
+  int get _currentLength => _effectiveController.value.text.characters.length;
+  bool get _hasIntrinsicError =>
+      widget.maxLength != null &&
+      widget.maxLength! > 0 &&
+      _effectiveController.value.text.characters.length > widget.maxLength!;
+  bool get _hasError =>
+      widget.decoration?.errorText != null || _hasIntrinsicError;
   InputDecoration _getEffectiveDecoration() {
     final MaterialLocalizations localizations =
         MaterialLocalizations.of(context);
@@ -677,7 +766,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         (widget.decoration ?? const InputDecoration())
             .applyDefaults(themeData.inputDecorationTheme)
             .copyWith(
-              enabled: widget.enabled,
+              enabled: _isEnabled,
               hintMaxLines: widget.decoration?.hintMaxLines ?? widget.maxLines,
             );
 
@@ -688,13 +777,13 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     }
 
     // If buildCounter was provided, use it to generate a counter widget.
-    Widget counter;
+    Widget? counter;
     final int currentLength = _currentLength;
     if (effectiveDecoration.counter == null &&
         effectiveDecoration.counterText == null &&
         widget.buildCounter != null) {
       final bool isFocused = _effectiveFocusNode.hasFocus;
-      final Widget builtCounter = widget.buildCounter(
+      final Widget? builtCounter = widget.buildCounter!(
         context,
         currentLength: currentLength,
         maxLength: widget.maxLength,
@@ -718,24 +807,23 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     String semanticCounterText = '';
 
     // Handle a real maxLength (positive number)
-    if (widget.maxLength > 0) {
+    if (widget.maxLength! > 0) {
       // Show the maxLength in the counter
       counterText += '/${widget.maxLength}';
       final int remaining =
-          (widget.maxLength - currentLength).clamp(0, widget.maxLength) as int;
+          (widget.maxLength! - currentLength).clamp(0, widget.maxLength!);
       semanticCounterText =
           localizations.remainingTextFieldCharacterCount(remaining);
+    }
 
-      // Handle length exceeds maxLength
-      if (_effectiveController.value.text.runes.length > widget.maxLength) {
-        return effectiveDecoration.copyWith(
-          errorText: effectiveDecoration.errorText ?? '',
-          counterStyle: effectiveDecoration.errorStyle ??
-              themeData.textTheme.caption.copyWith(color: themeData.errorColor),
-          counterText: counterText,
-          semanticCounterText: semanticCounterText,
-        );
-      }
+    if (_hasIntrinsicError) {
+      return effectiveDecoration.copyWith(
+        errorText: effectiveDecoration.errorText ?? '',
+        counterStyle: effectiveDecoration.errorStyle ??
+            themeData.textTheme.caption!.copyWith(color: themeData.errorColor),
+        counterText: counterText,
+        semanticCounterText: semanticCounterText,
+      );
     }
 
     return effectiveDecoration.copyWith(
@@ -751,29 +839,49 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         CommonTextSelectionGestureDetectorBuilder(
       delegate: this,
       hideToolbar: () {
-        _editableText.hideToolbar();
+        _editableText!.hideToolbar();
       },
       showToolbar: () {
-        _editableText.showToolbar();
+        _editableText!.showToolbar();
       },
       onTap: widget.onTap,
       context: context,
       requestKeyboard: _requestKeyboard,
     );
     if (widget.controller == null) {
-      _controller = TextEditingController();
+      _createLocalController();
     }
     _effectiveFocusNode.canRequestFocus = _isEnabled;
+  }
+
+  bool get _canRequestFocus {
+    final NavigationMode mode = MediaQuery.maybeOf(context)?.navigationMode ??
+        NavigationMode.traditional;
+    switch (mode) {
+      case NavigationMode.traditional:
+        return _isEnabled;
+      case NavigationMode.directional:
+        return true;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _effectiveFocusNode.canRequestFocus = _canRequestFocus;
   }
 
   @override
   void didUpdateWidget(ExtendedTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.controller == null && oldWidget.controller != null)
-      _controller = TextEditingController.fromValue(oldWidget.controller.value);
-    else if (widget.controller != null && oldWidget.controller == null)
+    if (widget.controller == null && oldWidget.controller != null) {
+      _createLocalController(oldWidget.controller!.value);
+    } else if (widget.controller != null && oldWidget.controller == null) {
+      unregisterFromRestoration(_controller!);
+      _controller!.dispose();
       _controller = null;
-    _effectiveFocusNode.canRequestFocus = _isEnabled;
+    }
+    _effectiveFocusNode.canRequestFocus = _canRequestFocus;
     if (_effectiveFocusNode.hasFocus && widget.readOnly != oldWidget.readOnly) {
       if (_effectiveController.selection.isCollapsed) {
         _showSelectionHandles = !widget.readOnly;
@@ -782,18 +890,43 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   }
 
   @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    if (_controller != null) {
+      _registerController();
+    }
+  }
+
+  void _registerController() {
+    assert(_controller != null);
+    registerForRestoration(_controller!, 'controller');
+  }
+
+  void _createLocalController([TextEditingValue? value]) {
+    assert(_controller == null);
+    _controller = value == null
+        ? RestorableTextEditingController()
+        : RestorableTextEditingController.fromValue(value);
+    if (!restorePending) {
+      _registerController();
+    }
+  }
+
+  @override
+  String? get restorationId => widget.restorationId;
+  @override
   void dispose() {
     _focusNode?.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
-  ExtendedEditableTextState get _editableText => editableTextKey.currentState;
+  ExtendedEditableTextState? get _editableText => editableTextKey.currentState;
 
   void _requestKeyboard() {
     _editableText?.requestKeyboard();
   }
 
-  bool _shouldShowSelectionHandles(SelectionChangedCause cause) {
+  bool _shouldShowSelectionHandles(SelectionChangedCause? cause) {
     // When the text field is activated by something that doesn't trigger the
     // selection overlay, we shouldn't show the handles either.
     if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
@@ -806,6 +939,9 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     if (widget.readOnly && _effectiveController.selection.isCollapsed)
       return false;
 
+    if (!_isEnabled) {
+      return false;
+    }
     if (cause == SelectionChangedCause.longPress) {
       return true;
     }
@@ -818,8 +954,9 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   }
 
   void _handleSelectionChanged(
-      TextSelection selection, SelectionChangedCause cause) {
+      TextSelection selection, SelectionChangedCause? cause) {
     final bool willShowSelectionHandles = _shouldShowSelectionHandles(cause);
+
     if (willShowSelectionHandles != _showSelectionHandles) {
       setState(() {
         _showSelectionHandles = willShowSelectionHandles;
@@ -843,7 +980,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   /// Toggle the toolbar when a selection handle is tapped.
   void _handleSelectionHandleTapped() {
     if (_effectiveController.selection.isCollapsed) {
-      _editableText.toggleToolbar();
+      _editableText!.toggleToolbar();
     }
   }
 
@@ -858,42 +995,69 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterial(context));
-    // TODO(jonahwilliams): uncomment out this check once we have migrated tests.
-    // assert(debugCheckHasMaterialLocalizations(context));
+    assert(debugCheckHasMaterialLocalizations(context));
     assert(debugCheckHasDirectionality(context));
     assert(
       !(widget.style != null &&
-          widget.style.inherit == false &&
-          (widget.style.fontSize == null || widget.style.textBaseline == null)),
+          widget.style!.inherit == false &&
+          (widget.style!.fontSize == null ||
+              widget.style!.textBaseline == null)),
       'inherit false style must supply fontSize and textBaseline',
     );
 
-    final ThemeData themeData = Theme.of(context);
-    final TextStyle style = themeData.textTheme.subtitle1.merge(widget.style);
+    final ThemeData theme = Theme.of(context);
+    final TextSelectionThemeData selectionTheme =
+        TextSelectionTheme.of(context);
+    final TextStyle style = theme.textTheme.subtitle1!.merge(widget.style);
     final Brightness keyboardAppearance =
-        widget.keyboardAppearance ?? themeData.primaryColorBrightness;
+        widget.keyboardAppearance ?? theme.primaryColorBrightness;
     final TextEditingController controller = _effectiveController;
     final FocusNode focusNode = _effectiveFocusNode;
-    final List<TextInputFormatter> formatters =
-        widget.inputFormatters ?? <TextInputFormatter>[];
-    if (widget.maxLength != null && widget.maxLengthEnforced)
-      formatters.add(LengthLimitingTextInputFormatter(widget.maxLength));
+    final List<TextInputFormatter> formatters = <TextInputFormatter>[
+      ...?widget.inputFormatters,
+      if (widget.maxLength != null)
+        LengthLimitingTextInputFormatter(
+          widget.maxLength,
+          maxLengthEnforcement: _effectiveMaxLengthEnforcement,
+        ),
+    ];
 
-    TextSelectionControls textSelectionControls = widget.textSelectionControls;
-    bool paintCursorAboveText;
-    bool cursorOpacityAnimates;
-    Offset cursorOffset;
-    Color cursorColor = widget.cursorColor;
-    Radius cursorRadius = widget.cursorRadius;
+    TextSelectionControls? textSelectionControls = widget.selectionControls;
+    late bool paintCursorAboveText;
+    late bool cursorOpacityAnimates;
+    Offset? cursorOffset;
+    Color? cursorColor = widget.cursorColor;
+    Color? selectionColor;
+    Color? autocorrectionTextRectColor;
+    Radius? cursorRadius = widget.cursorRadius;
 
-    switch (themeData.platform) {
+    switch (theme.platform) {
       case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
+        final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = true;
-        textSelectionControls ??= extendedCupertinoTextSelectionControls;
+        textSelectionControls ??= cupertinoTextSelectionControls;
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
-        cursorColor ??= CupertinoTheme.of(context).primaryColor;
+        cursorColor ??=
+            selectionTheme.cursorColor ?? cupertinoTheme.primaryColor;
+        selectionColor = selectionTheme.selectionColor ??
+            cupertinoTheme.primaryColor.withOpacity(0.40);
+        cursorRadius ??= const Radius.circular(2.0);
+        cursorOffset = Offset(
+            iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
+        autocorrectionTextRectColor = selectionColor;
+        break;
+
+      case TargetPlatform.macOS:
+        final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
+        forcePressEnabled = false;
+        textSelectionControls ??= cupertinoDesktopTextSelectionControls;
+        paintCursorAboveText = true;
+        cursorOpacityAnimates = true;
+        cursorColor ??=
+            selectionTheme.cursorColor ?? cupertinoTheme.primaryColor;
+        selectionColor = selectionTheme.selectionColor ??
+            cupertinoTheme.primaryColor.withOpacity(0.40);
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
@@ -901,74 +1065,96 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
 
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
+        forcePressEnabled = false;
+        textSelectionControls ??= materialTextSelectionControls;
+        paintCursorAboveText = false;
+        cursorOpacityAnimates = false;
+        cursorColor ??= selectionTheme.cursorColor ?? theme.colorScheme.primary;
+        selectionColor = selectionTheme.selectionColor ??
+            theme.colorScheme.primary.withOpacity(0.40);
+        break;
+
       case TargetPlatform.linux:
       case TargetPlatform.windows:
         forcePressEnabled = false;
-        textSelectionControls ??= extendedMaterialTextSelectionControls;
+        textSelectionControls ??= desktopTextSelectionControls;
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
-        cursorColor ??= themeData.cursorColor;
+        cursorColor ??= selectionTheme.cursorColor ?? theme.colorScheme.primary;
+        selectionColor = selectionTheme.selectionColor ??
+            theme.colorScheme.primary.withOpacity(0.40);
         break;
     }
 
     Widget child = RepaintBoundary(
-      child: ExtendedEditableText(
-        key: editableTextKey,
-        readOnly: widget.readOnly,
-        toolbarOptions: widget.toolbarOptions,
-        showCursor: widget.showCursor,
-        showSelectionHandles: _showSelectionHandles,
-        controller: controller,
-        focusNode: focusNode,
-        keyboardType: widget.keyboardType,
-        textInputAction: widget.textInputAction,
-        textCapitalization: widget.textCapitalization,
-        style: style,
-        strutStyle: widget.strutStyle,
-        textAlign: widget.textAlign,
-        textDirection: widget.textDirection,
-        autofocus: widget.autofocus,
-        obscureText: widget.obscureText,
-        autocorrect: widget.autocorrect,
-        smartDashesType: widget.smartDashesType,
-        smartQuotesType: widget.smartQuotesType,
-        enableSuggestions: widget.enableSuggestions,
-        maxLines: widget.maxLines,
-        minLines: widget.minLines,
-        expands: widget.expands,
-        selectionColor: themeData.textSelectionColor,
-        selectionControls:
-            widget.selectionEnabled ? textSelectionControls : null,
-        onChanged: widget.onChanged,
-        onSelectionChanged: _handleSelectionChanged,
-        onEditingComplete: widget.onEditingComplete,
-        onSubmitted: widget.onSubmitted,
-        onSelectionHandleTapped: _handleSelectionHandleTapped,
-        inputFormatters: formatters,
-        rendererIgnoresPointer: true,
-        cursorWidth: widget.cursorWidth,
-        cursorRadius: cursorRadius,
-        cursorColor: cursorColor,
-        selectionHeightStyle: widget.selectionHeightStyle,
-        selectionWidthStyle: widget.selectionWidthStyle,
-        cursorOpacityAnimates: cursorOpacityAnimates,
-        cursorOffset: cursorOffset,
-        paintCursorAboveText: paintCursorAboveText,
-        backgroundCursorColor: CupertinoColors.inactiveGray,
-        scrollPadding: widget.scrollPadding,
-        keyboardAppearance: keyboardAppearance,
-        enableInteractiveSelection: widget.enableInteractiveSelection,
-        dragStartBehavior: widget.dragStartBehavior,
-        scrollController: widget.scrollController,
-        scrollPhysics: widget.scrollPhysics,
-        specialTextSpanBuilder: widget.specialTextSpanBuilder,
+      child: UnmanagedRestorationScope(
+        bucket: bucket,
+        child: ExtendedEditableText(
+          key: editableTextKey,
+          specialTextSpanBuilder: widget.specialTextSpanBuilder,
+          readOnly: widget.readOnly || !_isEnabled,
+          toolbarOptions: widget.toolbarOptions,
+          showCursor: widget.showCursor,
+          showSelectionHandles: _showSelectionHandles,
+          controller: controller,
+          focusNode: focusNode,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          textCapitalization: widget.textCapitalization,
+          style: style,
+          strutStyle: widget.strutStyle,
+          textAlign: widget.textAlign,
+          textDirection: widget.textDirection,
+          autofocus: widget.autofocus,
+          obscuringCharacter: widget.obscuringCharacter,
+          obscureText: widget.obscureText,
+          autocorrect: widget.autocorrect,
+          smartDashesType: widget.smartDashesType,
+          smartQuotesType: widget.smartQuotesType,
+          enableSuggestions: widget.enableSuggestions,
+          maxLines: widget.maxLines,
+          minLines: widget.minLines,
+          expands: widget.expands,
+          selectionColor: selectionColor,
+
+          selectionControls:
+              widget.selectionEnabled ? textSelectionControls : null,
+          onChanged: widget.onChanged,
+          onSelectionChanged: _handleSelectionChanged,
+          onEditingComplete: widget.onEditingComplete,
+          onSubmitted: widget.onSubmitted,
+          onAppPrivateCommand: widget.onAppPrivateCommand,
+          onSelectionHandleTapped: _handleSelectionHandleTapped,
+          inputFormatters: formatters,
+          rendererIgnoresPointer: true,
+          mouseCursor: MouseCursor.defer, // TextField will handle the cursor
+          cursorWidth: widget.cursorWidth,
+          cursorHeight: widget.cursorHeight,
+          cursorRadius: cursorRadius,
+          cursorColor: cursorColor,
+          selectionHeightStyle: widget.selectionHeightStyle,
+          selectionWidthStyle: widget.selectionWidthStyle,
+          cursorOpacityAnimates: cursorOpacityAnimates,
+          cursorOffset: cursorOffset,
+          paintCursorAboveText: paintCursorAboveText,
+          backgroundCursorColor: CupertinoColors.inactiveGray,
+          scrollPadding: widget.scrollPadding,
+          keyboardAppearance: keyboardAppearance,
+          enableInteractiveSelection: widget.enableInteractiveSelection,
+          dragStartBehavior: widget.dragStartBehavior,
+          scrollController: widget.scrollController,
+          scrollPhysics: widget.scrollPhysics,
+          autofillHints: widget.autofillHints,
+          autocorrectionTextRectColor: autocorrectionTextRectColor,
+          restorationId: 'editable',
+        ),
       ),
     );
 
     if (widget.decoration != null) {
       child = AnimatedBuilder(
         animation: Listenable.merge(<Listenable>[focusNode, controller]),
-        builder: (BuildContext context, Widget child) {
+        builder: (BuildContext context, Widget? child) {
           return InputDecorator(
             decoration: _getEffectiveDecoration(),
             baseStyle: widget.style,
@@ -984,28 +1170,47 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         child: child,
       );
     }
+    final MouseCursor effectiveMouseCursor =
+        MaterialStateProperty.resolveAs<MouseCursor>(
+      widget.mouseCursor ?? MaterialStateMouseCursor.textable,
+      <MaterialState>{
+        if (!_isEnabled) MaterialState.disabled,
+        if (_isHovering) MaterialState.hovered,
+        if (focusNode.hasFocus) MaterialState.focused,
+        if (_hasError) MaterialState.error,
+      },
+    );
 
-    return IgnorePointer(
-      ignoring: !_isEnabled,
-      child: MouseRegion(
-        onEnter: (PointerEnterEvent event) => _handleHover(true),
-        onExit: (PointerExitEvent event) => _handleHover(false),
+    int? semanticsMaxValueLength;
+    if (_effectiveMaxLengthEnforcement != MaxLengthEnforcement.none &&
+        widget.maxLength != null &&
+        widget.maxLength! > 0) {
+      semanticsMaxValueLength = widget.maxLength;
+    } else {
+      semanticsMaxValueLength = null;
+    }
+
+    child = MouseRegion(
+      cursor: effectiveMouseCursor,
+      onEnter: (PointerEnterEvent event) => _handleHover(true),
+      onExit: (PointerExitEvent event) => _handleHover(false),
+      child: IgnorePointer(
+        ignoring: !_isEnabled,
         child: AnimatedBuilder(
           animation: controller, // changes the _currentLength
-          builder: (BuildContext context, Widget child) {
+          builder: (BuildContext context, Widget? child) {
             return Semantics(
-              maxValueLength: widget.maxLengthEnforced &&
-                      widget.maxLength != null &&
-                      widget.maxLength > 0
-                  ? widget.maxLength
-                  : null,
+              maxValueLength: semanticsMaxValueLength,
               currentValueLength: _currentLength,
-              onTap: () {
-                if (!_effectiveController.selection.isValid)
-                  _effectiveController.selection = TextSelection.collapsed(
-                      offset: _effectiveController.text.length);
-                _requestKeyboard();
-              },
+              onTap: widget.readOnly
+                  ? null
+                  : () {
+                      if (!_effectiveController.selection.isValid)
+                        _effectiveController.selection =
+                            TextSelection.collapsed(
+                                offset: _effectiveController.text.length);
+                      _requestKeyboard();
+                    },
               child: child,
             );
           },
@@ -1016,5 +1221,13 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return Shortcuts(
+        shortcuts: scrollShortcutOverrides,
+        child: child,
+      );
+    }
+    return child;
   }
 }

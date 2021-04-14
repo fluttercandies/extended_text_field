@@ -4,14 +4,12 @@
 
 Extended official text field to build special text like inline image, @somebody, custom background etc quickly.It also support to build custom seleciton toolbar and handles.
 
-base on flutter sdk 1.7.8
-
 Language: [English](README.md) | [中文简体](README-ZH.md)
 
-- [extended_text_field](#extendedtextfield)
+- [extended_text_field](#extended_text_field)
   - [Limitation](#limitation)
-  - [Speical Text](#speical-text)
-    - [Create Speical Text](#create-speical-text)
+  - [Special Text](#special-text)
+    - [Create Special Text](#create-special-text)
     - [SpecialTextSpanBuilder](#specialtextspanbuilder)
   - [Image](#image)
     - [ImageSpan](#imagespan)
@@ -27,15 +25,15 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 
 - Not support:it won't handle special text when obscureText is true.
 
-## Speical Text
+## Special Text
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/extended_text_field.gif)
 
-### Create Speical Text
+### Create Special Text
 
-extended text helps to convert your text to speical textSpan quickly.
+extended text helps to convert your text to special textSpan quickly.
 
-for example, follwing code show how to create @xxxx speical textSpan.
+for example, follwing code show how to create @xxxx special textSpan.
 
 ```dart
 class AtText extends SpecialText {
@@ -127,8 +125,6 @@ class MySpecialTextSpanBuilder extends SpecialTextSpanBuilder {
   }
 }
 ```
-
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
 
 ## Image
 
@@ -224,15 +220,13 @@ ExtendedNetworkImageProvider(
 Future<bool> clearDiskCachedImages({Duration duration}) async
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/text_demo.dart)
-
 ## TextSelectionControls
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/custom_toolbar.gif)
 
 default value of textSelectionControls are MaterialExtendedTextSelectionControls/CupertinoExtendedTextSelectionControls
 
-override buildToolbar or buildHandle to custom your toolbar widget or handle widget
+override buildToolbar or buildHandle to customize your toolbar widget or handle widget
 
 ```dart
 class MyExtendedMaterialTextSelectionControls
@@ -387,8 +381,6 @@ class _TextSelectionToolbar extends StatelessWidget {
 
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/custom_toolbar.dart)
-
 ## WidgetSpan
 
 ![](https://github.com/fluttercandies/Flutter_Candies/blob/master/gif/extended_text_field/widget_span.gif)
@@ -510,4 +502,5 @@ class EmailText extends SpecialText {
 }
 ```
 
-[more detail](https://github.com/fluttercandies/extended_text_field/blob/master/example/lib/pages/widget_span.dart)
+
+

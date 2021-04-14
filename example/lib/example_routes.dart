@@ -6,59 +6,68 @@ const List<String> routeNames = <String>[
   'fluttercandies://CustomToolBar',
   'fluttercandies://TextDemo',
   'fluttercandies://WidgetSpanDemo',
+  'fluttercandies://demogrouppage',
   'fluttercandies://mainpage',
-  'fluttercandies://picswiper'
 ];
 
 class Routes {
   const Routes._();
 
-  /// "custom selection toolbar and handles for text field"
+  /// 'custom selection toolbar and handles for text field'
   ///
-  /// [name] : fluttercandies://CustomToolBar
+  /// [name] : 'fluttercandies://CustomToolBar'
   ///
-  /// [routeName] : custom toolbar
+  /// [routeName] : 'custom toolbar'
   ///
-  /// [description] : "custom selection toolbar and handles for text field"
+  /// [description] : 'custom selection toolbar and handles for text field'
+  ///
+  /// [exts] : {group: Simple, order: 0}
   static const String fluttercandiesCustomToolBar =
       'fluttercandies://CustomToolBar';
 
-  /// "build special text and inline image in text field"
+  /// 'build special text and inline image in text field'
   ///
-  /// [name] : fluttercandies://TextDemo
+  /// [name] : 'fluttercandies://TextDemo'
   ///
-  /// [routeName] : text
+  /// [routeName] : 'text'
   ///
-  /// [description] : "build special text and inline image in text field"
+  /// [description] : 'build special text and inline image in text field'
+  ///
+  /// [exts] : {group: Complex, order: 0}
   static const String fluttercandiesTextDemo = 'fluttercandies://TextDemo';
 
-  /// "mailbox demo with widgetSpan"
+  /// 'mailbox demo with widgetSpan'
   ///
-  /// [name] : fluttercandies://WidgetSpanDemo
+  /// [name] : 'fluttercandies://WidgetSpanDemo'
   ///
-  /// [routeName] : widget span
+  /// [routeName] : 'widget span'
   ///
-  /// [description] : "mailbox demo with widgetSpan"
+  /// [description] : 'mailbox demo with widgetSpan'
+  ///
+  /// [exts] : {group: Simple, order: 1}
   static const String fluttercandiesWidgetSpanDemo =
       'fluttercandies://WidgetSpanDemo';
 
-  /// MainPage
+  /// 'DemoGroupPage'
   ///
-  /// [name] : fluttercandies://mainpage
+  /// [name] : 'fluttercandies://demogrouppage'
   ///
-  /// [routeName] : MainPage
-  static const String fluttercandiesMainpage = 'fluttercandies://mainpage';
+  /// [routeName] : 'DemoGroupPage'
+  ///
+  /// [constructors] :
+  ///
+  /// DemoGroupPage : [MapEntry<String, List<DemoRouteResult>> keyValue]
+  static const String fluttercandiesDemogrouppage =
+      'fluttercandies://demogrouppage';
 
-  /// PicSwiper
+  /// 'MainPage'
   ///
-  /// [name] : fluttercandies://picswiper
+  /// [name] : 'fluttercandies://mainpage'
   ///
-  /// [routeName] : PicSwiper
+  /// [routeName] : 'MainPage'
   ///
-  /// [arguments] : [index, pics, tuChongItem]
+  /// [constructors] :
   ///
-  /// [showStatusBar] : false
-  ///
-  /// [pageRouteType] : PageRouteType.transparent
-  static const String fluttercandiesPicswiper = 'fluttercandies://picswiper';
+  /// MainPage : []
+  static const String fluttercandiesMainpage = 'fluttercandies://mainpage';
 }

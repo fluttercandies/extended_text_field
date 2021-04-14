@@ -1,16 +1,21 @@
 import 'package:example/special_text/email_span_builder.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_text_field/extended_text_field.dart';
+import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
-import 'package:ff_annotation_route/ff_annotation_route.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/8/4
 ///
 @FFRoute(
-    name: 'fluttercandies://WidgetSpanDemo',
-    routeName: 'widget span',
-    description: 'mailbox demo with widgetSpan')
+  name: 'fluttercandies://WidgetSpanDemo',
+  routeName: 'widget span',
+  description: 'mailbox demo with widgetSpan',
+  exts: <String, dynamic>{
+    'group': 'Simple',
+    'order': 1,
+  },
+)
 class WidgetSpanDemo extends StatefulWidget {
   @override
   _WidgetSpanDemoState createState() => _WidgetSpanDemoState();
@@ -38,7 +43,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
         title: const Text('E-mail'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: () {},
           )
         ],
@@ -61,9 +66,10 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                   maxLines: null,
                   decoration: InputDecoration(
                       suffixIcon: IconButton(
-                        icon: Icon(Icons.add),
+                        icon: const Icon(Icons.add),
                         onPressed: () {
-                          final TextSelection selection = controller.selection.copyWith();
+                          final TextSelection selection =
+                              controller.selection.copyWith();
                           showDialog<void>(
                               context: context,
                               barrierDismissible: true,
@@ -79,24 +85,24 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                                         padding: const EdgeInsets.all(10.0),
                                         child: Column(
                                           children: <Widget>[
-                                            FlatButton(
+                                            TextButton(
                                                 onPressed: () {
                                                   insertEmail(
                                                       'zmtzawqlp@live.com ',
                                                       selection);
                                                   Navigator.pop(context);
                                                 },
-                                                child:
-                                                    const Text('zmtzawqlp@live.com')),
-                                            FlatButton(
+                                                child: const Text(
+                                                    'zmtzawqlp@live.com')),
+                                            TextButton(
                                                 onPressed: () {
                                                   insertEmail(
                                                       '410496936@qq.com ',
                                                       selection);
                                                   Navigator.pop(context);
                                                 },
-                                                child:
-                                                    const Text('410496936@qq.com')),
+                                                child: const Text(
+                                                    '410496936@qq.com')),
                                           ],
                                         ),
                                       )),
@@ -127,7 +133,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                 child: ExtendedTextField(
                   controller: controller1,
                   maxLines: null,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       border: InputBorder.none, hintText: 'input topic here'),
                 ),
               )
@@ -139,8 +145,8 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
               controller: controller2,
               maxLines: null,
               specialTextSpanBuilder: MySpecialTextSpanBuilder(),
-              decoration: InputDecoration(
-                  border: InputBorder.none, contentPadding: const EdgeInsets.all(10)),
+              decoration: const InputDecoration(
+                  border: InputBorder.none, contentPadding: EdgeInsets.all(10)),
             ),
           )
         ],

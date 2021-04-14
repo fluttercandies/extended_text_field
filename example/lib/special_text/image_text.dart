@@ -75,10 +75,11 @@ class ImageText extends SpecialText {
             onTap: () {
               onTap?.call(url);
             },
-            child: Image.network(url,
-                width: width,
-                height: height,
-                fit: fit,
-                )));
+            child: Image.network(
+              url,
+              width: width,
+              height: height,
+              fit: fit,
+            )));
   }
 }

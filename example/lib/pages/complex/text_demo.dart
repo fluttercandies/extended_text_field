@@ -6,18 +6,23 @@ import 'package:example/special_text/my_extended_text_selection_controls.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_list/extended_list.dart';
 import 'package:extended_text/extended_text.dart';
+import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/services.dart';
-import 'package:ff_annotation_route/ff_annotation_route.dart';
 import 'package:loading_more_list/loading_more_list.dart';
 import 'package:example/special_text/emoji_text.dart' as emoji;
 import 'package:url_launcher/url_launcher.dart';
 
 @FFRoute(
-    name: 'fluttercandies://TextDemo',
-    routeName: 'text',
-    description: 'build special text and inline image in text field')
+  name: 'fluttercandies://TextDemo',
+  routeName: 'text',
+  description: 'build special text and inline image in text field',
+  exts: <String, dynamic>{
+    'group': 'Complex',
+    'order': 0,
+  },
+)
 class TextDemo extends StatefulWidget {
   @override
   _TextDemoState createState() => _TextDemoState();
@@ -25,9 +30,8 @@ class TextDemo extends StatefulWidget {
 
 class _TextDemoState extends State<TextDemo> {
   final TextEditingController _textEditingController = TextEditingController();
-  final MyExtendedMaterialTextSelectionControls
-      _myExtendedMaterialTextSelectionControls =
-      MyExtendedMaterialTextSelectionControls();
+  final MyTextSelectionControls _myExtendedMaterialTextSelectionControls =
+      MyTextSelectionControls();
   final GlobalKey _key = GlobalKey();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
@@ -48,14 +52,12 @@ class _TextDemoState extends State<TextDemo> {
     'error 0 [45] warning 0',
   ];
 
-
   @override
   Widget build(BuildContext context) {
     FocusScope.of(context).autofocus(_focusNode);
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     if (keyboardHeight > 0) {
-      activeEmojiGird =
-          activeAtGrid = activeDollarGrid = false;
+      activeEmojiGird = activeAtGrid = activeDollarGrid = false;
     }
 
     _keyboardHeight = max(_keyboardHeight, keyboardHeight);
@@ -64,8 +66,8 @@ class _TextDemoState extends State<TextDemo> {
       appBar: AppBar(
         title: const Text('special text'),
         actions: <Widget>[
-          FlatButton(
-            child: Icon(Icons.backspace),
+          TextButton(
+            child: const Icon(Icons.backspace),
             onPressed: manualDelete,
           )
         ],
@@ -119,13 +121,14 @@ class _TextDemoState extends State<TextDemo> {
             height: 2.0,
             color: Colors.blue,
           ),
+          //EditableText(controller: controller, focusNode: focusNode, style: style, cursorColor: cursorColor, backgroundCursorColor: backgroundCursorColor)
           ExtendedTextField(
             key: _key,
             specialTextSpanBuilder: MySpecialTextSpanBuilder(
               showAtBackground: true,
             ),
             controller: _textEditingController,
-            textSelectionControls: _myExtendedMaterialTextSelectionControls,
+            selectionControls: _myExtendedMaterialTextSelectionControls,
             maxLines: null,
             focusNode: _focusNode,
             decoration: InputDecoration(
@@ -141,7 +144,7 @@ class _TextDemoState extends State<TextDemo> {
                               composing: TextRange.empty);
                     });
                   },
-                  child: Icon(Icons.send),
+                  child: const Icon(Icons.send),
                 ),
                 contentPadding: const EdgeInsets.all(12.0)),
             //textDirection: TextDirection.rtl,
@@ -153,17 +156,17 @@ class _TextDemoState extends State<TextDemo> {
                 Row(
                   children: <Widget>[
                     ToggleButton(
-                      activeWidget: Icon(
+                      activeWidget: const Icon(
                         Icons.sentiment_very_satisfied,
                         color: Colors.orange,
                       ),
-                      unActiveWidget: Icon(Icons.sentiment_very_satisfied),
+                      unActiveWidget:
+                          const Icon(Icons.sentiment_very_satisfied),
                       activeChanged: (bool active) {
                         final Function change = () {
                           setState(() {
                             if (active) {
-                              activeAtGrid =
-                                  activeDollarGrid  = false;
+                              activeAtGrid = activeDollarGrid = false;
                               FocusScope.of(context).requestFocus(_focusNode);
                             }
                             activeEmojiGird = active;
@@ -174,8 +177,8 @@ class _TextDemoState extends State<TextDemo> {
                       active: activeEmojiGird,
                     ),
                     ToggleButton(
-                        activeWidget: Padding(
-                          padding: const EdgeInsets.only(bottom: 5.0),
+                        activeWidget: const Padding(
+                          padding: EdgeInsets.only(bottom: 5.0),
                           child: Text(
                             '@',
                             style: TextStyle(
@@ -185,8 +188,8 @@ class _TextDemoState extends State<TextDemo> {
                             ),
                           ),
                         ),
-                        unActiveWidget: Padding(
-                          padding: const EdgeInsets.only(bottom: 5.0),
+                        unActiveWidget: const Padding(
+                          padding: EdgeInsets.only(bottom: 5.0),
                           child: Text(
                             '@',
                             style: TextStyle(
@@ -197,8 +200,7 @@ class _TextDemoState extends State<TextDemo> {
                           final Function change = () {
                             setState(() {
                               if (active) {
-                                activeEmojiGird =
-                                    activeDollarGrid  = false;
+                                activeEmojiGird = activeDollarGrid = false;
                                 FocusScope.of(context).requestFocus(_focusNode);
                               }
                               activeAtGrid = active;
@@ -208,17 +210,16 @@ class _TextDemoState extends State<TextDemo> {
                         },
                         active: activeAtGrid),
                     ToggleButton(
-                        activeWidget: Icon(
+                        activeWidget: const Icon(
                           Icons.attach_money,
                           color: Colors.orange,
                         ),
-                        unActiveWidget: Icon(Icons.attach_money),
+                        unActiveWidget: const Icon(Icons.attach_money),
                         activeChanged: (bool active) {
                           final Function change = () {
                             setState(() {
                               if (active) {
-                                activeEmojiGird =
-                                    activeAtGrid  = false;
+                                activeEmojiGird = activeAtGrid = false;
                                 FocusScope.of(context).requestFocus(_focusNode);
                               }
                               activeDollarGrid = active;

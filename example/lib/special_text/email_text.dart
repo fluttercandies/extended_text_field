@@ -48,7 +48,7 @@ class EmailText extends SpecialText {
                       width: 5.0,
                     ),
                     InkWell(
-                      child: Icon(
+                      child: const Icon(
                         Icons.close,
                         size: 15.0,
                       ),
@@ -82,7 +82,7 @@ class EmailText extends SpecialText {
                       child: TextField(
                         controller: textEditingController,
                         decoration: InputDecoration(
-                            suffixIcon: FlatButton(
+                            suffixIcon: TextButton(
                           child: const Text('OK'),
                           onPressed: () {
                             controller.value = controller.value.copyWith(
