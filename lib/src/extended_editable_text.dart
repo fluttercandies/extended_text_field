@@ -1443,7 +1443,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         final TextSpan oldTextSpan = widget.specialTextSpanBuilder!
             .build(_value.text, textStyle: widget.style);
         value = handleSpecialTextSpanDelete(
-            value, _value, oldTextSpan, _textInputConnection!);
+            value, _value, oldTextSpan, _textInputConnection);
 
         final String text = newTextSpan.toPlainText();
         //correct caret Offset

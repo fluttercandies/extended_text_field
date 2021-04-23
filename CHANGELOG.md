@@ -1,3 +1,8 @@
+## 7.0.0
+
+* Breaking change: [SpecialText.getContent] is not include endflag now.(please check if you call getContent and your endflag length is more than 1)
+* Fix issue about demo manualDelete #120
+
 ## 6.0.1
 
 * Fix issue that toolbar is not shown when double tap 
