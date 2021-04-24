@@ -548,6 +548,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   }
 
   /// Whether this rendering object is read only.
+  @override
   bool get readOnly => _readOnly;
   bool _readOnly = false;
   set readOnly(bool value) {

@@ -1,6 +1,11 @@
-# 6.0.0-non-null-safety
+## 7.0.0-non-null-safety
+
+* Breaking change: [SpecialText.getContent] is not include endflag now.(please check if you call getContent and your endflag length is more than 1)
+* Fix demo manualDelete error #120
+## 6.0.0-non-null-safety
 
 * non-null-safety
+
 ## 5.0.4
 
 * Fix toolbar is not show after some behaviour #107

@@ -22,7 +22,7 @@ class ImageText extends SpecialText {
   @override
   InlineSpan finishText() {
     ///content already has endflag '/'
-    final String text = flag + getContent() + '>';
+    final String text = toString();
 
     ///'<img src='$url'/>'
 //    var index1 = text.indexOf(''') + 1;
