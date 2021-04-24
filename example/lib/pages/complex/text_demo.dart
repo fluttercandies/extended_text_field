@@ -67,7 +67,10 @@ class _TextDemoState extends State<TextDemo> {
         title: const Text('special text'),
         actions: <Widget>[
           TextButton(
-            child: const Icon(Icons.backspace),
+            child: const Icon(
+              Icons.backspace,
+              color: Colors.white,
+            ),
             onPressed: manualDelete,
           )
         ],
