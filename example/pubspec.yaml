@@ -23,12 +23,12 @@ dependencies:
 
 
   cupertino_icons: ^0.1.2
-  extended_text: ^5.0.0  
+  extended_text: ^6.0.0
   extended_text_field:
-    path: ../  
+    path: ../
   ff_annotation_route_library: ^2.0.1-non-null-safety
   flutter:
-    sdk: flutter  
+    sdk: flutter
   html: any
   loading_more_list: ^3.1.1
   oktoast: ^2.1.4
