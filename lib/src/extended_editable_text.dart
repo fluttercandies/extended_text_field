@@ -1409,7 +1409,17 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     }
     _lastKnownRemoteTextEditingValue = value;
     value = _handleSpecialTextSpan(value);
-    if (value.text != _value.text) {
+    if (value == _value) {
+      // This is possible, for example, when the numeric keyboard is input,
+      // the engine will notify twice for the same value.
+      // Track at https://github.com/flutter/flutter/issues/65811
+      return;
+    }
+
+    if (value.text == _value.text && value.composing == _value.composing) {
+      // `selection` is the only change.
+      _handleSelectionChanged(value.selection, SelectionChangedCause.keyboard);
+    } else {
       hideToolbar();
       _currentPromptRectRange = null;
 
