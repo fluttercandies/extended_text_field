@@ -9,7 +9,7 @@
 
 ## 6.0.1
 
-* Fix issue that toolbar is not shown when double tap 
+* Fix issue that toolbar is not shown when double tap
 * Fix throw exception when selectWordAtOffset
 
 ## 6.0.0
@@ -19,20 +19,20 @@
 ## 5.0.4
 
 * Fix toolbar is not show after some behaviour #107
-  
+
 ## 5.0.3
 
 * Fix miss TextStyle for specialTextSpanBuilder #89
-  
+
 ## 5.0.2
 
 * Fix wrong position of caret
-  
+
 ## 5.0.1
 
 * change handleSpecialText to hasSpecialInlineSpanBase(extended_text_library)
 * add hasPlaceholderSpan(extended_text_library)
-  
+
 ## 5.0.0
 
 * Merge from Flutter v1.22
