@@ -1,3 +1,7 @@
+## 7.0.1
+
+* Fix issue that composing is not updated.#122
+
 ## 7.0.0
 
 * Breaking change: [SpecialText.getContent] is not include endflag now.(please check if you call getContent and your endflag length is more than 1)
