@@ -23,7 +23,7 @@ dependencies:
 
 
   cupertino_icons: ^0.1.2
-  extended_text: ^6.0.0
+  extended_text: ^7.0.0
   extended_text_field:
     path: ../
   ff_annotation_route_library: ^2.0.1-non-null-safety
@@ -37,7 +37,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+#dependency_overrides:
+ 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 

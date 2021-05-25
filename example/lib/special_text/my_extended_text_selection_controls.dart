@@ -50,8 +50,11 @@ class MyTextSelectionControls extends TextSelectionControls {
         launch(
             'mailto:zmtzawqlp@live.com?subject=extended_text_share&body=${delegate.textEditingValue.text}');
         delegate.hideToolbar();
-        delegate.textEditingValue = delegate.textEditingValue
-            .copyWith(selection: const TextSelection.collapsed(offset: 0));
+        delegate.userUpdateTextEditingValue(
+          delegate.textEditingValue
+              .copyWith(selection: const TextSelection.collapsed(offset: 0)),
+          SelectionChangedCause.toolBar,
+        );
       },
     );
   }

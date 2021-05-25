@@ -1,3 +1,8 @@
+## 8.0.0
+
+* Add [SpecialTextSpan.mouseCursor], [SpecialTextSpan.onEnter] and [SpecialTextSpan.onExit].
+* merge code from 2.2.0
+
 ## 7.0.1
 
 * Fix issue that composing is not updated.#122

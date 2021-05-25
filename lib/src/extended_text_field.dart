@@ -1222,12 +1222,12 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       ),
     );
 
-    if (kIsWeb) {
-      return Shortcuts(
-        shortcuts: scrollShortcutOverrides,
-        child: child,
-      );
-    }
+    // if (kIsWeb) {
+    //   return Shortcuts(
+    //     shortcuts: scrollShortcutOverrides,
+    //     child: child,
+    //   );
+    // }
     return child;
   }
 }
