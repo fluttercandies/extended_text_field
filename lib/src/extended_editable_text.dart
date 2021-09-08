@@ -9,12 +9,12 @@ import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended_render_editable.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/gestures.dart' show DragStartBehavior;
 
 // The time it takes for the cursor to fade from fully opaque to fully
 // transparent and vice versa. A full cursor blink, from transparent to opaque

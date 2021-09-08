@@ -10,10 +10,11 @@ import 'pages/main_page.dart';
 import 'pages/simple/custom_toolbar.dart';
 import 'pages/simple/widget_span.dart';
 
-// ignore_for_file: prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_literals_to_create_immutables,unused_local_variable,unused_import
 FFRouteSettings getRouteSettings({
   @required String name,
   Map<String, dynamic> arguments,
+  Widget notFoundWidget,
 }) {
   final Map<String, dynamic> safeArguments =
       arguments ?? const <String, dynamic>{};
@@ -63,6 +64,10 @@ FFRouteSettings getRouteSettings({
         routeName: 'MainPage',
       );
     default:
-      return const FFRouteSettings(name: '404', routeName: '404_page');
+      return FFRouteSettings(
+        name: '404',
+        routeName: '404_page',
+        widget: notFoundWidget,
+      );
   }
 }

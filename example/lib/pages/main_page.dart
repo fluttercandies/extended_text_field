@@ -1,8 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:example/example_routes.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:collection/collection.dart';
+
 import '../example_route.dart';
 import '../example_routes.dart' as example_routes;
 
@@ -22,8 +23,8 @@ class MainPage extends StatelessWidget {
             .where((FFRouteSettings element) => element.exts != null)
             .map<DemoRouteResult>((FFRouteSettings e) => DemoRouteResult(e))
             .toList()
-              ..sort((DemoRouteResult a, DemoRouteResult b) =>
-                  b.group.compareTo(a.group)),
+          ..sort((DemoRouteResult a, DemoRouteResult b) =>
+              b.group.compareTo(a.group)),
         (DemoRouteResult x) => x.group));
   }
   final Map<String, List<DemoRouteResult>> routesGroup =

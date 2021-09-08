@@ -62,7 +62,8 @@ class MyTextSelectionControls extends TextSelectionControls {
   /// Builder for material-style text selection handles.
   @override
   Widget buildHandle(
-      BuildContext context, TextSelectionHandleType type, double textHeight) {
+      BuildContext context, TextSelectionHandleType type, double textLineHeight,
+      [VoidCallback onTap, double startGlyphHeight, double endGlyphHeight]) {
     final Widget handle = SizedBox(
       width: _kHandleSize,
       height: _kHandleSize,
@@ -95,7 +96,8 @@ class MyTextSelectionControls extends TextSelectionControls {
   ///
   /// See [TextSelectionControls.getHandleAnchor].
   @override
-  Offset getHandleAnchor(TextSelectionHandleType type, double textLineHeight) {
+  Offset getHandleAnchor(TextSelectionHandleType type, double textLineHeight,
+      [double startGlyphHeight, double endGlyphHeight]) {
     switch (type) {
       case TextSelectionHandleType.left:
         return const Offset(_kHandleSize, 0);
