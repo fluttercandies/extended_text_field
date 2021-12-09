@@ -3,12 +3,12 @@ import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/material.dart';
 
 class EmailText extends SpecialText {
-  EmailText(TextStyle textStyle, SpecialTextGestureTapCallback onTap,
-      {this.start, this.controller, this.context, String startFlag})
+  EmailText(TextStyle textStyle, SpecialTextGestureTapCallback? onTap,
+      {this.start, this.controller, this.context, required String startFlag})
       : super(startFlag, ' ', textStyle, onTap: onTap);
-  final TextEditingController controller;
-  final int start;
-  final BuildContext context;
+  final TextEditingController? controller;
+  final int? start;
+  final BuildContext? context;
   @override
   bool isEnd(String value) {
     final int index = value.indexOf('@');
@@ -26,7 +26,7 @@ class EmailText extends SpecialText {
 
     return ExtendedWidgetSpan(
       actualText: text,
-      start: start,
+      start: start!,
       alignment: ui.PlaceholderAlignment.middle,
       child: GestureDetector(
         child: Padding(
@@ -53,11 +53,11 @@ class EmailText extends SpecialText {
                         size: 15.0,
                       ),
                       onTap: () {
-                        controller.value = controller.value.copyWith(
-                            text: controller.text
-                                .replaceRange(start, start + text.length, ''),
+                        controller!.value = controller!.value.copyWith(
+                            text: controller!.text
+                                .replaceRange(start!, start! + text.length, ''),
                             selection: TextSelection.fromPosition(
-                                TextPosition(offset: start)));
+                                TextPosition(offset: start!)));
                       },
                     )
                   ],
@@ -66,7 +66,7 @@ class EmailText extends SpecialText {
         ),
         onTap: () {
           showDialog<void>(
-              context: context,
+              context: context!,
               barrierDismissible: true,
               builder: (BuildContext c) {
                 final TextEditingController textEditingController =
@@ -85,18 +85,18 @@ class EmailText extends SpecialText {
                             suffixIcon: TextButton(
                           child: const Text('OK'),
                           onPressed: () {
-                            controller.value = controller.value.copyWith(
-                                text: controller.text.replaceRange(
-                                    start,
-                                    start + text.length,
+                            controller!.value = controller!.value.copyWith(
+                                text: controller!.text.replaceRange(
+                                    start!,
+                                    start! + text.length,
                                     textEditingController.text + ' '),
                                 selection: TextSelection.fromPosition(
                                     TextPosition(
-                                        offset: start +
+                                        offset: start! +
                                             (textEditingController.text + ' ')
                                                 .length)));
 
-                            Navigator.pop(context);
+                            Navigator.pop(context!);
                           },
                         )),
                       ),

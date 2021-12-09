@@ -6,10 +6,10 @@ class ToggleButton extends StatefulWidget {
       this.unActiveWidget,
       this.activeChanged,
       this.active = false});
-  final Widget activeWidget;
-  final Widget unActiveWidget;
+  final Widget? activeWidget;
+  final Widget? unActiveWidget;
   final bool active;
-  final ValueChanged<bool> activeChanged;
+  final ValueChanged<bool>? activeChanged;
   @override
   _ToggleButtonState createState() => _ToggleButtonState();
 }

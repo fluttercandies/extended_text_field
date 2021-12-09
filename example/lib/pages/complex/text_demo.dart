@@ -12,7 +12,6 @@ import 'package:extended_text_field/extended_text_field.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:loading_more_list/loading_more_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @FFRoute(
@@ -293,7 +292,7 @@ class _TextDemoState extends State<TextDemo> {
       itemBuilder: (BuildContext context, int index) {
         return GestureDetector(
           child:
-              Image.asset(emoji.EmojiUitl.instance.emojiMap['[${index + 1}]']),
+              Image.asset(emoji.EmojiUitl.instance.emojiMap['[${index + 1}]']!),
           behavior: HitTestBehavior.translucent,
           onTap: () {
             insertText('[${index + 1}]');

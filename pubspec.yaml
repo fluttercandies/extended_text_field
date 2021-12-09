@@ -1,11 +1,11 @@
 name: extended_text_field
 description: Extended official text field to build special text like inline image, @somebody, custom background etc quickly.It also support to build custom seleciton toolbar and handles.
-version: 8.0.0
+version: 9.0.0
 homepage: https://github.com/fluttercandies/extended_text_field
 
 environment:
   sdk: '>=2.13.0 <3.0.0'
-  flutter: ">=2.2.0"
+  flutter: ">=2.8.0"
 dependencies:
 
   extended_text_library: ^7.0.0

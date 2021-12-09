@@ -14,25 +14,25 @@ publish_to: none
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.6.0 <3.0.0"
-  flutter: ">=2.5.0"
+  sdk: '>=2.12.0 <3.0.0'
+  flutter: ">=2.8.0"
 dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
 
 
-  cupertino_icons: ^0.1.2
-  extended_text: ^7.0.0
+  cupertino_icons: ^1.0.4
+  extended_text: ^8.0.0
   extended_text_field:
     path: ../
-  ff_annotation_route_library: ^2.0.1-non-null-safety
+  ff_annotation_route_library: ^3.0.0
   flutter:
     sdk: flutter
-  html: any
-  loading_more_list: ^3.1.1
-  oktoast: ^2.1.4
-  url_launcher: any
+  html: ^0.15.0
+  loading_more_list: ^4.1.0
+  oktoast: ^3.1.5
+  url_launcher: ^6.0.17
 
 dev_dependencies:
   flutter_test:

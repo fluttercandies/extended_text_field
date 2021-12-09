@@ -29,7 +29,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
         '[33]Extended text field help you to build rich text quickly. any special text you will have with extended text field. this is demo to show how to create special text with widget span.'
             '\n\nIt\'s my pleasure to invite you to join \$FlutterCandies\$ if you want to improve flutter .[36]'
             '\n\nif you meet any problem, please let me konw @zmtzawqlp .[44]';
-  EmailSpanBuilder _emailSpanBuilder;
+  EmailSpanBuilder? _emailSpanBuilder;
   @override
   void initState() {
     _emailSpanBuilder = EmailSpanBuilder(controller, context);

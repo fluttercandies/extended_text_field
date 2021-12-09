@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 const double _kCaretGap = 1.0; // pixels
@@ -53,7 +52,8 @@ const double _kFloatingCaretRadius = 1.0;
 /// Keyboard handling, IME handling, scrolling, toggling the [showCursor] value
 /// to actually blink the cursor, and other features not mentioned above are the
 /// responsibility of higher layers and not handled by this object.
-class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
+class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject
+    implements TextLayoutMetrics {
   /// Creates a render object that implements the visual aspects of a text field.
   ///
   /// The [textAlign] argument must not be null. It defaults to [TextAlign.start].
@@ -1777,7 +1777,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   Offset getOffsetForCaret(TextPosition position, Rect caretPrototype) {
     assert(!debugNeedsLayout);
-    return _textPainter.getOffsetForCaret(position, caretPrototype);
+    return getCaretOffset(position, caretPrototype: caretPrototype);
+    //return _textPainter.getOffsetForCaret(position, caretPrototype);
   }
 
   @override
@@ -1850,4 +1851,67 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   @override
   Rect get caretPrototype => _caretPrototype;
+
+  // Start TextLayoutMetrics.
+
+  /// {@macro flutter.services.TextLayoutMetrics.getLineAtOffset}
+  @override
+  TextSelection getLineAtOffset(TextPosition position) {
+    debugAssertLayoutUpToDate();
+    final TextRange line = _textPainter.getLineBoundary(position);
+    // If text is obscured, the entire string should be treated as one line.
+    if (obscureText) {
+      return TextSelection(baseOffset: 0, extentOffset: plainText.length);
+    }
+    return TextSelection(baseOffset: line.start, extentOffset: line.end);
+  }
+
+  /// {@macro flutter.painting.TextPainter.getWordBoundary}
+  @override
+  TextRange getWordBoundary(TextPosition position) {
+    return _textPainter.getWordBoundary(position);
+  }
+
+  /// {@macro flutter.services.TextLayoutMetrics.getTextPositionAbove}
+  @override
+  TextPosition getTextPositionAbove(TextPosition position) {
+    // The caret offset gives a location in the upper left hand corner of
+    // the caret so the middle of the line above is a half line above that
+    // point and the line below is 1.5 lines below that point.
+    final double preferredLineHeight = _textPainter.preferredLineHeight;
+    final double verticalOffset = -0.5 * preferredLineHeight;
+    return _getTextPositionVertical(position, verticalOffset);
+  }
+
+  /// {@macro flutter.services.TextLayoutMetrics.getTextPositionBelow}
+  @override
+  TextPosition getTextPositionBelow(TextPosition position) {
+    // The caret offset gives a location in the upper left hand corner of
+    // the caret so the middle of the line above is a half line above that
+    // point and the line below is 1.5 lines below that point.
+    final double preferredLineHeight = _textPainter.preferredLineHeight;
+    final double verticalOffset = 1.5 * preferredLineHeight;
+    return _getTextPositionVertical(position, verticalOffset);
+  }
+
+  /// Returns the TextPosition above or below the given offset.
+  TextPosition _getTextPositionVertical(
+      TextPosition position, double verticalOffset) {
+    final Offset caretOffset =
+        getCaretOffset(position, caretPrototype: _caretPrototype);
+    final Offset caretOffsetTranslated =
+        caretOffset.translate(0.0, verticalOffset);
+    return _textPainter.getPositionForOffset(caretOffsetTranslated);
+  }
+
+  // End TextLayoutMetrics.
+
+  /// Assert that the last layout still matches the constraints.
+  void debugAssertLayoutUpToDate() {
+    assert(
+      textLayoutLastMaxWidth == constraints.maxWidth &&
+          textLayoutLastMinWidth == constraints.minWidth,
+      'Last width ($textLayoutLastMinWidth, $textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).',
+    );
+  }
 }

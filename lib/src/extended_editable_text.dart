@@ -11,7 +11,6 @@ import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -1176,8 +1175,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     with
         AutomaticKeepAliveClientMixin<ExtendedEditableText>,
         WidgetsBindingObserver,
-        TickerProviderStateMixin<ExtendedEditableText>
-    implements TextInputClient, TextSelectionDelegate, AutofillClient {
+        TickerProviderStateMixin<ExtendedEditableText>,
+        TextEditingActionTarget,
+        TextSelectionDelegate
+    implements TextInputClient, AutofillClient {
   Timer? _cursorTimer;
   bool _targetCursorVisibility = false;
   final ValueNotifier<bool> _cursorVisibilityNotifier =
@@ -2363,7 +2364,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       textCapitalization: widget.textCapitalization,
       keyboardAppearance: widget.keyboardAppearance,
       autofillConfiguration: !needsAutofillConfiguration
-          ? null
+          ? AutofillConfiguration.disabled
           : AutofillConfiguration(
               uniqueIdentifier: autofillId,
               autofillHints:
@@ -2402,7 +2403,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
             cutEnabled &&
             _hasFocus &&
             controls?.canCut(this) == true
-        ? () => controls!.handleCut(this)
+        ? () => controls!.handleCut(this, _clipboardStatus)
         : null;
   }
 
@@ -2587,6 +2588,94 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       TextEditingValue value, SelectionChangedCause cause) {
     textEditingValue = value;
   }
+
+  @override
+  void autofill(TextEditingValue value) => updateEditingValue(value);
+
+  /// {@macro flutter.widgets.TextEditingActionTarget.copySelection}
+  @override
+  void copySelection(SelectionChangedCause cause) {
+    super.copySelection(cause);
+    if (cause == SelectionChangedCause.toolbar) {
+      bringIntoView(textEditingValue.selection.extent);
+      hideToolbar(false);
+
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.iOS:
+          break;
+        case TargetPlatform.macOS:
+        case TargetPlatform.android:
+        case TargetPlatform.fuchsia:
+        case TargetPlatform.linux:
+        case TargetPlatform.windows:
+          // Collapse the selection and hide the toolbar and handles.
+          userUpdateTextEditingValue(
+            TextEditingValue(
+              text: textEditingValue.text,
+              selection: TextSelection.collapsed(
+                  offset: textEditingValue.selection.end),
+            ),
+            SelectionChangedCause.toolbar,
+          );
+          break;
+      }
+    }
+  }
+
+  /// {@macro flutter.widgets.TextEditingActionTarget.cutSelection}
+  @override
+  void cutSelection(SelectionChangedCause cause) {
+    super.cutSelection(cause);
+    if (cause == SelectionChangedCause.toolbar) {
+      bringIntoView(textEditingValue.selection.extent);
+      hideToolbar();
+    }
+  }
+
+  /// {@macro flutter.widgets.TextEditingActionTarget.pasteText}
+  @override
+  Future<void> pasteText(SelectionChangedCause cause) async {
+    super.pasteText(cause);
+    if (cause == SelectionChangedCause.toolbar) {
+      bringIntoView(textEditingValue.selection.extent);
+      hideToolbar();
+    }
+  }
+
+  /// Select the entire text value.
+  @override
+  void selectAll(SelectionChangedCause cause) {
+    super.selectAll(cause);
+    if (cause == SelectionChangedCause.toolbar) {
+      bringIntoView(textEditingValue.selection.extent);
+    }
+  }
+
+  @override
+  bool get readOnly => widget.readOnly;
+
+  @override
+  bool get obscureText => widget.obscureText;
+
+  @override
+  bool get selectionEnabled => widget.selectionEnabled;
+
+  @override
+  void debugAssertLayoutUpToDate() =>
+      renderEditable.debugAssertLayoutUpToDate();
+
+  @override
+  void setTextEditingValue(
+      TextEditingValue newValue, SelectionChangedCause cause) {
+    if (newValue == textEditingValue) {
+      return;
+    }
+    textEditingValue = newValue;
+    userUpdateTextEditingValue(newValue, cause);
+  }
+
+  @override
+  TextLayoutMetrics get textLayoutMetrics => renderEditable;
 }
 
 class _Editable extends MultiChildRenderObjectWidget {

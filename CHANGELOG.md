@@ -1,3 +1,7 @@
+## 9.0.0
+
+* Migrate to 2.8
+
 ## 8.0.0
 
 * Add [SpecialTextSpan.mouseCursor], [SpecialTextSpan.onEnter] and [SpecialTextSpan.onExit].
