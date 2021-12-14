@@ -52,8 +52,7 @@ const double _kFloatingCaretRadius = 1.0;
 /// Keyboard handling, IME handling, scrolling, toggling the [showCursor] value
 /// to actually blink the cursor, and other features not mentioned above are the
 /// responsibility of higher layers and not handled by this object.
-class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject
-    implements TextLayoutMetrics {
+class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Creates a render object that implements the visual aspects of a text field.
   ///
   /// The [textAlign] argument must not be null. It defaults to [TextAlign.start].
@@ -1140,8 +1139,11 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject
 
       return <TextSelectionPoint>[TextSelectionPoint(start, null)];
     } else {
-      final List<ui.TextBox> boxes =
-          _textPainter.getBoxesForSelection(textPainterSelection);
+      final List<ui.TextBox> boxes = _textPainter.getBoxesForSelection(
+        textPainterSelection,
+        boxWidthStyle: selectionWidthStyle,
+        boxHeightStyle: selectionHeightStyle,
+      );
       final Offset start =
           Offset(boxes.first.start, boxes.first.bottom) + effectiveOffset;
       final Offset end =
@@ -1168,7 +1170,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject
     layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
 
     final List<ui.TextBox> boxes = _textPainter.getBoxesForSelection(
-      TextSelection(baseOffset: range.start, extentOffset: range.end),
+      TextSelection(
+        baseOffset: range.start,
+        extentOffset: range.end,
+      ),
+      boxWidthStyle: selectionWidthStyle,
+      boxHeightStyle: selectionHeightStyle,
     );
 
     return boxes
@@ -1622,6 +1629,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject
         baseOffset: _promptRectRange!.start,
         extentOffset: _promptRectRange!.end,
       ),
+      boxWidthStyle: selectionWidthStyle,
+      boxHeightStyle: selectionHeightStyle,
     );
 
     for (final TextBox box in boxes) {
@@ -1654,9 +1663,11 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject
       _updateSelectionExtentsVisibility(effectiveOffset, actualSelection);
     }
     if (showSelection) {
-      _selectionRects ??= _textPainter.getBoxesForSelection(actualSelection!,
-          boxHeightStyle: _selectionHeightStyle,
-          boxWidthStyle: _selectionWidthStyle);
+      _selectionRects ??= _textPainter.getBoxesForSelection(
+        actualSelection!,
+        boxWidthStyle: selectionWidthStyle,
+        boxHeightStyle: selectionHeightStyle,
+      );
       paintSelection(context.canvas, effectiveOffset);
     }
 
@@ -1851,67 +1862,4 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject
 
   @override
   Rect get caretPrototype => _caretPrototype;
-
-  // Start TextLayoutMetrics.
-
-  /// {@macro flutter.services.TextLayoutMetrics.getLineAtOffset}
-  @override
-  TextSelection getLineAtOffset(TextPosition position) {
-    debugAssertLayoutUpToDate();
-    final TextRange line = _textPainter.getLineBoundary(position);
-    // If text is obscured, the entire string should be treated as one line.
-    if (obscureText) {
-      return TextSelection(baseOffset: 0, extentOffset: plainText.length);
-    }
-    return TextSelection(baseOffset: line.start, extentOffset: line.end);
-  }
-
-  /// {@macro flutter.painting.TextPainter.getWordBoundary}
-  @override
-  TextRange getWordBoundary(TextPosition position) {
-    return _textPainter.getWordBoundary(position);
-  }
-
-  /// {@macro flutter.services.TextLayoutMetrics.getTextPositionAbove}
-  @override
-  TextPosition getTextPositionAbove(TextPosition position) {
-    // The caret offset gives a location in the upper left hand corner of
-    // the caret so the middle of the line above is a half line above that
-    // point and the line below is 1.5 lines below that point.
-    final double preferredLineHeight = _textPainter.preferredLineHeight;
-    final double verticalOffset = -0.5 * preferredLineHeight;
-    return _getTextPositionVertical(position, verticalOffset);
-  }
-
-  /// {@macro flutter.services.TextLayoutMetrics.getTextPositionBelow}
-  @override
-  TextPosition getTextPositionBelow(TextPosition position) {
-    // The caret offset gives a location in the upper left hand corner of
-    // the caret so the middle of the line above is a half line above that
-    // point and the line below is 1.5 lines below that point.
-    final double preferredLineHeight = _textPainter.preferredLineHeight;
-    final double verticalOffset = 1.5 * preferredLineHeight;
-    return _getTextPositionVertical(position, verticalOffset);
-  }
-
-  /// Returns the TextPosition above or below the given offset.
-  TextPosition _getTextPositionVertical(
-      TextPosition position, double verticalOffset) {
-    final Offset caretOffset =
-        getCaretOffset(position, caretPrototype: _caretPrototype);
-    final Offset caretOffsetTranslated =
-        caretOffset.translate(0.0, verticalOffset);
-    return _textPainter.getPositionForOffset(caretOffsetTranslated);
-  }
-
-  // End TextLayoutMetrics.
-
-  /// Assert that the last layout still matches the constraints.
-  void debugAssertLayoutUpToDate() {
-    assert(
-      textLayoutLastMaxWidth == constraints.maxWidth &&
-          textLayoutLastMinWidth == constraints.minWidth,
-      'Last width ($textLayoutLastMinWidth, $textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).',
-    );
-  }
 }

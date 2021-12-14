@@ -1,3 +1,8 @@
+## 9.0.1
+
+* Support to use keyboard move cursor for SpecialInlineSpan. #135
+* Fix issue that backspace delete two chars. #141
+
 ## 9.0.0
 
 * Migrate to 2.8

@@ -2670,8 +2670,27 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (newValue == textEditingValue) {
       return;
     }
-    textEditingValue = newValue;
+
     userUpdateTextEditingValue(newValue, cause);
+  }
+
+  @override
+  void setSelection(TextSelection nextSelection, SelectionChangedCause cause) {
+    // suport left ,right,keyboard
+    if (cause == SelectionChangedCause.keyboard) {
+      if (supportSpecialText) {
+        final TextSelection temp = convertKeyboardMoveSelection(
+          renderEditable.text!,
+          nextSelection,
+        );
+        if (temp != nextSelection) {
+          _textInputConnection
+              ?.setEditingState(_value.copyWith(selection: temp));
+          nextSelection = temp;
+        }
+      }
+    }
+    super.setSelection(nextSelection, cause);
   }
 
   @override

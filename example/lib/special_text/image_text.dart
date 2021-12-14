@@ -6,7 +6,7 @@ import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart';
 
 class ImageText extends SpecialText {
-  ImageText(TextStyle textStyle,
+  ImageText(TextStyle? textStyle,
       {this.start, SpecialTextGestureTapCallback? onTap})
       : super(
           ImageText.flag,
