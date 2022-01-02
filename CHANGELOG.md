@@ -1,3 +1,7 @@
+# 9.0.3
+
+* Fix hittest is not right #131
+
 # 9.0.2
 
 * Fix selectionWidthStyle and selectionHeightStyle are not working.
