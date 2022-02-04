@@ -1176,7 +1176,6 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         AutomaticKeepAliveClientMixin<ExtendedEditableText>,
         WidgetsBindingObserver,
         TickerProviderStateMixin<ExtendedEditableText>,
-        TextEditingActionTarget,
         TextSelectionDelegate
     implements TextInputClient, AutofillClient {
   Timer? _cursorTimer;
@@ -2592,10 +2591,15 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   @override
   void autofill(TextEditingValue value) => updateEditingValue(value);
 
-  /// {@macro flutter.widgets.TextEditingActionTarget.copySelection}
+  /// Copy current selection to [Clipboard].
   @override
   void copySelection(SelectionChangedCause cause) {
-    super.copySelection(cause);
+    final TextSelection selection = textEditingValue.selection;
+    final String text = textEditingValue.text;
+    if (selection.isCollapsed) {
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: selection.textInside(text)));
     if (cause == SelectionChangedCause.toolbar) {
       bringIntoView(textEditingValue.selection.extent);
       hideToolbar(false);
@@ -2622,20 +2626,52 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     }
   }
 
-  /// {@macro flutter.widgets.TextEditingActionTarget.cutSelection}
+  void _replaceText(ReplaceTextIntent intent) {
+    userUpdateTextEditingValue(
+      intent.currentTextEditingValue
+          .replaced(intent.replacementRange, intent.replacementText),
+      intent.cause,
+    );
+  }
+
+  /// Cut current selection to [Clipboard].
   @override
   void cutSelection(SelectionChangedCause cause) {
-    super.cutSelection(cause);
+    if (widget.readOnly) {
+      return;
+    }
+    final TextSelection selection = textEditingValue.selection;
+    final String text = textEditingValue.text;
+    if (selection.isCollapsed) {
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: selection.textInside(text)));
+    _replaceText(ReplaceTextIntent(textEditingValue, '', selection, cause));
     if (cause == SelectionChangedCause.toolbar) {
       bringIntoView(textEditingValue.selection.extent);
       hideToolbar();
     }
   }
 
-  /// {@macro flutter.widgets.TextEditingActionTarget.pasteText}
+  /// Paste text from [Clipboard].
   @override
   Future<void> pasteText(SelectionChangedCause cause) async {
-    super.pasteText(cause);
+    if (widget.readOnly) {
+      return;
+    }
+    final TextSelection selection = textEditingValue.selection;
+    if (!selection.isValid) {
+      return;
+    }
+    // Snapshot the input before using `await`.
+    // See https://github.com/flutter/flutter/issues/11427
+    final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data == null) {
+      return;
+    }
+
+    _replaceText(
+        ReplaceTextIntent(textEditingValue, data.text!, selection, cause));
     if (cause == SelectionChangedCause.toolbar) {
       bringIntoView(textEditingValue.selection.extent);
       hideToolbar();
@@ -2645,56 +2681,17 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   /// Select the entire text value.
   @override
   void selectAll(SelectionChangedCause cause) {
-    super.selectAll(cause);
+    userUpdateTextEditingValue(
+      textEditingValue.copyWith(
+        selection: TextSelection(
+            baseOffset: 0, extentOffset: textEditingValue.text.length),
+      ),
+      cause,
+    );
     if (cause == SelectionChangedCause.toolbar) {
       bringIntoView(textEditingValue.selection.extent);
     }
   }
-
-  @override
-  bool get readOnly => widget.readOnly;
-
-  @override
-  bool get obscureText => widget.obscureText;
-
-  @override
-  bool get selectionEnabled => widget.selectionEnabled;
-
-  @override
-  void debugAssertLayoutUpToDate() =>
-      renderEditable.debugAssertLayoutUpToDate();
-
-  @override
-  void setTextEditingValue(
-      TextEditingValue newValue, SelectionChangedCause cause) {
-    if (newValue == textEditingValue) {
-      return;
-    }
-
-    userUpdateTextEditingValue(newValue, cause);
-  }
-
-  @override
-  void setSelection(TextSelection nextSelection, SelectionChangedCause cause) {
-    // suport left ,right,keyboard
-    if (cause == SelectionChangedCause.keyboard) {
-      if (supportSpecialText) {
-        final TextSelection temp = convertKeyboardMoveSelection(
-          renderEditable.text!,
-          nextSelection,
-        );
-        if (temp != nextSelection) {
-          _textInputConnection
-              ?.setEditingState(_value.copyWith(selection: temp));
-          nextSelection = temp;
-        }
-      }
-    }
-    super.setSelection(nextSelection, cause);
-  }
-
-  @override
-  TextLayoutMetrics get textLayoutMetrics => renderEditable;
 }
 
 class _Editable extends MultiChildRenderObjectWidget {
