@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:example/example_routes.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -55,17 +56,18 @@ class MainPage extends StatelessWidget {
               },
             ),
           ),
-          ButtonTheme(
-            padding: const EdgeInsets.only(right: 10.0),
-            minWidth: 0.0,
-            child: TextButton(
-              child:
-                  Image.network('https://pub.idqqimg.com/wpa/images/group.png'),
-              onPressed: () {
-                launch('https://jq.qq.com/?_wv=1027&k=5bcc0gy');
-              },
-            ),
-          )
+          if (!kIsWeb)
+            ButtonTheme(
+              padding: const EdgeInsets.only(right: 10.0),
+              minWidth: 0.0,
+              child: TextButton(
+                child: Image.network(
+                    'https://pub.idqqimg.com/wpa/images/group.png'),
+                onPressed: () {
+                  launch('https://jq.qq.com/?_wv=1027&k=5bcc0gy');
+                },
+              ),
+            )
         ],
       ),
       body: ListView.builder(

@@ -177,6 +177,7 @@ class ExtendedEditableText extends StatefulWidget {
     this.restorationId,
     this.scrollBehavior,
     this.enableIMEPersonalizedLearning = true,
+    this.showToolbarInWeb = false,
   })  : assert(controller != null),
         assert(focusNode != null),
         assert(obscuringCharacter != null && obscuringCharacter.length == 1),
@@ -232,6 +233,8 @@ class ExtendedEditableText extends StatefulWidget {
             : inputFormatters,
         showCursor = showCursor ?? !readOnly,
         super(key: key);
+
+  final bool showToolbarInWeb;
 
   ///build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
@@ -596,7 +599,7 @@ class ExtendedEditableText extends StatefulWidget {
   ///
   /// For [CupertinoTextField]s, the value is set to the ambient
   /// [CupertinoThemeData.primaryColor] with 20% opacity. For [TextField]s, the
-  /// value is set to the ambient [ThemeData.textSelectionColor].
+  /// value is set to the ambient [TextSelectionThemeData.selectionColor].
   final Color? selectionColor;
 
   /// {@template flutter.widgets.editableText.selectionControls}
@@ -1233,8 +1236,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   final ValueNotifier<bool> _cursorVisibilityNotifier =
       ValueNotifier<bool>(true);
   final GlobalKey _editableKey = GlobalKey();
-  final ClipboardStatusNotifier? _clipboardStatus =
-      kIsWeb ? null : ClipboardStatusNotifier();
+  ClipboardStatusNotifier? _clipboardStatus;
 
   TextInputConnection? _textInputConnection;
   ExtendedTextSelectionOverlay? _selectionOverlay;
@@ -1426,6 +1428,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       vsync: this,
       duration: _fadeDuration,
     )..addListener(_onCursorColorTick);
+    _clipboardStatus =
+        kIsWeb && !widget.showToolbarInWeb ? null : ClipboardStatusNotifier();
     _clipboardStatus?.addListener(_onChangedClipboardStatus);
     widget.controller.addListener(_didChangeTextEditingValue);
     widget.focusNode.addListener(_handleFocusChanged);
@@ -1530,6 +1534,11 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         pasteEnabled &&
         widget.selectionControls?.canPaste(this) == true) {
       _clipboardStatus?.update();
+    }
+
+    if (oldWidget.showToolbarInWeb != widget.showToolbarInWeb) {
+      _clipboardStatus =
+          kIsWeb && !widget.showToolbarInWeb ? null : ClipboardStatusNotifier();
     }
   }
 
@@ -2585,12 +2594,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   ///
   /// Returns `false` if a toolbar couldn't be shown, such as when the toolbar
   /// is already shown, or when no text selection currently exists.
-  bool showToolbar() {
+  bool showToolbar({bool showToolbarInWeb = false}) {
     // Web is using native dom elements to enable clipboard functionality of the
     // toolbar: copy, paste, select, cut. It might also provide additional
     // functionality depending on the browser (such as translate). Due to this
     // we should not show a Flutter toolbar for the editable text elements.
-    if (kIsWeb) {
+    if (kIsWeb && !showToolbarInWeb) {
       return false;
     }
 

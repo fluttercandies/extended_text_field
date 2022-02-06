@@ -241,6 +241,8 @@ class ExtendedTextField extends StatefulWidget {
     this.clipBehavior = Clip.hardEdge,
     this.restorationId,
     this.enableIMEPersonalizedLearning = true,
+    this.shouldShowSelectionHandles,
+    this.textSelectionGestureDetectorBuilder,
   })  : assert(textAlign != null),
         assert(readOnly != null),
         assert(autofocus != null),
@@ -298,7 +300,16 @@ class ExtendedTextField extends StatefulWidget {
                   )),
         super(key: key);
 
-  ///build your ccustom text span
+  /// create custom TextSelectionGestureDetectorBuilder
+  final TextSelectionGestureDetectorBuilderCallback?
+      textSelectionGestureDetectorBuilder;
+
+  /// Whether should show selection handles
+  /// handles are not shown in desktop or web as default
+  /// you can define your behavior
+  final ShouldShowSelectionHandlesCallback? shouldShowSelectionHandles;
+
+  /// build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
 
   /// Controls the text being edited.
@@ -900,24 +911,49 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   @override
   void initState() {
     super.initState();
-    _selectionGestureDetectorBuilder =
-        CommonTextSelectionGestureDetectorBuilder(
-      delegate: this,
-      hideToolbar: () {
-        _editableText!.hideToolbar();
-      },
-      showToolbar: () {
-        _editableText!.showToolbar();
-      },
-      onTap: widget.onTap,
-      context: context,
-      requestKeyboard: _requestKeyboard,
-    );
+    _initGestureDetectorBuilder();
+
     if (widget.controller == null) {
       _createLocalController();
     }
     _effectiveFocusNode.canRequestFocus = _isEnabled;
     _effectiveFocusNode.addListener(_handleFocusChanged);
+  }
+
+  void _initGestureDetectorBuilder() {
+    if (widget.textSelectionGestureDetectorBuilder != null) {
+      _selectionGestureDetectorBuilder =
+          widget.textSelectionGestureDetectorBuilder!(
+        delegate: this,
+        hideToolbar: () {
+          _editableText!.hideToolbar();
+        },
+        showToolbar: () {
+          _editableText!.showToolbar(
+            showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
+          );
+        },
+        onTap: widget.onTap,
+        context: context,
+        requestKeyboard: _requestKeyboard,
+      );
+    } else {
+      _selectionGestureDetectorBuilder =
+          CommonTextSelectionGestureDetectorBuilder(
+        delegate: this,
+        hideToolbar: () {
+          _editableText!.hideToolbar();
+        },
+        showToolbar: () {
+          _editableText!.showToolbar(
+            showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
+          );
+        },
+        onTap: widget.onTap,
+        context: context,
+        requestKeyboard: _requestKeyboard,
+      );
+    }
   }
 
   bool get _canRequestFocus {
@@ -962,6 +998,9 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         _showSelectionHandles = !widget.readOnly;
       }
     }
+    if (widget.textSelectionGestureDetectorBuilder !=
+        oldWidget.textSelectionGestureDetectorBuilder)
+      _initGestureDetectorBuilder();
   }
 
   @override
@@ -1004,6 +1043,13 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   }
 
   bool _shouldShowSelectionHandles(SelectionChangedCause? cause) {
+    if (widget.shouldShowSelectionHandles != null) {
+      return widget.shouldShowSelectionHandles!(
+        cause,
+        _selectionGestureDetectorBuilder,
+        _editableText!.textEditingValue,
+      );
+    }
     // When the text field is activated by something that doesn't trigger the
     // selection overlay, we shouldn't show the handles either.
     if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
@@ -1116,8 +1162,8 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     final TextSelectionThemeData selectionTheme =
         TextSelectionTheme.of(context);
     final TextStyle style = theme.textTheme.subtitle1!.merge(widget.style);
-    final Brightness keyboardAppearance =
-        widget.keyboardAppearance ?? theme.primaryColorBrightness;
+    final Brightness keyboardAppearance = widget.keyboardAppearance ??
+        ThemeData.estimateBrightnessForColor(theme.primaryColor);
     final TextEditingController controller = _effectiveController;
     final FocusNode focusNode = _effectiveFocusNode;
     final List<TextInputFormatter> formatters = <TextInputFormatter>[
@@ -1278,8 +1324,9 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
           autofillClient: this,
           autocorrectionTextRectColor: autocorrectionTextRectColor,
           clipBehavior: widget.clipBehavior,
-          restorationId: 'editable',
+          restorationId: 'ExtendedEditableText',
           enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
+          showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
         ),
       ),
     );

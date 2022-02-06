@@ -15,7 +15,7 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
-  flutter: ">=2.8.0"
+  flutter: ">=2.10.0"
 dependencies:
 
   # The following adds the Cupertino Icons font to your application.
@@ -24,8 +24,8 @@ dependencies:
 
   cupertino_icons: ^1.0.4
 
-  extended_text_field:
-    path: ../
+  extended_text: ^9.0.0
+  extended_text_library: ^9.0.0
   ff_annotation_route_library: ^3.0.0
   flutter:
     sdk: flutter
@@ -38,7 +38,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 dependency_overrides:
-   
+  extended_text_field:
+    path: ../
+
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 

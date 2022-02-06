@@ -127,6 +127,14 @@ class _TextDemoState extends State<TextDemo> {
           //EditableText(controller: controller, focusNode: focusNode, style: style, cursorColor: cursorColor, backgroundCursorColor: backgroundCursorColor)
           ExtendedTextField(
             key: _key,
+            // StrutStyle get strutStyle {
+            //   if (_strutStyle == null) {
+            //     return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
+            //   }
+            //   return _strutStyle!.inheritFromTextStyle(style);
+            // }
+            // default strutStyle is not good for WidgetSpan
+            strutStyle: const StrutStyle(),
             specialTextSpanBuilder: MySpecialTextSpanBuilder(
               showAtBackground: true,
             ),

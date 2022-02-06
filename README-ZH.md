@@ -2,9 +2,12 @@
 
 [![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field) [![GitHub stars](https://img.shields.io/github/stars/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/network)  [![GitHub license](https://img.shields.io/github/license/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/blob/master/LICENSE)  [![GitHub issues](https://img.shields.io/github/issues/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/issues) <a target="_blank" href="https://jq.qq.com/?_wv=1027&k=5bcc0gy"><img border="0" src="https://pub.idqqimg.com/wpa/images/group.png" alt="flutter-candies" title="flutter-candies"></a>
 
+文档语言: [English](README.md) | 中文简体
+
 官方输入框的扩展组件，支持图片，@某人，自定义文字背景。也支持自定义菜单和选择器。
 
-文档语言: [English](README.md) | [中文简体](README-ZH.md)
+[ExtendedTextField 在线 Demo](https://fluttercandies.github.io/extended_text_field/)
+
 
 - [extended_text_field](#extended_text_field)
   - [限制](#限制)

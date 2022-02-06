@@ -64,6 +64,14 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                   controller: controller,
                   specialTextSpanBuilder: _emailSpanBuilder,
                   maxLines: null,
+                  // StrutStyle get strutStyle {
+                  //   if (_strutStyle == null) {
+                  //     return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
+                  //   }
+                  //   return _strutStyle!.inheritFromTextStyle(style);
+                  // }
+                  // default strutStyle is not good for WidgetSpan
+                  strutStyle: const StrutStyle(),
                   decoration: InputDecoration(
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.add),

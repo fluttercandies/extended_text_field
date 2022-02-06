@@ -1,6 +1,5 @@
 import 'package:example/special_text/image_text.dart';
 import 'package:extended_text_library/extended_text_library.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'at_text.dart';
