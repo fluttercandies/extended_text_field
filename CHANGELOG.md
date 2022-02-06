@@ -1,3 +1,7 @@
+# 10.0.0
+
+* Migrate to 2.10.0
+
 # 9.0.3
 
 * Fix hittest is not right #131
