@@ -12,12 +12,13 @@ class EmojiText extends SpecialText {
     final String key = toString();
 
     if (EmojiUitl.instance.emojiMap.containsKey(key)) {
-      //fontsize id define image height
-      //size = 30.0/26.0 * fontSize
-      const double size = 20.0;
+      double size = 18;
 
-      ///fontSize 26 and text height =30.0
-      //final double fontSize = 26.0;
+      final TextStyle ts = textStyle!;
+      if (ts.fontSize != null) {
+        size = ts.fontSize! * 1.15;
+      }
+
       return ImageSpan(
           AssetImage(
             EmojiUitl.instance.emojiMap[key]!,
@@ -26,8 +27,8 @@ class EmojiText extends SpecialText {
           imageWidth: size,
           imageHeight: size,
           start: start!,
-          fit: BoxFit.fill,
-          margin: const EdgeInsets.only(left: 2.0, top: 2.0, right: 2.0));
+          //fit: BoxFit.fill,
+          margin: const EdgeInsets.all(2));
     }
 
     return TextSpan(text: toString(), style: textStyle);
