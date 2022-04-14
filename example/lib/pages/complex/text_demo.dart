@@ -434,11 +434,7 @@ class _TextDemoState extends State<TextDemo> {
     SchedulerBinding.instance?.addPostFrameCallback((Duration timeStamp) {
       _key.currentState
           ?.bringIntoView(_textEditingController.selection.base, offset: 1);
-      //nestedPdfViewerGetxController.page.value = firstIndex + 1;
     });
-    // Future<void>.delayed(Duration(milliseconds: 200), () {
-    //   _key.currentState?.bringIntoView(_textEditingController.selection.base);
-    // });
   }
 
   void manualDelete() {
