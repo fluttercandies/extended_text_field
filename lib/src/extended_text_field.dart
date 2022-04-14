@@ -686,7 +686,7 @@ class ExtendedTextField extends StatefulWidget {
   final bool enableIMEPersonalizedLearning;
 
   @override
-  _ExtendedTextFieldState createState() => _ExtendedTextFieldState();
+  ExtendedTextFieldState createState() => ExtendedTextFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -782,7 +782,7 @@ class ExtendedTextField extends StatefulWidget {
   }
 }
 
-class _ExtendedTextFieldState extends State<ExtendedTextField>
+class ExtendedTextFieldState extends State<ExtendedTextField>
     with RestorationMixin
     implements
         ExtendedTextSelectionGestureDetectorBuilderDelegate,
@@ -1405,5 +1405,9 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         ),
       ),
     );
+  }
+
+  void bringIntoView(TextPosition position, {double offset = 0}) {
+    _editableText?.bringIntoView(position, offset: offset);
   }
 }

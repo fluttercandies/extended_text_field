@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:example/common/toggle_button.dart';
@@ -11,6 +13,7 @@ import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -32,12 +35,15 @@ class _TextDemoState extends State<TextDemo> {
   final TextEditingController _textEditingController = TextEditingController();
   final MyTextSelectionControls _myExtendedMaterialTextSelectionControls =
       MyTextSelectionControls();
-  final GlobalKey _key = GlobalKey();
+  final GlobalKey<ExtendedTextFieldState> _key =
+      GlobalKey<ExtendedTextFieldState>();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
+  final StreamController<void> _gridBuilderController =
+      StreamController<void>.broadcast();
 
   final FocusNode _focusNode = FocusNode();
-  double _keyboardHeight = 267.0;
+  double _keyboardHeight = 0;
   bool get showCustomKeyBoard =>
       activeEmojiGird || activeAtGrid || activeDollarGrid;
   bool activeEmojiGird = false;
@@ -54,227 +60,268 @@ class _TextDemoState extends State<TextDemo> {
 
   @override
   Widget build(BuildContext context) {
-    FocusScope.of(context).autofocus(_focusNode);
+    //FocusScope.of(context).autofocus(_focusNode);
+    final MediaQueryData mediaQueryData = MediaQuery.of(context);
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    if (keyboardHeight > 0) {
+
+    if (keyboardHeight > 0 && keyboardHeight >= _keyboardHeight) {
       activeEmojiGird = activeAtGrid = activeDollarGrid = false;
+      _gridBuilderController.add(null);
     }
 
     _keyboardHeight = max(_keyboardHeight, keyboardHeight);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('special text'),
-        actions: <Widget>[
-          TextButton(
-            child: const Icon(
-              Icons.backspace,
-              color: Colors.white,
-            ),
-            onPressed: manualDelete,
-          )
-        ],
-      ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-              child: ExtendedListView.builder(
-            extendedListDelegate:
-                const ExtendedListDelegate(closeToTrailing: true),
-            itemBuilder: (BuildContext context, int index) {
-              final bool left = index % 2 == 0;
-              final Image logo = Image.asset(
-                'assets/flutter_candies_logo.png',
-                width: 30.0,
-                height: 30.0,
-              );
-              //print(sessions[index]);
-              final Widget text = ExtendedText(
-                sessions[index],
-                textAlign: left ? TextAlign.left : TextAlign.right,
-                specialTextSpanBuilder: _mySpecialTextSpanBuilder,
-                onSpecialTextTap: (dynamic value) {
-                  if (value.toString().startsWith('\$')) {
-                    launch('https://github.com/fluttercandies');
-                  } else if (value.toString().startsWith('@')) {
-                    launch('mailto:zmtzawqlp@live.com');
-                  }
-                },
-              );
-              List<Widget> list = <Widget>[
-                logo,
-                Expanded(child: text),
-                Container(
+    return SafeArea(
+      bottom: true,
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text('special text'),
+          actions: <Widget>[
+            TextButton(
+              child: const Icon(
+                Icons.backspace,
+                color: Colors.white,
+              ),
+              onPressed: manualDelete,
+            )
+          ],
+        ),
+        body: Column(
+          children: <Widget>[
+            Expanded(
+                child: ExtendedListView.builder(
+              extendedListDelegate:
+                  const ExtendedListDelegate(closeToTrailing: true),
+              itemBuilder: (BuildContext context, int index) {
+                final bool left = index % 2 == 0;
+                final Image logo = Image.asset(
+                  'assets/flutter_candies_logo.png',
                   width: 30.0,
-                )
-              ];
-              if (!left) {
-                list = list.reversed.toList();
-              }
-              return Row(
-                children: list,
-              );
-            },
-            padding: const EdgeInsets.only(bottom: 10.0),
-            reverse: true,
-            itemCount: sessions.length,
-          )),
-          //  TextField()
-          Container(
-            height: 2.0,
-            color: Colors.blue,
-          ),
-          //EditableText(controller: controller, focusNode: focusNode, style: style, cursorColor: cursorColor, backgroundCursorColor: backgroundCursorColor)
-          ExtendedTextField(
-            key: _key,
-            // StrutStyle get strutStyle {
-            //   if (_strutStyle == null) {
-            //     return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
-            //   }
-            //   return _strutStyle!.inheritFromTextStyle(style);
-            // }
-            // default strutStyle is not good for WidgetSpan
-            strutStyle: const StrutStyle(),
-            specialTextSpanBuilder: MySpecialTextSpanBuilder(
-              showAtBackground: true,
-            ),
-            controller: _textEditingController,
-            selectionControls: _myExtendedMaterialTextSelectionControls,
-            maxLines: null,
-            focusNode: _focusNode,
-            decoration: InputDecoration(
-                suffixIcon: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      sessions.insert(0, _textEditingController.text);
-                      _textEditingController.value =
-                          _textEditingController.value.copyWith(
-                              text: '',
-                              selection:
-                                  const TextSelection.collapsed(offset: 0),
-                              composing: TextRange.empty);
-                    });
+                  height: 30.0,
+                );
+                //print(sessions[index]);
+                final Widget text = ExtendedText(
+                  sessions[index],
+                  textAlign: left ? TextAlign.left : TextAlign.right,
+                  specialTextSpanBuilder: _mySpecialTextSpanBuilder,
+                  onSpecialTextTap: (dynamic value) {
+                    if (value.toString().startsWith('\$')) {
+                      launch('https://github.com/fluttercandies');
+                    } else if (value.toString().startsWith('@')) {
+                      launch('mailto:zmtzawqlp@live.com');
+                    }
                   },
-                  child: const Icon(Icons.send),
-                ),
-                contentPadding: const EdgeInsets.all(12.0)),
-            //textDirection: TextDirection.rtl,
-          ),
-          Container(
-            color: Colors.grey.withOpacity(0.3),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    ToggleButton(
-                      activeWidget: const Icon(
-                        Icons.sentiment_very_satisfied,
-                        color: Colors.orange,
-                      ),
-                      unActiveWidget:
-                          const Icon(Icons.sentiment_very_satisfied),
-                      activeChanged: (bool active) {
-                        final Function change = () {
-                          setState(() {
-                            if (active) {
-                              activeAtGrid = activeDollarGrid = false;
-                              FocusScope.of(context).requestFocus(_focusNode);
-                            }
-                            activeEmojiGird = active;
-                          });
-                        };
-                        update(change);
-                      },
-                      active: activeEmojiGird,
-                    ),
-                    ToggleButton(
-                        activeWidget: const Padding(
-                          padding: EdgeInsets.only(bottom: 5.0),
-                          child: Text(
-                            '@',
-                            style: TextStyle(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20.0,
-                            ),
-                          ),
-                        ),
-                        unActiveWidget: const Padding(
-                          padding: EdgeInsets.only(bottom: 5.0),
-                          child: Text(
-                            '@',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20.0),
-                          ),
-                        ),
-                        activeChanged: (bool active) {
-                          final Function change = () {
-                            setState(() {
-                              if (active) {
-                                activeEmojiGird = activeDollarGrid = false;
-                                FocusScope.of(context).requestFocus(_focusNode);
-                              }
-                              activeAtGrid = active;
-                            });
-                          };
-                          update(change);
-                        },
-                        active: activeAtGrid),
-                    ToggleButton(
-                        activeWidget: const Icon(
-                          Icons.attach_money,
-                          color: Colors.orange,
-                        ),
-                        unActiveWidget: const Icon(Icons.attach_money),
-                        activeChanged: (bool active) {
-                          final Function change = () {
-                            setState(() {
-                              if (active) {
-                                activeEmojiGird = activeAtGrid = false;
-                                FocusScope.of(context).requestFocus(_focusNode);
-                              }
-                              activeDollarGrid = active;
-                            });
-                          };
-                          update(change);
-                        },
-                        active: activeDollarGrid),
-                    Container(
-                      width: 20.0,
-                    )
-                  ],
-                  mainAxisAlignment: MainAxisAlignment.end,
-                ),
-                Container(),
-              ],
+                );
+                List<Widget> list = <Widget>[
+                  logo,
+                  Expanded(child: text),
+                  Container(
+                    width: 30.0,
+                  )
+                ];
+                if (!left) {
+                  list = list.reversed.toList();
+                }
+                return Row(
+                  children: list,
+                );
+              },
+              padding: const EdgeInsets.only(bottom: 10.0),
+              reverse: true,
+              itemCount: sessions.length,
+            )),
+            //  TextField()
+            Container(
+              height: 2.0,
+              color: Colors.blue,
             ),
-          ),
-          Container(
-            height: 2.0,
-            color: Colors.blue,
-          ),
-          Container(
-            height: showCustomKeyBoard ? _keyboardHeight : 0.0,
-            child: buildCustomKeyBoard(),
-          )
-        ],
+            //EditableText(controller: controller, focusNode: focusNode, style: style, cursorColor: cursorColor, backgroundCursorColor: backgroundCursorColor)
+            ExtendedTextField(
+              key: _key,
+              minLines: 1,
+              maxLines: 2,
+              // StrutStyle get strutStyle {
+              //   if (_strutStyle == null) {
+              //     return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
+              //   }
+              //   return _strutStyle!.inheritFromTextStyle(style);
+              // }
+              // default strutStyle is not good for WidgetSpan
+              strutStyle: const StrutStyle(),
+              specialTextSpanBuilder: MySpecialTextSpanBuilder(
+                showAtBackground: true,
+              ),
+              controller: _textEditingController,
+              selectionControls: _myExtendedMaterialTextSelectionControls,
+
+              focusNode: _focusNode,
+              decoration: InputDecoration(
+                  suffixIcon: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        sessions.insert(0, _textEditingController.text);
+                        _textEditingController.value =
+                            _textEditingController.value.copyWith(
+                                text: '',
+                                selection:
+                                    const TextSelection.collapsed(offset: 0),
+                                composing: TextRange.empty);
+                      });
+                    },
+                    child: const Icon(Icons.send),
+                  ),
+                  contentPadding: const EdgeInsets.all(12.0)),
+              //textDirection: TextDirection.rtl,
+            ),
+            StreamBuilder<void>(
+              stream: _gridBuilderController.stream,
+              builder: (BuildContext b, AsyncSnapshot<void> d) {
+                return Container(
+                  color: Colors.grey.withOpacity(0.3),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          ToggleButton(
+                            activeWidget: const Icon(
+                              Icons.sentiment_very_satisfied,
+                              color: Colors.orange,
+                            ),
+                            unActiveWidget:
+                                const Icon(Icons.sentiment_very_satisfied),
+                            activeChanged: (bool active) {
+                              if (keyboardHeight > 0) {
+                                SystemChannels.textInput
+                                    .invokeMethod<void>('TextInput.hide');
+                              }
+                              if (active) {
+                                activeAtGrid = activeDollarGrid = false;
+                              }
+                              activeEmojiGird = active;
+
+                              _gridBuilderController.add(null);
+                            },
+                            active: activeEmojiGird,
+                          ),
+                          ToggleButton(
+                              activeWidget: const Padding(
+                                padding: EdgeInsets.only(bottom: 5.0),
+                                child: Text(
+                                  '@',
+                                  style: TextStyle(
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20.0,
+                                  ),
+                                ),
+                              ),
+                              unActiveWidget: const Padding(
+                                padding: EdgeInsets.only(bottom: 5.0),
+                                child: Text(
+                                  '@',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20.0),
+                                ),
+                              ),
+                              activeChanged: (bool active) {
+                                if (keyboardHeight > 0) {
+                                  SystemChannels.textInput
+                                      .invokeMethod<void>('TextInput.hide');
+                                }
+
+                                if (active) {
+                                  activeEmojiGird = activeDollarGrid = false;
+                                  // FocusScope.of(context).requestFocus(_focusNode);
+                                }
+                                activeAtGrid = active;
+
+                                _gridBuilderController.add(null);
+
+                                //final Function change = () {};
+                                //update(change);
+                              },
+                              active: activeAtGrid),
+                          ToggleButton(
+                              activeWidget: const Icon(
+                                Icons.attach_money,
+                                color: Colors.orange,
+                              ),
+                              unActiveWidget: const Icon(Icons.attach_money),
+                              activeChanged: (bool active) {
+                                if (keyboardHeight > 0) {
+                                  SystemChannels.textInput
+                                      .invokeMethod<void>('TextInput.hide');
+                                }
+
+                                if (active) {
+                                  activeEmojiGird = activeAtGrid = false;
+                                }
+                                activeDollarGrid = active;
+
+                                _gridBuilderController.add(null);
+                              },
+                              active: activeDollarGrid),
+                          Container(
+                            width: 20.0,
+                          )
+                        ],
+                        mainAxisAlignment: MainAxisAlignment.end,
+                      ),
+                      Container(),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            Container(
+              height: 2.0,
+              color: Colors.blue,
+            ),
+            StreamBuilder<void>(
+              stream: _gridBuilderController.stream,
+              builder: (BuildContext b, AsyncSnapshot<void> d) {
+                return SizedBox(
+                    height: showCustomKeyBoard
+                        ? _keyboardHeight -
+                            (Platform.isIOS ? mediaQueryData.padding.bottom : 0)
+                        : 0,
+                    child: buildCustomKeyBoard());
+              },
+            ),
+
+            StreamBuilder<void>(
+              stream: _gridBuilderController.stream,
+              builder: (BuildContext b, AsyncSnapshot<void> d) {
+                return Container(
+                  height: showCustomKeyBoard ? 0 : keyboardHeight,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
   void update(Function change) {
-    if (showCustomKeyBoard) {
-      change();
-    } else {
-      SystemChannels.textInput
-          .invokeMethod<void>('TextInput.hide')
-          .whenComplete(() {
-        Future<void>.delayed(const Duration(milliseconds: 200))
-            .whenComplete(() {
-          change();
-        });
-      });
-    }
+    change();
+    SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+
+    // if (showCustomKeyBoard) {
+    //   change();
+    // } else {
+    //   SystemChannels.textInput
+    //       .invokeMethod<void>('TextInput.hide')
+    //       .whenComplete(() {
+    //     Future<void>.delayed(const Duration(milliseconds: 200))
+    //         .whenComplete(() {
+    //       change();
+    //     });
+    //   });
+    // }
   }
 
   Widget buildCustomKeyBoard() {
@@ -383,6 +430,15 @@ class _TextDemoState extends State<TextDemo> {
           selection:
               TextSelection.fromPosition(TextPosition(offset: text.length)));
     }
+
+    SchedulerBinding.instance?.addPostFrameCallback((Duration timeStamp) {
+      _key.currentState
+          ?.bringIntoView(_textEditingController.selection.base, offset: 1);
+      //nestedPdfViewerGetxController.page.value = firstIndex + 1;
+    });
+    // Future<void>.delayed(Duration(milliseconds: 200), () {
+    //   _key.currentState?.bringIntoView(_textEditingController.selection.base);
+    // });
   }
 
   void manualDelete() {

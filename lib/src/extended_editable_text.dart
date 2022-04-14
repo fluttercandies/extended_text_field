@@ -2577,7 +2577,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   @override
-  void bringIntoView(TextPosition position) {
+  void bringIntoView(TextPosition position, {double offset = 0}) {
     if (supportSpecialText) {
       position = convertTextInputPostionToTextPainterPostion(
           renderEditable.text!, position);
@@ -2586,7 +2586,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     final Rect localRect = renderEditable.getLocalRectForCaret(position);
 
     final RevealedOffset targetOffset = _getOffsetToRevealCaret(localRect);
-    _scrollController.jumpTo(targetOffset.offset);
+    _scrollController.jumpTo(targetOffset.offset + offset);
     renderEditable.showOnScreen(rect: targetOffset.rect);
   }
 
