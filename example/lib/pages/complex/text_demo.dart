@@ -44,6 +44,7 @@ class _TextDemoState extends State<TextDemo> {
 
   final FocusNode _focusNode = FocusNode();
   double _keyboardHeight = 0;
+  double _preKeyboardHeight = 0;
   bool get showCustomKeyBoard =>
       activeEmojiGird || activeAtGrid || activeDollarGrid;
   bool activeEmojiGird = false;
@@ -64,7 +65,10 @@ class _TextDemoState extends State<TextDemo> {
     final MediaQueryData mediaQueryData = MediaQuery.of(context);
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
-    if (keyboardHeight > 0 && keyboardHeight >= _keyboardHeight) {
+    final bool showingKeyboard = keyboardHeight > _preKeyboardHeight;
+    _preKeyboardHeight = keyboardHeight;
+    if ((keyboardHeight > 0 && keyboardHeight >= _keyboardHeight) ||
+        showingKeyboard) {
       activeEmojiGird = activeAtGrid = activeDollarGrid = false;
       _gridBuilderController.add(null);
     }
@@ -191,16 +195,10 @@ class _TextDemoState extends State<TextDemo> {
                             unActiveWidget:
                                 const Icon(Icons.sentiment_very_satisfied),
                             activeChanged: (bool active) {
-                              if (keyboardHeight > 0) {
-                                SystemChannels.textInput
-                                    .invokeMethod<void>('TextInput.hide');
-                              }
-                              if (active) {
-                                activeAtGrid = activeDollarGrid = false;
-                              }
-                              activeEmojiGird = active;
-
-                              _gridBuilderController.add(null);
+                              onToolbarButtonActiveChanged(
+                                  keyboardHeight, active, () {
+                                activeEmojiGird = active;
+                              });
                             },
                             active: activeEmojiGird,
                           ),
@@ -226,21 +224,10 @@ class _TextDemoState extends State<TextDemo> {
                                 ),
                               ),
                               activeChanged: (bool active) {
-                                if (keyboardHeight > 0) {
-                                  SystemChannels.textInput
-                                      .invokeMethod<void>('TextInput.hide');
-                                }
-
-                                if (active) {
-                                  activeEmojiGird = activeDollarGrid = false;
-                                  // FocusScope.of(context).requestFocus(_focusNode);
-                                }
-                                activeAtGrid = active;
-
-                                _gridBuilderController.add(null);
-
-                                //final Function change = () {};
-                                //update(change);
+                                onToolbarButtonActiveChanged(
+                                    keyboardHeight, active, () {
+                                  activeAtGrid = active;
+                                });
                               },
                               active: activeAtGrid),
                           ToggleButton(
@@ -250,17 +237,10 @@ class _TextDemoState extends State<TextDemo> {
                               ),
                               unActiveWidget: const Icon(Icons.attach_money),
                               activeChanged: (bool active) {
-                                if (keyboardHeight > 0) {
-                                  SystemChannels.textInput
-                                      .invokeMethod<void>('TextInput.hide');
-                                }
-
-                                if (active) {
-                                  activeEmojiGird = activeAtGrid = false;
-                                }
-                                activeDollarGrid = active;
-
-                                _gridBuilderController.add(null);
+                                onToolbarButtonActiveChanged(
+                                    keyboardHeight, active, () {
+                                  activeDollarGrid = active;
+                                });
                               },
                               active: activeDollarGrid),
                           Container(
@@ -306,22 +286,22 @@ class _TextDemoState extends State<TextDemo> {
     );
   }
 
-  void update(Function change) {
-    change();
-    SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+  void onToolbarButtonActiveChanged(
+      double keyboardHeight, bool active, Function activeOne) {
+    if (keyboardHeight > 0) {
+      // make sure grid height = keyboardHeight
+      _keyboardHeight = keyboardHeight;
+      SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+    }
 
-    // if (showCustomKeyBoard) {
-    //   change();
-    // } else {
-    //   SystemChannels.textInput
-    //       .invokeMethod<void>('TextInput.hide')
-    //       .whenComplete(() {
-    //     Future<void>.delayed(const Duration(milliseconds: 200))
-    //         .whenComplete(() {
-    //       change();
-    //     });
-    //   });
-    // }
+    if (active) {
+      activeDollarGrid = activeEmojiGird = activeAtGrid = false;
+    }
+
+    activeOne();
+    //activeDollarGrid = active;
+
+    _gridBuilderController.add(null);
   }
 
   Widget buildCustomKeyBoard() {
