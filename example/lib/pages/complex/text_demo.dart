@@ -411,7 +411,7 @@ class _TextDemoState extends State<TextDemo> {
               TextSelection.fromPosition(TextPosition(offset: text.length)));
     }
 
-    SchedulerBinding.instance?.addPostFrameCallback((Duration timeStamp) {
+    SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
       _key.currentState?.bringIntoView(_textEditingController.selection.base);
     });
   }

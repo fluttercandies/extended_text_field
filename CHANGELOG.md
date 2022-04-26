@@ -1,3 +1,7 @@
+# 11.0.0-dev
+
+* Migrate to 2.13.0
+
 # 10.0.1
 
 * Public ExtendedTextFieldState and add bringIntoView method to support jump to caret when insert text with TextEditingController
