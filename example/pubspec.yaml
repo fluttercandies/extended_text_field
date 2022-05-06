@@ -27,7 +27,7 @@ dependencies:
   #extended_text: ^9.0.0
   #extended_text_library: ^9.0.0
   ff_annotation_route_library: ^3.0.0
-  extended_text: ^10.0.0-dev
+  extended_text: ^10.0.0-dev.1
   flutter:
     sdk: flutter
   html: ^0.15.0
