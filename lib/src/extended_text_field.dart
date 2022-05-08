@@ -1178,8 +1178,10 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
     );
 
     final ThemeData theme = Theme.of(context);
-    final DefaultSelectionStyle selectionStyle =
-        DefaultSelectionStyle.of(context);
+    // final DefaultSelectionStyle selectionStyle =
+    //     DefaultSelectionStyle.of(context);
+    final TextSelectionThemeData selectionTheme =
+        TextSelectionTheme.of(context);
     final TextStyle style = theme.textTheme.subtitle1!.merge(widget.style);
     final Brightness keyboardAppearance =
         widget.keyboardAppearance ?? theme.brightness;
@@ -1212,9 +1214,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
         cursorColor = widget.cursorColor ??
-            selectionStyle.cursorColor ??
+            selectionTheme.cursorColor ??
             cupertinoTheme.primaryColor;
-        selectionColor = selectionStyle.selectionColor ??
+        selectionColor = selectionTheme.selectionColor ??
             cupertinoTheme.primaryColor.withOpacity(0.40);
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
@@ -1229,9 +1231,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
         cursorColor = widget.cursorColor ??
-            selectionStyle.cursorColor ??
+            selectionTheme.cursorColor ??
             cupertinoTheme.primaryColor;
-        selectionColor = selectionStyle.selectionColor ??
+        selectionColor = selectionTheme.selectionColor ??
             cupertinoTheme.primaryColor.withOpacity(0.40);
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
@@ -1252,9 +1254,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
         cursorColor = widget.cursorColor ??
-            selectionStyle.cursorColor ??
+            selectionTheme.cursorColor ??
             theme.colorScheme.primary;
-        selectionColor = selectionStyle.selectionColor ??
+        selectionColor = selectionTheme.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
         break;
 
@@ -1264,9 +1266,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
         cursorColor = widget.cursorColor ??
-            selectionStyle.cursorColor ??
+            selectionTheme.cursorColor ??
             theme.colorScheme.primary;
-        selectionColor = selectionStyle.selectionColor ??
+        selectionColor = selectionTheme.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
         break;
 
@@ -1276,9 +1278,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
         cursorColor = widget.cursorColor ??
-            selectionStyle.cursorColor ??
+            selectionTheme.cursorColor ??
             theme.colorScheme.primary;
-        selectionColor = selectionStyle.selectionColor ??
+        selectionColor = selectionTheme.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
         handleDidGainAccessibilityFocus = () {
           // Automatically activate the TextField when it receives accessibility focus.
