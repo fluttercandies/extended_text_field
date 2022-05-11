@@ -1,6 +1,7 @@
-# 11.0.0-dev.2
+# 10.1.0
 
-* Migrate to 2.13.0
+* Migrate to 3.0.0
+* Support Scribble Handwriting for iPads
 
 # 10.0.1
 
