@@ -2168,17 +2168,19 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       return;
     }
 
-    if (renderEditable.hasSpecialInlineSpanBase) {
-      final TextEditingValue value = correctCaretOffset(
-          _value, renderEditable.text!, _textInputConnection,
-          newSelection: selection);
+    // #172 remove this code
+    // renderEditable.text is not the same as build from _value
+    // if (renderEditable.hasSpecialInlineSpanBase) {
+    //   final TextEditingValue value = correctCaretOffset(
+    //       _value, renderEditable.text!, _textInputConnection,
+    //       newSelection: selection);
 
-      ///change
-      if (value != _value) {
-        selection = value.selection;
-        _value = value;
-      }
-    }
+    //   ///change
+    //   if (value != _value) {
+    //     selection = value.selection;
+    //     _value = value;
+    //   }
+    // }
 
     final bool textChanged = widget.controller.text != renderEditable.plainText;
     // zmt

@@ -1,3 +1,7 @@
+# 10.1.1
+
+* Fix issue selection not right #172
+
 # 10.1.0
 
 * Migrate to 3.0.0
