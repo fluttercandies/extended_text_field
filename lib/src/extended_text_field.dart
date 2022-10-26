@@ -246,7 +246,7 @@ class ExtendedTextField extends StatefulWidget {
     this.scribbleEnabled = true,
     this.enableIMEPersonalizedLearning = true,
     this.shouldShowSelectionHandles,
-    this.textSelectionGestureDetectorBuilder,
+    this.textSelectionGestureDetectorBuilder, this.onShowKeyBoard,
   })  : assert(textAlign != null),
         assert(readOnly != null),
         assert(autofocus != null),
@@ -703,6 +703,9 @@ class ExtendedTextField extends StatefulWidget {
 
   /// {@macro flutter.services.TextInputConfiguration.enableIMEPersonalizedLearning}
   final bool enableIMEPersonalizedLearning;
+
+  /// {@macro extended_text_field.src.extended_editable_text.onShowKeyBoard}
+  final ValueGetter<bool>? onShowKeyBoard;
 
   @override
   ExtendedTextFieldState createState() => ExtendedTextFieldState();
@@ -1357,6 +1360,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           scribbleEnabled: widget.scribbleEnabled,
           enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
           showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
+          onShowKeyBoard: widget.onShowKeyBoard,
         ),
       ),
     );

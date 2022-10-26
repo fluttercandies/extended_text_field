@@ -183,6 +183,7 @@ class ExtendedEditableText extends StatefulWidget {
     this.enableIMEPersonalizedLearning = true,
     this.showToolbarInWeb = false,
     this.scribbleEnabled = true,
+    this.onShowKeyBoard,
   })  : assert(controller != null),
         assert(focusNode != null),
         assert(obscuringCharacter != null && obscuringCharacter.length == 1),
@@ -1035,6 +1036,12 @@ class ExtendedEditableText extends StatefulWidget {
   /// {@macro flutter.services.TextInputConfiguration.enableIMEPersonalizedLearning}
   final bool enableIMEPersonalizedLearning;
 
+  /// Called when waking up the keyboard to determine whether to wake up the keyboard.
+  /// When the method is null or the return value is true, the keyboard will be
+  /// called out, and when the return value is false, the show keyboard will be
+  /// abandoned.
+  final ValueGetter<bool>? onShowKeyBoard;
+
   // Infer the keyboard type of an `EditableText` if it's not specified.
   static TextInputType _inferKeyboardType({
     required Iterable<String>? autofillHints,
@@ -1271,6 +1278,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   ExtendedTextSelectionOverlay? _selectionOverlay;
 
   ScrollController? _internalScrollController;
+
   ScrollController get _scrollController =>
       widget.scrollController ??
       (_internalScrollController ??= ScrollController());
@@ -1284,6 +1292,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   bool _didAutoFocus = false;
 
   AutofillGroupState? _currentAutofillScope;
+
   @override
   AutofillScope? get currentAutofillScope => _currentAutofillScope;
 
@@ -1337,6 +1346,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   @override
   bool get selectAllEnabled => widget.toolbarOptions.selectAll;
+
   void _onChangedClipboardStatus() {
     setState(() {
       // Inform the widget that the value of clipboardStatus has changed.
@@ -1944,11 +1954,13 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   TextEditingValue get _value => widget.controller.value;
+
   set _value(TextEditingValue value) {
     widget.controller.value = value;
   }
 
   bool get _hasFocus => widget.focusNode.hasFocus;
+
   bool get _isMultiline => widget.maxLines != 1;
 
   // Finds the closest scroll offset to the current scroll offset that fully
@@ -2044,8 +2056,8 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           textDirection: _textDirection,
           textAlign: widget.textAlign,
         )
-        ..setEditingState(localValue)
-        ..show();
+        ..setEditingState(localValue);
+      _showKeyboard();
       if (_needsAutofill) {
         // Request autofill AFTER the size and the transform have been sent to
         // the platform text input plugin.
@@ -2053,6 +2065,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       }
       _lastKnownRemoteTextEditingValue = localValue;
     } else {
+      _showKeyboard();
+    }
+  }
+
+  void _showKeyboard() {
+    if (widget.onShowKeyBoard == null || widget.onShowKeyBoard!()) {
       _textInputConnection!.show();
     }
   }
@@ -2075,6 +2093,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   bool _restartConnectionScheduled = false;
+
   void _scheduleRestartConnection() {
     if (_restartConnectionScheduled) {
       return;
@@ -2242,6 +2261,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   Rect? _currentCaretRect;
+
   // ignore: use_setters_to_change_properties, (this is used as a callback, can't be a setter)
   void _handleCaretChanged(Rect caretRect) {
     _currentCaretRect = caretRect;
@@ -2493,7 +2513,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     _updateOrDisposeSelectionOverlayIfNeeded();
     // TODO(abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
     // to avoid this setState().
-    setState(() {/* We use widget.controller.value in build(). */});
+    setState(() {
+      /* We use widget.controller.value in build(). */
+    });
     _adjacentLineAction.stopCurrentVerticalRunIfSelectionChanges();
   }
 
@@ -3448,6 +3470,7 @@ class _CodeUnitBoundary extends _TextBoundary {
   @override
   TextPosition getLeadingTextBoundaryAt(TextPosition position) =>
       TextPosition(offset: position.offset);
+
   @override
   TextPosition getTrailingTextBoundaryAt(TextPosition position) => TextPosition(
       offset: math.min(position.offset + 1, textEditingValue.text.length));
@@ -3599,6 +3622,7 @@ class _DocumentBoundary extends _TextBoundary {
   @override
   TextPosition getLeadingTextBoundaryAt(TextPosition position) =>
       const TextPosition(offset: 0);
+
   @override
   TextPosition getTrailingTextBoundaryAt(TextPosition position) {
     return TextPosition(
