@@ -18,6 +18,9 @@ Extended official text field to build special text like inline image, @somebody,
     - [Cache Image](#cache-image)
   - [TextSelectionControls](#textselectioncontrols)
   - [WidgetSpan](#widgetspan)
+  - [NoSystemKeyboard](#nosystemkeyboard)
+    - [TextInputBindingMixin](#textinputbindingmixin)
+    - [SystemKeyboardShowWidgetMixin or SystemKeyboardShowStateMixin](#systemkeyboardshowwidgetmixin-or-systemkeyboardshowstatemixin)
 
 ## Limitation
 
@@ -504,5 +507,67 @@ class EmailText extends SpecialText {
 }
 ```
 
+## NoSystemKeyboard
 
+support to prevent system keyboard show without any code intrusion for [ExtendedTextField] or [TextField].
 
+### TextInputBindingMixin
+
+we prevent system keyboard show by stop Flutter Framework send `TextInput.show` message to Flutter Engine.
+
+if you use [ExtendedTextField], just need to do as following.
+
+``` dart
+void main() {
+  TextInputBinding();
+  runApp(const MyApp());
+}
+
+ExtendedTextField(
+  ignoreSystemKeyboardShow: true,
+）
+```
+
+if you use [TextField] or you hava other `WidgetsFlutterBindingMixin`
+
+``` dart
+class YourBinding extends WidgetsFlutterBinding
+    with TextInputBindingMixin,YourBindingMixin {
+  @override
+  bool ignoreTextInputShow() {
+    // you can do base on your case
+    // ignore it if your need
+    return SystemKeyboardShowWidgetMixin.ignoreShowSystemKeyboard<
+        ExtendedTextField>();
+  }
+}
+void main() {
+  YourBinding();
+  runApp(const MyApp());
+}
+```
+
+### SystemKeyboardShowWidgetMixin or SystemKeyboardShowStateMixin
+
+if you not use [ExtendedTextField], you can define your `Widget` or `State`, so that we can find it by `context`, and make sure which [TextField] we should ignore system keyboard show. 
+
+``` dart
+class CustomTextFieldWidget extends StatelessWidget
+    with SystemKeyboardShowWidgetMixin {
+  const CustomTextFieldWidget({
+    Key? key,
+    this.ignoreSystemKeyboardShow = true,
+  }) : super(key: key);
+  @override
+  final bool ignoreSystemKeyboardShow;
+}
+
+class CustomTextFieldState extends State<CustomTextField>
+    with SystemKeyboardShowStateMixin {
+  @override
+  bool get ignoreSystemKeyboardShow => true;
+}
+
+```
+
+see [Full Demo](https://github.com/fluttercandies/extended_text_field/tree/master/example/lib/pages/simple/no_keyboard.dart)

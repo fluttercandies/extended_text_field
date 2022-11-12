@@ -19,6 +19,9 @@
     - [缓存图片](#缓存图片)
   - [文本选择控制器](#文本选择控制器)
   - [WidgetSpan](#widgetspan)
+  - [阻止系统键盘](#阻止系统键盘)
+    - [TextInputBindingMixin](#textinputbindingmixin)
+    - [SystemKeyboardShowWidgetMixin or SystemKeyboardShowStateMixin](#systemkeyboardshowwidgetmixin-or-systemkeyboardshowstatemixin)
   - [☕️Buy me a coffee](#️buy-me-a-coffee)
 
 ## 限制
@@ -510,6 +513,73 @@ class EmailText extends SpecialText {
   }
 }
 ```
+
+## 阻止系统键盘
+
+我们不需要代码侵入到 [ExtendedTextField] 或者 [TextField] 当中， 就可以阻止系统键盘弹出，
+
+### TextInputBindingMixin
+
+我们通过阻止 Flutter Framework 发送 `TextInput.show` 到 Flutter 引擎来阻止系统键盘弹出
+
+如果你使用的是 [ExtendedTextField], 只需要做下面操作.
+
+``` dart
+void main() {
+  TextInputBinding();
+  runApp(const MyApp());
+}
+
+ExtendedTextField(
+  ignoreSystemKeyboardShow: true,
+）
+
+```
+
+if you use [TextField] or you hava other `WidgetsFlutterBindingMixin`
+
+``` dart
+class YourBinding extends WidgetsFlutterBinding
+    with TextInputBindingMixin,YourBindingMixin {
+  @override
+  bool ignoreTextInputShow() {
+    // you can do base on your case
+    // ignore it if your need
+    return SystemKeyboardShowWidgetMixin.ignoreShowSystemKeyboard<
+        ExtendedTextField>();
+  }
+}
+void main() {
+  YourBinding();
+  runApp(const MyApp());
+}
+```
+
+### SystemKeyboardShowWidgetMixin or SystemKeyboardShowStateMixin
+
+如果你没有使用 [ExtendedTextField] ，那么你可以定义自定的 `Widget` 或者 `State`. 我们需要通过 `context` 找到它，并且确认是否需要阻止系统键盘弹出。
+
+
+``` dart
+class CustomTextFieldWidget extends StatelessWidget
+    with SystemKeyboardShowWidgetMixin {
+  const CustomTextFieldWidget({
+    Key? key,
+    this.ignoreSystemKeyboardShow = true,
+  }) : super(key: key);
+  @override
+  final bool ignoreSystemKeyboardShow;
+}
+
+class CustomTextFieldState extends State<CustomTextField>
+    with SystemKeyboardShowStateMixin {
+  @override
+  bool get ignoreSystemKeyboardShow => true;
+}
+
+```
+
+查看 [完整的例子](https://github.com/fluttercandies/extended_text_field/tree/master/example/lib/pages/simple/no_keyboard.dart)
 
 ## ☕️Buy me a coffee
 

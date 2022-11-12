@@ -2,6 +2,7 @@
 
 import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended_editable_text.dart';
+import 'package:extended_text_field/src/keyboard/no_keyboard_mixin.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -138,7 +139,8 @@ typedef InputCounterWidgetBuilder = Widget Function(
 ///  * Cookbook: [Handle changes to a text field](https://flutter.dev/docs/cookbook/forms/text-field-changes)
 ///  * Cookbook: [Retrieve the value of a text field](https://flutter.dev/docs/cookbook/forms/retrieve-input)
 ///  * Cookbook: [Focus and text fields](https://flutter.dev/docs/cookbook/forms/focus)
-class ExtendedTextField extends StatefulWidget {
+class ExtendedTextField extends StatefulWidget
+    with SystemKeyboardShowWidgetMixin {
   /// Creates a Material Design text field.
   ///
   /// If [decoration] is non-null (which is the default), the text field requires
@@ -247,6 +249,7 @@ class ExtendedTextField extends StatefulWidget {
     this.enableIMEPersonalizedLearning = true,
     this.shouldShowSelectionHandles,
     this.textSelectionGestureDetectorBuilder,
+    this.ignoreSystemKeyboardShow = false,
   })  : assert(textAlign != null),
         assert(readOnly != null),
         assert(autofocus != null),
@@ -799,6 +802,10 @@ class ExtendedTextField extends StatefulWidget {
         'enableIMEPersonalizedLearning', enableIMEPersonalizedLearning,
         defaultValue: true));
   }
+
+  /// no system keyboard show
+  @override
+  final bool ignoreSystemKeyboardShow;
 }
 
 class ExtendedTextFieldState extends State<ExtendedTextField>
