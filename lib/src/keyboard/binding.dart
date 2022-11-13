@@ -1,34 +1,26 @@
 import 'dart:ui';
 
-import 'package:extended_text_field/src/extended_text_field.dart';
+import 'package:extended_text_field/src/keyboard/focus_node.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-
-import 'no_keyboard_mixin.dart';
 
 /// void main() {
 ///   TextInputBinding();
 ///   runApp(const MyApp());
 /// }
 class TextInputBinding extends WidgetsFlutterBinding
-    with TextInputBindingMixin {
-  @override
-  bool ignoreTextInputShow() {
-    return SystemKeyboardShowWidgetMixin.ignoreShowSystemKeyboard<
-        ExtendedTextField>();
-  }
-}
+    with TextInputBindingMixin {}
 
-/// class YourBinding extends WidgetsFlutterBinding
-///     with TextInputBindingMixin,YourBindingMixin {
+/// class YourBinding extends WidgetsFlutterBinding with TextInputBindingMixin,YourBindingMixin {
 ///   @override
+///   // ignore: unnecessary_overrides
 ///   bool ignoreTextInputShow() {
-///     // you can do base on your case
-///     // ignore it if your need
-///     return SystemKeyboardShowWidgetMixin.ignoreShowSystemKeyboard<
-///         ExtendedTextField>();
+///     // you can override it base on your case
+///     // if NoKeyboardFocusNode is not enough
+///     return super.ignoreTextInputShow();
 ///   }
 /// }
+///
 /// void main() {
 ///   YourBinding();
 ///   runApp(const MyApp());
@@ -41,7 +33,15 @@ mixin TextInputBindingMixin on WidgetsFlutterBinding {
 
   bool ignoreSendMessage(MethodCall methodCall) => false;
 
-  bool ignoreTextInputShow() => false;
+  bool ignoreTextInputShow() {
+    final FocusNode? focus = FocusManager.instance.primaryFocus;
+    if (focus != null &&
+        focus is TextInputFocusNode &&
+        focus.ignoreSystemKeyboardShow) {
+      return true;
+    }
+    return false;
+  }
 }
 
 class TextInputBinaryMessenger extends BinaryMessenger {

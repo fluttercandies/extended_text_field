@@ -7,12 +7,11 @@ import 'package:oktoast/oktoast.dart';
 
 class CustomKeyboarBinding extends TextInputBinding {
   @override
+  // ignore: unnecessary_overrides
   bool ignoreTextInputShow() {
-    // find CustomTextFieldState or find ExtendedTextField
-    // see ignoreSystemKeyboardShow is true or false
-    return SystemKeyboardShowStateMixin.ignoreShowSystemKeyboard<
-            CustomTextFieldState>() ||
-        super.ignoreTextInputShow();
+    // you can override it base on your case
+    // if NoKeyboardFocusNode is not enough
+    return super.ignoreTextInputShow();
   }
 }
 
@@ -25,15 +24,9 @@ class CustomKeyboarBinding extends TextInputBinding {
     'order': 2,
   },
 )
-class NoSystemKeyboardDemo extends StatefulWidget {
+class NoSystemKeyboardDemo extends StatelessWidget {
   const NoSystemKeyboardDemo({Key? key}) : super(key: key);
 
-  @override
-  State<NoSystemKeyboardDemo> createState() => _NoSystemKeyboardDemoState();
-}
-
-class _NoSystemKeyboardDemoState extends State<NoSystemKeyboardDemo>
-    with CustomKeyboardShowStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,20 +40,11 @@ class _NoSystemKeyboardDemoState extends State<NoSystemKeyboardDemo>
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(children: <Widget>[
-            const Text('ExtendedTextField'),
-            ExtendedTextField(
-              ignoreSystemKeyboardShow: true,
-              // request keyboard if need
-              focusNode: _focusNode,
-              // request keyboard if need
-              onTap: _onTextFiledTap,
-              controller: _controller,
-              maxLines: null,
-              inputFormatters: _inputFormatters,
-            ),
-            const Text('CustomTextField'),
-            const CustomTextField(),
+          child: Column(children: const <Widget>[
+            Text('ExtendedTextField'),
+            ExtendedTextFieldCase(),
+            Text('CustomTextField'),
+            TextFieldCase(),
           ]),
         ),
       ),
@@ -68,24 +52,44 @@ class _NoSystemKeyboardDemoState extends State<NoSystemKeyboardDemo>
   }
 }
 
-class CustomTextField extends StatefulWidget {
-  const CustomTextField({Key? key}) : super(key: key);
+class ExtendedTextFieldCase extends StatefulWidget {
+  const ExtendedTextFieldCase({Key? key}) : super(key: key);
 
   @override
-  State<CustomTextField> createState() => CustomTextFieldState();
+  State<ExtendedTextFieldCase> createState() => _ExtendedTextFieldCaseState();
 }
 
-class CustomTextFieldState extends State<CustomTextField>
-    with SystemKeyboardShowStateMixin, CustomKeyboardShowStateMixin {
+class _ExtendedTextFieldCaseState extends State<ExtendedTextFieldCase>
+    with CustomKeyboardShowStateMixin {
   @override
-  bool get ignoreSystemKeyboardShow => true;
+  Widget build(BuildContext context) {
+    return ExtendedTextField(
+      // you must use TextInputFocusNode
+      focusNode: _focusNode..debugLabel = 'ExtendedTextField',
+      // if your custom keyboard can be close without unfocus
+      // you can show custom keyboard when TextField onTap
+      controller: _controller,
+      maxLines: null,
+      inputFormatters: _inputFormatters,
+    );
+  }
+}
 
+class TextFieldCase extends StatefulWidget {
+  const TextFieldCase({Key? key}) : super(key: key);
+  @override
+  State<TextFieldCase> createState() => TextFieldCaseState();
+}
+
+class TextFieldCaseState extends State<TextFieldCase>
+    with CustomKeyboardShowStateMixin {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      // request keyboard if need
-      focusNode: _focusNode,
-      // request keyboard if need
+      // you must use TextInputFocusNode
+      focusNode: _focusNode..debugLabel = 'CustomTextField',
+      // if your custom keyboard can be close without unfocus
+      // you can show custom keyboard when TextField onTap
       onTap: _onTextFiledTap,
       controller: _controller,
       inputFormatters: _inputFormatters,
@@ -96,7 +100,7 @@ class CustomTextFieldState extends State<CustomTextField>
 
 @optionalTypeArgs
 mixin CustomKeyboardShowStateMixin<T extends StatefulWidget> on State<T> {
-  final FocusNode _focusNode = FocusNode();
+  final TextInputFocusNode _focusNode = TextInputFocusNode();
   final TextEditingController _controller = TextEditingController();
   PersistentBottomSheetController<void>? _bottomSheetController;
 
@@ -125,6 +129,7 @@ mixin CustomKeyboardShowStateMixin<T extends StatefulWidget> on State<T> {
 
   void _handleFocusChanged() {
     if (_focusNode.hasFocus) {
+      // just demo, you can define your custom keyboard as you want
       _bottomSheetController = showBottomSheet<void>(
           context: FocusManager.instance.primaryFocus!.context!,
           // set false, if don't want to drag to close custom keyboard
