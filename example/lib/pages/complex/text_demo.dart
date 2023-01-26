@@ -111,9 +111,9 @@ class _TextDemoState extends State<TextDemo> {
                   specialTextSpanBuilder: _mySpecialTextSpanBuilder,
                   onSpecialTextTap: (dynamic value) {
                     if (value.toString().startsWith('\$')) {
-                      launch('https://github.com/fluttercandies');
+                      launchUrl(Uri.parse('https://github.com/fluttercandies'));
                     } else if (value.toString().startsWith('@')) {
-                      launch('mailto:zmtzawqlp@live.com');
+                      launchUrl(Uri.parse('mailto:zmtzawqlp@live.com'));
                     }
                   },
                 );

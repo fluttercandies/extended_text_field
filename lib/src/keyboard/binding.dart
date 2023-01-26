@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:extended_text_field/src/keyboard/focus_node.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';

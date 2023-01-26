@@ -52,7 +52,8 @@ class MainPage extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                launch('https://github.com/fluttercandies/extended_text_field');
+                launchUrl(Uri.parse(
+                    'https://github.com/fluttercandies/extended_text_field'));
               },
             ),
           ),
@@ -64,7 +65,7 @@ class MainPage extends StatelessWidget {
                 child: Image.network(
                     'https://pub.idqqimg.com/wpa/images/group.png'),
                 onPressed: () {
-                  launch('https://jq.qq.com/?_wv=1027&k=5bcc0gy');
+                  launchUrl(Uri.parse('https://jq.qq.com/?_wv=1027&k=5bcc0gy'));
                 },
               ),
             )

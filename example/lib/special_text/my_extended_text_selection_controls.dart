@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 ///
@@ -45,8 +44,8 @@ class MyTextSelectionControls extends TextSelectionControls {
       handleSelectAll:
           canSelectAll(delegate) ? () => handleSelectAll(delegate) : null,
       handleLike: () {
-        launch(
-            'mailto:zmtzawqlp@live.com?subject=extended_text_share&body=${delegate.textEditingValue.text}');
+        launchUrl(Uri.parse(
+            'mailto:zmtzawqlp@live.com?subject=extended_text_share&body=${delegate.textEditingValue.text}'));
         delegate.hideToolbar();
         delegate.userUpdateTextEditingValue(
           delegate.textEditingValue
