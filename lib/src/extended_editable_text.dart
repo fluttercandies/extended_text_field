@@ -183,6 +183,7 @@ class ExtendedEditableText extends StatefulWidget {
     this.enableIMEPersonalizedLearning = true,
     this.showToolbarInWeb = false,
     this.scribbleEnabled = true,
+    this.customPasteAction = false,
   })  : assert(controller != null),
         assert(focusNode != null),
         assert(obscuringCharacter != null && obscuringCharacter.length == 1),
@@ -1035,6 +1036,9 @@ class ExtendedEditableText extends StatefulWidget {
   /// {@macro flutter.services.TextInputConfiguration.enableIMEPersonalizedLearning}
   final bool enableIMEPersonalizedLearning;
 
+  ///Set to True if you want to monitor keyboard paste operations externally and handle them yourself
+  final bool customPasteAction;
+
   // Infer the keyboard type of an `EditableText` if it's not specified.
   static TextInputType _inferKeyboardType({
     required Iterable<String>? autofillHints,
@@ -1410,7 +1414,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   /// Paste text from [Clipboard].
   @override
   Future<void> pasteText(SelectionChangedCause cause) async {
-    if (widget.readOnly) {
+    if (widget.readOnly || widget.customPasteAction) {
       return;
     }
     final TextSelection selection = textEditingValue.selection;

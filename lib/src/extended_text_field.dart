@@ -245,6 +245,7 @@ class ExtendedTextField extends StatefulWidget {
     this.scribbleEnabled = true,
     this.enableIMEPersonalizedLearning = true,
     this.shouldShowSelectionHandles,
+    this.customPasteAction = false,
     this.textSelectionGestureDetectorBuilder,
   })  : assert(textAlign != null),
         assert(readOnly != null),
@@ -702,6 +703,9 @@ class ExtendedTextField extends StatefulWidget {
 
   /// {@macro flutter.services.TextInputConfiguration.enableIMEPersonalizedLearning}
   final bool enableIMEPersonalizedLearning;
+
+  ///Set to True if you want to monitor keyboard paste operations externally and handle them yourself
+  final bool customPasteAction;
 
   @override
   ExtendedTextFieldState createState() => ExtendedTextFieldState();
@@ -1356,6 +1360,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           scribbleEnabled: widget.scribbleEnabled,
           enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
           showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
+          customPasteAction: widget.customPasteAction,
         ),
       ),
     );
