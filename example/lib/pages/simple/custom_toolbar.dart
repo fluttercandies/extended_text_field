@@ -127,7 +127,7 @@ class MyCommonTextSelectionGestureDetectorBuilder
           requestKeyboard: requestKeyboard,
         );
   @override
-  void onTapDown(TapDownDetails details) {
+  void onTapDown(TapDragDownDetails details) {
     super.onTapDown(details);
 
     /// always show toolbar

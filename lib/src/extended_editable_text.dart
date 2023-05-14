@@ -3219,6 +3219,11 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       }
     }
   }
+  
+  @override
+  void insertContent(KeyboardInsertedContent content) {
+    // TODO: implement insertContent
+  }
 }
 
 class _Editable extends MultiChildRenderObjectWidget {

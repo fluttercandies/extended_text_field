@@ -38,9 +38,10 @@ class NoSystemKeyboardDemo extends StatelessWidget {
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
         },
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(children: const <Widget>[
+        child: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Column(children: <Widget>[
+            ExtendedTextField1(),
             Text('ExtendedTextField'),
             ExtendedTextFieldCase(),
             Text('CustomTextField'),
