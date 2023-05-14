@@ -41,11 +41,10 @@ class NoSystemKeyboardDemo extends StatelessWidget {
         child: const Padding(
           padding: EdgeInsets.all(8.0),
           child: Column(children: <Widget>[
-            ExtendedTextField1(),
-            // Text('ExtendedTextField'),
-            // ExtendedTextFieldCase(),
-            // Text('CustomTextField'),
-            // TextFieldCase(),
+            Text('ExtendedTextField'),
+            ExtendedTextFieldCase(),
+            Text('CustomTextField'),
+            TextFieldCase(),
           ]),
         ),
       ),

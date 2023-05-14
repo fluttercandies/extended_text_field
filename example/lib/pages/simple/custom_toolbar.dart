@@ -57,25 +57,25 @@ class _CustomToolBarState extends State<CustomToolBar> {
             // }
             // default strutStyle is not good for WidgetSpan
             strutStyle: const StrutStyle(),
-            shouldShowSelectionHandles: _shouldShowSelectionHandles,
-            textSelectionGestureDetectorBuilder: ({
-              required ExtendedTextSelectionGestureDetectorBuilderDelegate
-                  delegate,
-              required Function showToolbar,
-              required Function hideToolbar,
-              required Function? onTap,
-              required BuildContext context,
-              required Function? requestKeyboard,
-            }) {
-              return MyCommonTextSelectionGestureDetectorBuilder(
-                delegate: delegate,
-                showToolbar: showToolbar,
-                hideToolbar: hideToolbar,
-                onTap: onTap,
-                context: context,
-                requestKeyboard: requestKeyboard,
-              );
-            },
+            // shouldShowSelectionHandles: _shouldShowSelectionHandles,
+            // textSelectionGestureDetectorBuilder: ({
+            //   required ExtendedTextSelectionGestureDetectorBuilderDelegate
+            //       delegate,
+            //   required Function showToolbar,
+            //   required Function hideToolbar,
+            //   required Function? onTap,
+            //   required BuildContext context,
+            //   required Function? requestKeyboard,
+            // }) {
+            //   return MyCommonTextSelectionGestureDetectorBuilder(
+            //     delegate: delegate,
+            //     showToolbar: showToolbar,
+            //     hideToolbar: hideToolbar,
+            //     onTap: onTap,
+            //     context: context,
+            //     requestKeyboard: requestKeyboard,
+            //   );
+            // },
           ),
         ),
       ),

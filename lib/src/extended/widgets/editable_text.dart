@@ -92,7 +92,11 @@ class ExtendedEditableText extends _EditableText {
     this.extendedSpellCheckConfiguration,
     super.magnifierConfiguration = TextMagnifierConfiguration.disabled,
     super.undoController,
+    this.specialTextSpanBuilder,
   });
+
+  /// build your ccustom text span
+  final SpecialTextSpanBuilder? specialTextSpanBuilder;
 
   /// {@template flutter.widgets.EditableText.contextMenuBuilder}
   /// Builds the text selection toolbar when requested by the user.
@@ -155,6 +159,12 @@ class ExtendedEditableTextState extends _EditableTextState {
       widget as ExtendedEditableText;
   ExtendedSpellCheckConfiguration get extendedSpellCheckConfiguration =>
       _spellCheckConfiguration as ExtendedSpellCheckConfiguration;
+
+  /// whether to support build SpecialText
+  bool get supportSpecialText =>
+      extendedEditableText.specialTextSpanBuilder != null &&
+      !widget.obscureText &&
+      _textDirection == TextDirection.ltr;
 
   // State lifecycle:
 
@@ -412,7 +422,8 @@ class ExtendedEditableTextState extends _EditableTextState {
 
   @override
   _TextSelectionOverlay _createSelectionOverlay() {
-    final _TextSelectionOverlay selectionOverlay = _TextSelectionOverlay(
+    final ExtendedTextFieldTextSelectionOverlay selectionOverlay =
+        ExtendedTextFieldTextSelectionOverlay(
       clipboardStatus: clipboardStatus,
       context: context,
       value: _value,
@@ -439,6 +450,148 @@ class ExtendedEditableTextState extends _EditableTextState {
     );
 
     return selectionOverlay;
+  }
+
+  /// Builds [TextSpan] from current editing value.
+  ///
+  /// By default makes text in composing range appear as underlined.
+  /// Descendants can override this method to customize appearance of text.
+  @override
+  TextSpan buildTextSpan() {
+    if (widget.obscureText) {
+      String text = _value.text;
+      text = widget.obscuringCharacter * text.length;
+      // Reveal the latest character in an obscured field only on mobile.
+      // Newer versions of iOS (iOS 15+) no longer reveal the most recently
+      // entered character.
+      const Set<TargetPlatform> mobilePlatforms = <TargetPlatform>{
+        TargetPlatform.android,
+        TargetPlatform.fuchsia,
+      };
+      final bool brieflyShowPassword =
+          WidgetsBinding.instance.platformDispatcher.brieflyShowPassword &&
+              mobilePlatforms.contains(defaultTargetPlatform);
+      if (brieflyShowPassword) {
+        final int? o =
+            _obscureShowCharTicksPending > 0 ? _obscureLatestCharIndex : null;
+        if (o != null && o >= 0 && o < text.length) {
+          text = text.replaceRange(o, o + 1, _value.text.substring(o, o + 1));
+        }
+      }
+      return TextSpan(style: _style, text: text);
+    }
+
+    // zmtzawqlp
+    if (_value.composing.isValid && !widget.readOnly) {
+      final TextStyle composingStyle = widget.style.merge(
+        const TextStyle(decoration: TextDecoration.underline),
+      );
+      final String beforeText = _value.composing.textBefore(_value.text);
+      final String insideText = _value.composing.textInside(_value.text);
+      final String afterText = _value.composing.textAfter(_value.text);
+
+      if (supportSpecialText) {
+        final TextSpan before = extendedEditableText.specialTextSpanBuilder!
+            .build(beforeText, textStyle: widget.style);
+        final TextSpan after = extendedEditableText.specialTextSpanBuilder!
+            .build(afterText, textStyle: widget.style);
+
+        final List<InlineSpan> children = <InlineSpan>[];
+
+        children.add(before);
+
+        children.add(TextSpan(
+          style: composingStyle,
+          text: insideText,
+        ));
+
+        children.add(after);
+
+        return TextSpan(style: widget.style, children: children);
+      }
+
+      return TextSpan(style: widget.style, children: <TextSpan>[
+        TextSpan(text: beforeText),
+        TextSpan(
+          style: composingStyle,
+          text: insideText,
+        ),
+        TextSpan(text: afterText),
+      ]);
+    }
+
+    //final String text = _value.text;
+
+    if (supportSpecialText) {
+      final TextSpan? specialTextSpan = extendedEditableText
+          .specialTextSpanBuilder
+          ?.build(_value.text, textStyle: widget.style);
+      if (specialTextSpan != null) {
+        return specialTextSpan;
+      }
+    }
+
+    if (_placeholderLocation >= 0 &&
+        _placeholderLocation <= _value.text.length) {
+      final List<_ScribblePlaceholder> placeholders = <_ScribblePlaceholder>[];
+      final int placeholderLocation = _value.text.length - _placeholderLocation;
+      if (_isMultiline) {
+        // The zero size placeholder here allows the line to break and keep the caret on the first line.
+        placeholders.add(const _ScribblePlaceholder(
+            child: SizedBox.shrink(), size: Size.zero));
+        placeholders.add(_ScribblePlaceholder(
+            child: const SizedBox.shrink(),
+            size: Size(renderEditable.size.width, 0.0)));
+      } else {
+        placeholders.add(const _ScribblePlaceholder(
+            child: SizedBox.shrink(), size: Size(100.0, 0.0)));
+      }
+      return TextSpan(
+        style: _style,
+        children: <InlineSpan>[
+          TextSpan(text: _value.text.substring(0, placeholderLocation)),
+          ...placeholders,
+          TextSpan(text: _value.text.substring(placeholderLocation)),
+        ],
+      );
+    }
+    final bool withComposing = !widget.readOnly && _hasFocus;
+    if (_spellCheckResultsReceived) {
+      // If the composing range is out of range for the current text, ignore it to
+      // preserve the tree integrity, otherwise in release mode a RangeError will
+      // be thrown and this EditableText will be built with a broken subtree.
+      assert(!_value.composing.isValid ||
+          !withComposing ||
+          _value.isComposingRangeValid);
+
+      final bool composingRegionOutOfRange =
+          !_value.isComposingRangeValid || !withComposing;
+
+      return buildTextSpanWithSpellCheckSuggestions(
+        _value,
+        composingRegionOutOfRange,
+        _style,
+        _spellCheckConfiguration.misspelledTextStyle!,
+        spellCheckResults!,
+      );
+    }
+
+    // Read only mode should not paint text composing.
+    return widget.controller.buildTextSpan(
+      context: context,
+      style: _style,
+      withComposing: withComposing,
+    );
+  }
+
+  @override
+  void bringIntoView(TextPosition position, {double offset = 0}) {
+    final Rect localRect = renderEditable.getLocalRectForCaret(position);
+    final RevealedOffset targetOffset = _getOffsetToRevealCaret(localRect);
+
+    // zmtzawqlp
+    _scrollController.jumpTo(targetOffset.offset + offset);
+    renderEditable.showOnScreen(rect: targetOffset.rect);
   }
 }
 

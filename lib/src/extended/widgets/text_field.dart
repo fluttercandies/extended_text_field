@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:extended_text_field/src/extended/cupertino/spell_check_suggestions_toolbar.dart';
 import 'package:extended_text_field/src/extended/material/spell_check_suggestions_toolbar.dart';
+import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -16,14 +17,15 @@ import 'package:flutter/services.dart';
 part 'package:extended_text_field/src/extended/rendering/editable.dart';
 part 'package:extended_text_field/src/extended/widgets/editable_text.dart';
 part 'package:extended_text_field/src/extended/widgets/spell_check.dart';
+part 'package:extended_text_field/src/extended/widgets/text_selection.dart';
 part 'package:extended_text_field/src/official/rendering/editable.dart';
 part 'package:extended_text_field/src/official/widgets/editable_text.dart';
 part 'package:extended_text_field/src/official/widgets/text_field.dart';
 part 'package:extended_text_field/src/official/widgets/text_selection.dart';
 part 'package:extended_text_field/src/official/widgets/spell_check.dart';
 
-class ExtendedTextField1 extends _TextField {
-  const ExtendedTextField1({
+class ExtendedTextField extends _TextField {
+  const ExtendedTextField({
     super.key,
     super.controller,
     super.focusNode,
@@ -89,19 +91,16 @@ class ExtendedTextField1 extends _TextField {
     // zmtzawqlp
     // TODO
     // super.contextMenuBuilder = _defaultContextMenuBuilder,
-    this.extendedContextMenuBuilder,
+    this.extendedContextMenuBuilder = _defaultContextMenuBuilder,
     super.canRequestFocus = true,
     // zmtzawqlp
     // super.spellCheckConfiguration,
     this.extendedSpellCheckConfiguration,
+    this.specialTextSpanBuilder,
   });
 
-  static Widget _defaultContextMenuBuilder(
-      BuildContext context, EditableTextState editableTextState) {
-    return AdaptiveTextSelectionToolbar.editableText(
-      editableTextState: editableTextState,
-    );
-  }
+  /// build your ccustom text span
+  final SpecialTextSpanBuilder? specialTextSpanBuilder;
 
   /// {@template flutter.widgets.EditableText.contextMenuBuilder}
   /// Builds the text selection toolbar when requested by the user.
@@ -154,6 +153,19 @@ class ExtendedTextField1 extends _TextField {
   /// {@endtemplate}
   final ExtendedSpellCheckConfiguration? extendedSpellCheckConfiguration;
 
+  /// zmtzawqlp
+  /// [AdaptiveTextSelectionToolbar.editableText]
+  static Widget _defaultContextMenuBuilder(
+      BuildContext context, ExtendedEditableTextState editableTextState) {
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      buttonItems: editableTextState.contextMenuButtonItems,
+      anchors: editableTextState.contextMenuAnchors,
+    );
+    // return AdaptiveTextSelectionToolbar.editableText(
+    //   editableTextState: editableTextState,
+    // );
+  }
+
   /// Returns a new [SpellCheckConfiguration] where the given configuration has
   /// had any missing values replaced with their defaults for the Android
   /// platform.
@@ -169,7 +181,7 @@ class ExtendedTextField1 extends _TextField {
           TextField.materialMisspelledTextStyle,
       extendedSpellCheckSuggestionsToolbarBuilder:
           configuration.extendedSpellCheckSuggestionsToolbarBuilder ??
-              ExtendedTextField1.defaultSpellCheckSuggestionsToolbarBuilder,
+              ExtendedTextField.defaultSpellCheckSuggestionsToolbarBuilder,
       // spellCheckSuggestionsToolbarBuilder:
       //     configuration.spellCheckSuggestionsToolbarBuilder ??
       //         TextField.defaultSpellCheckSuggestionsToolbarBuilder,
@@ -258,12 +270,12 @@ class ExtendedTextField1 extends _TextField {
 
   @override
   State<_TextField> createState() {
-    return _ExtendedTextFieldState();
+    return ExtendedTextFieldState();
   }
 }
 
-class _ExtendedTextFieldState extends _TextFieldState {
-  ExtendedTextField1 get extenedTextField => widget as ExtendedTextField1;
+class ExtendedTextFieldState extends _TextFieldState {
+  ExtendedTextField get extenedTextField => widget as ExtendedTextField;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +320,7 @@ class _ExtendedTextFieldState extends _TextFieldState {
       case TargetPlatform.macOS:
         // zmtzawqlp
         spellCheckConfiguration =
-            ExtendedTextField1.inferIOSSpellCheckConfiguration(
+            ExtendedTextField.inferIOSSpellCheckConfiguration(
           extenedTextField.extendedSpellCheckConfiguration,
         );
         break;
@@ -318,7 +330,7 @@ class _ExtendedTextFieldState extends _TextFieldState {
       case TargetPlatform.windows:
         // zmtzawqlp
         spellCheckConfiguration =
-            ExtendedTextField1.inferAndroidSpellCheckConfiguration(
+            ExtendedTextField.inferAndroidSpellCheckConfiguration(
           extenedTextField.extendedSpellCheckConfiguration,
         );
         break;
@@ -499,6 +511,8 @@ class _ExtendedTextFieldState extends _TextFieldState {
           extendedSpellCheckConfiguration: spellCheckConfiguration,
           magnifierConfiguration: widget.magnifierConfiguration ??
               TextMagnifier.adaptiveMagnifierConfiguration,
+          // zmtzawqlp
+          specialTextSpanBuilder: extenedTextField.specialTextSpanBuilder,
         ),
       ),
     );
@@ -572,5 +586,10 @@ class _ExtendedTextFieldState extends _TextFieldState {
         ),
       ),
     );
+  }
+
+  void bringIntoView(TextPosition position, {double offset = 0}) {
+    (_editableText as ExtendedEditableTextState?)
+        ?.bringIntoView(position, offset: offset);
   }
 }
