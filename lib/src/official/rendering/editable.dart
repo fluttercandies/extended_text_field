@@ -311,56 +311,7 @@ class _RenderEditable extends RenderBox
         _readOnly = readOnly,
         _forceLine = forceLine,
         _clipBehavior = clipBehavior,
-        _hasFocus = hasFocus ?? false
-  // zmtzawqlp
-  // super(
-  //   text: text,
-  //   textDirection: textDirection,
-  //   textAlign: textAlign,
-  //   cursorColor: cursorColor,
-  //   backgroundCursorColor: backgroundCursorColor,
-  //   showCursor: showCursor,
-  //   hasFocus: hasFocus,
-  //   startHandleLayerLink: startHandleLayerLink,
-  //   endHandleLayerLink: endHandleLayerLink,
-  //   maxLines: maxLines,
-  //   minLines: minLines,
-  //   expands: expands,
-  //   strutStyle: strutStyle,
-  //   selectionColor: selectionColor,
-  //   textScaleFactor: textScaleFactor,
-  //   selection: selection,
-  //   offset: offset,
-  //   onCaretChanged: onCaretChanged,
-  //   ignorePointer: ignorePointer,
-  //   readOnly: readOnly,
-  //   forceLine: forceLine,
-  //   textHeightBehavior: textHeightBehavior,
-  //   textWidthBasis: textWidthBasis,
-  //   obscuringCharacter: obscuringCharacter,
-  //   obscureText: obscureText,
-  //   locale: locale,
-  //   cursorWidth: cursorWidth,
-  //   cursorHeight: cursorHeight,
-  //   cursorRadius: cursorRadius,
-  //   paintCursorAboveText: paintCursorAboveText,
-  //   cursorOffset: cursorOffset,
-  //   devicePixelRatio: devicePixelRatio,
-  //   selectionHeightStyle: selectionHeightStyle,
-  //   selectionWidthStyle: selectionWidthStyle,
-  //   enableInteractiveSelection: enableInteractiveSelection,
-  //   floatingCursorAddedMargin: floatingCursorAddedMargin,
-  //   promptRectRange: promptRectRange,
-  //   promptRectColor: promptRectColor,
-  //   clipBehavior: clipBehavior,
-  //   textSelectionDelegate: textSelectionDelegate,
-  //   // zmtzawqlp
-  //   // painter: painter,
-  //   // foregroundPainter: foregroundPainter,
-  //   // children: children,
-  // )
-
-  {
+        _hasFocus = hasFocus ?? false {
     assert(!_showCursor.value || cursorColor != null);
 
     _selectionPainter.highlightColor = selectionColor;
@@ -1325,7 +1276,8 @@ class _RenderEditable extends RenderBox
     if (_semanticsInfo!.any(
             (InlineSpanSemanticsInformation info) => info.recognizer != null) &&
         defaultTargetPlatform != TargetPlatform.macOS) {
-      assert(readOnly && !obscureText);
+      // TODO zmtzawqlp
+      // assert(readOnly && !obscureText);
       // For Selectable rich text with recognizer, we need to create a semantics
       // node for each text fragment.
       config
@@ -3155,7 +3107,10 @@ class _FloatingCursorPainter extends RenderEditablePainter {
   void paint(Canvas canvas, Size size, _RenderEditable renderEditable) {
     // Compute the caret location even when `shouldPaint` is false.
 
-    final TextSelection? selection = renderEditable.selection;
+    // final TextSelection? selection = renderEditable.selection;
+    // zmtzawqlp
+    final TextSelection? selection =
+        (renderEditable as ExtendedRenderEditable).getActualSelection();
 
     // TODO(LongCatIsLooong): skip painting caret when selection is (-1, -1): https://github.com/flutter/flutter/issues/79495
     if (selection == null || !selection.isCollapsed) {

@@ -24,10 +24,8 @@ dependencies:
 
   cupertino_icons: ^1.0.4
 
-  #extended_text: ^9.0.0
-  #extended_text_library: ^9.0.0
   ff_annotation_route_library: ^3.0.0
-  extended_text: ^10.0.0
+  extended_text: ^11.0.0-dev
   flutter:
     sdk: flutter
   html: ^0.15.0
@@ -41,16 +39,16 @@ dev_dependencies:
 dependency_overrides:
   extended_text_field:
     path: ../
-  extended_text:
-    # git: 
-    #   url: https://github.com/fluttercandies/extended_text.git
-    #   ref: refactor
-    path: ../../extended_text
-  extended_text_library:
-    # git: 
-    #   url: https://github.com/fluttercandies/extended_text_library.git
-    #   ref: refactor
-    path: ../../extended_text_library
+  # extended_text:
+  #   # git: 
+  #   #   url: https://github.com/fluttercandies/extended_text.git
+  #   #   ref: refactor
+  #   path: ../../extended_text
+  # extended_text_library:
+  #   # git: 
+  #   #   url: https://github.com/fluttercandies/extended_text_library.git
+  #   #   ref: refactor
+  #   path: ../../extended_text_library
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 

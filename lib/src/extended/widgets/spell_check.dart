@@ -82,4 +82,29 @@ class ExtendedSpellCheckConfiguration extends _SpellCheckConfiguration {
       //         this.spellCheckSuggestionsToolbarBuilder,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return other is ExtendedSpellCheckConfiguration &&
+        other.spellCheckService == spellCheckService &&
+        other.misspelledTextStyle == misspelledTextStyle &&
+        other.spellCheckSuggestionsToolbarBuilder ==
+            spellCheckSuggestionsToolbarBuilder &&
+        other._spellCheckEnabled == _spellCheckEnabled &&
+        other.extendedSpellCheckSuggestionsToolbarBuilder ==
+            extendedSpellCheckSuggestionsToolbarBuilder;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        spellCheckService,
+        misspelledTextStyle,
+        spellCheckSuggestionsToolbarBuilder,
+        _spellCheckEnabled,
+        extendedSpellCheckSuggestionsToolbarBuilder,
+      );
 }

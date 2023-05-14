@@ -82,58 +82,58 @@ class _CustomToolBarState extends State<CustomToolBar> {
     );
   }
 
-  bool _shouldShowSelectionHandles(
-    SelectionChangedCause? cause,
-    CommonTextSelectionGestureDetectorBuilder selectionGestureDetectorBuilder,
-    TextEditingValue editingValue,
-  ) {
-    // When the text field is activated by something that doesn't trigger the
-    // selection overlay, we shouldn't show the handles either.
+//   bool _shouldShowSelectionHandles(
+//     SelectionChangedCause? cause,
+//     CommonTextSelectionGestureDetectorBuilder selectionGestureDetectorBuilder,
+//     TextEditingValue editingValue,
+//   ) {
+//     // When the text field is activated by something that doesn't trigger the
+//     // selection overlay, we shouldn't show the handles either.
 
-    //
-    // if (!selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
-    //   return false;
+//     //
+//     // if (!selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
+//     //   return false;
 
-    if (cause == SelectionChangedCause.keyboard) return false;
+//     if (cause == SelectionChangedCause.keyboard) return false;
 
-    // if (widget.readOnly && _effectiveController.selection.isCollapsed)
-    //   return false;
+//     // if (widget.readOnly && _effectiveController.selection.isCollapsed)
+//     //   return false;
 
-    // if (!_isEnabled) return false;
+//     // if (!_isEnabled) return false;
 
-    if (cause == SelectionChangedCause.longPress) return true;
+//     if (cause == SelectionChangedCause.longPress) return true;
 
-    if (editingValue.text.isNotEmpty) return true;
+//     if (editingValue.text.isNotEmpty) return true;
 
-    return false;
-  }
+//     return false;
+//   }
 }
 
-class MyCommonTextSelectionGestureDetectorBuilder
-    extends CommonTextSelectionGestureDetectorBuilder {
-  MyCommonTextSelectionGestureDetectorBuilder(
-      {required ExtendedTextSelectionGestureDetectorBuilderDelegate delegate,
-      required Function showToolbar,
-      required Function hideToolbar,
-      required Function? onTap,
-      required BuildContext context,
-      required Function? requestKeyboard})
-      : super(
-          delegate: delegate,
-          showToolbar: showToolbar,
-          hideToolbar: hideToolbar,
-          onTap: onTap,
-          context: context,
-          requestKeyboard: requestKeyboard,
-        );
-  @override
-  void onTapDown(TapDragDownDetails details) {
-    super.onTapDown(details);
+// class MyCommonTextSelectionGestureDetectorBuilder
+//     extends CommonTextSelectionGestureDetectorBuilder {
+//   MyCommonTextSelectionGestureDetectorBuilder(
+//       {required ExtendedTextSelectionGestureDetectorBuilderDelegate delegate,
+//       required Function showToolbar,
+//       required Function hideToolbar,
+//       required Function? onTap,
+//       required BuildContext context,
+//       required Function? requestKeyboard})
+//       : super(
+//           delegate: delegate,
+//           showToolbar: showToolbar,
+//           hideToolbar: hideToolbar,
+//           onTap: onTap,
+//           context: context,
+//           requestKeyboard: requestKeyboard,
+//         );
+//   @override
+//   void onTapDown(TapDragDownDetails details) {
+//     super.onTapDown(details);
 
-    /// always show toolbar
-    shouldShowSelectionToolbar = true;
-  }
+//     /// always show toolbar
+//     shouldShowSelectionToolbar = true;
+//   }
 
-  @override
-  bool get showToolbarInWeb => true;
-}
+//   @override
+//   bool get showToolbarInWeb => true;
+// }

@@ -363,6 +363,7 @@ class ExtendedEditableTextState extends _EditableTextState {
                             promptRectRange: _currentPromptRectRange,
                             promptRectColor: widget.autocorrectionTextRectColor,
                             clipBehavior: widget.clipBehavior,
+                            supportSpecialText: supportSpecialText,
                           ),
                         ),
                       ),
@@ -520,8 +521,6 @@ class ExtendedEditableTextState extends _EditableTextState {
       ]);
     }
 
-    //final String text = _value.text;
-
     if (supportSpecialText) {
       final TextSpan? specialTextSpan = extendedEditableText
           .specialTextSpanBuilder
@@ -586,12 +585,226 @@ class ExtendedEditableTextState extends _EditableTextState {
 
   @override
   void bringIntoView(TextPosition position, {double offset = 0}) {
+    // zmtzawqlp
+    if (supportSpecialText) {
+      position =
+          ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
+        renderEditable.text!,
+        position,
+      );
+    }
     final Rect localRect = renderEditable.getLocalRectForCaret(position);
     final RevealedOffset targetOffset = _getOffsetToRevealCaret(localRect);
 
     // zmtzawqlp
     _scrollController.jumpTo(targetOffset.offset + offset);
     renderEditable.showOnScreen(rect: targetOffset.rect);
+  }
+
+  ///zmt
+  TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
+    if (supportSpecialText) {
+      final bool textChanged = _value.text != value.text;
+      final bool selectionChanged = _value.selection != value.selection;
+      if (textChanged) {
+        final TextSpan newTextSpan = extendedEditableText
+            .specialTextSpanBuilder!
+            .build(value.text, textStyle: widget.style);
+
+        final TextSpan oldTextSpan = extendedEditableText
+            .specialTextSpanBuilder!
+            .build(_value.text, textStyle: widget.style);
+        value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(
+            value, _value, oldTextSpan, _textInputConnection!);
+
+        final String text = newTextSpan.toPlainText();
+        //correct caret Offset
+        //make sure caret is not in text when caretIn is false
+        if (text != value.text || selectionChanged) {
+          value = ExtendedTextLibraryUtils.correctCaretOffset(
+              value, newTextSpan, _textInputConnection!);
+        }
+      }
+    }
+
+    return value;
+  }
+
+  @override
+  void updateEditingValue(TextEditingValue value) {
+    // This method handles text editing state updates from the platform text
+    // input plugin. The [EditableText] may not have the focus or an open input
+    // connection, as autofill can update a disconnected [EditableText].
+
+    // Since we still have to support keyboard select, this is the best place
+    // to disable text updating.
+    if (!_shouldCreateInputConnection) {
+      return;
+    }
+
+    if (_checkNeedsAdjustAffinity(value)) {
+      value = value.copyWith(
+          selection:
+              value.selection.copyWith(affinity: _value.selection.affinity));
+    }
+
+    if (widget.readOnly) {
+      // In the read-only case, we only care about selection changes, and reject
+      // everything else.
+      value = _value.copyWith(selection: value.selection);
+    }
+    _lastKnownRemoteTextEditingValue = value;
+    // zmtzawqlp
+    value = _handleSpecialTextSpan(value);
+    if (value == _value) {
+      // This is possible, for example, when the numeric keyboard is input,
+      // the engine will notify twice for the same value.
+      // Track at https://github.com/flutter/flutter/issues/65811
+      return;
+    }
+
+    if (value.text == _value.text && value.composing == _value.composing) {
+      // `selection` is the only change.
+      SelectionChangedCause cause;
+      if (_textInputConnection?.scribbleInProgress ?? false) {
+        cause = SelectionChangedCause.scribble;
+      } else if (_pointOffsetOrigin != null) {
+        cause = SelectionChangedCause.forcePress;
+      } else {
+        cause = SelectionChangedCause.keyboard;
+      }
+      _handleSelectionChanged(value.selection, cause);
+    } else {
+      if (value.text != _value.text) {
+        // Hide the toolbar if the text was changed, but only hide the toolbar
+        // overlay; the selection handle's visibility will be handled
+        // by `_handleSelectionChanged`. https://github.com/flutter/flutter/issues/108673
+        hideToolbar(false);
+      }
+      _currentPromptRectRange = null;
+
+      final bool revealObscuredInput = _hasInputConnection &&
+          widget.obscureText &&
+          WidgetsBinding.instance.platformDispatcher.brieflyShowPassword &&
+          value.text.length == _value.text.length + 1;
+
+      _obscureShowCharTicksPending =
+          revealObscuredInput ? _kObscureShowLatestCharCursorTicks : 0;
+      _obscureLatestCharIndex =
+          revealObscuredInput ? _value.selection.baseOffset : null;
+      _formatAndSetValue(value, SelectionChangedCause.keyboard);
+    }
+
+    // Wherever the value is changed by the user, schedule a showCaretOnScreen
+    // to make sure the user can see the changes they just made. Programmatic
+    // changes to `textEditingValue` do not trigger the behavior even if the
+    // text field is focused.
+    _scheduleShowCaretOnScreen(withAnimation: true);
+    if (_hasInputConnection) {
+      // To keep the cursor from blinking while typing, we want to restart the
+      // cursor timer every time a new character is typed.
+      _stopCursorBlink(resetCharTicks: false);
+      _startCursorBlink();
+    }
+  }
+
+  @override
+  void userUpdateTextEditingValue(
+      TextEditingValue value, SelectionChangedCause? cause) {
+    // zmtzawqlp
+    value = _handleSpecialTextSpan(value);
+    // Compare the current TextEditingValue with the pre-format new
+    // TextEditingValue value, in case the formatter would reject the change.
+    final bool shouldShowCaret =
+        widget.readOnly ? _value.selection != value.selection : _value != value;
+    if (shouldShowCaret) {
+      _scheduleShowCaretOnScreen(withAnimation: true);
+    }
+
+    // Even if the value doesn't change, it may be necessary to focus and build
+    // the selection overlay. For example, this happens when right clicking an
+    // unfocused field that previously had a selection in the same spot.
+    if (value == textEditingValue) {
+      if (!widget.focusNode.hasFocus) {
+        _flagInternalFocus();
+        widget.focusNode.requestFocus();
+        _selectionOverlay = _createSelectionOverlay();
+      }
+      return;
+    }
+
+    _formatAndSetValue(value, cause, userInteraction: true);
+  }
+
+  @override
+  void updateFloatingCursor(RawFloatingCursorPoint point) {
+    _floatingCursorResetController ??= AnimationController(
+      vsync: this,
+    )..addListener(_onFloatingCursorResetTick);
+    switch (point.state) {
+      case FloatingCursorDragState.Start:
+        if (_floatingCursorResetController!.isAnimating) {
+          _floatingCursorResetController!.stop();
+          _onFloatingCursorResetTick();
+        }
+        // Stop cursor blinking and making it visible.
+        _stopCursorBlink(resetCharTicks: false);
+        _cursorBlinkOpacityController.value = 1.0;
+        // We want to send in points that are centered around a (0,0) origin, so
+        // we cache the position.
+        _pointOffsetOrigin = point.offset;
+
+        // zmtzawqlp
+        final TextPosition currentTextPosition = supportSpecialText
+            ? ExtendedTextLibraryUtils
+                .convertTextInputPostionToTextPainterPostion(
+                renderEditable.text!,
+                renderEditable.selection!.base,
+              )
+            : TextPosition(
+                offset: renderEditable.selection!.baseOffset,
+                affinity: renderEditable.selection!.affinity);
+
+        _startCaretRect =
+            renderEditable.getLocalRectForCaret(currentTextPosition);
+
+        _lastBoundedOffset = _startCaretRect!.center - _floatingCursorOffset;
+        _lastTextPosition = currentTextPosition;
+        renderEditable.setFloatingCursor(
+            point.state, _lastBoundedOffset!, _lastTextPosition!);
+        break;
+      case FloatingCursorDragState.Update:
+        final Offset centeredPoint = point.offset! - _pointOffsetOrigin!;
+        final Offset rawCursorOffset =
+            _startCaretRect!.center + centeredPoint - _floatingCursorOffset;
+
+        _lastBoundedOffset = renderEditable
+            .calculateBoundedFloatingCursorOffset(rawCursorOffset);
+        _lastTextPosition = renderEditable.getPositionForPoint(renderEditable
+            .localToGlobal(_lastBoundedOffset! + _floatingCursorOffset));
+        // zmtzawlp
+        if (supportSpecialText) {
+          _lastTextPosition =
+              ExtendedTextLibraryUtils.makeSureCaretNotInSpecialText(
+                  renderEditable.text!, _lastTextPosition!);
+        }
+
+        renderEditable.setFloatingCursor(
+            point.state, _lastBoundedOffset!, _lastTextPosition!);
+        break;
+      case FloatingCursorDragState.End:
+        // Resume cursor blinking.
+        _startCursorBlink();
+        // We skip animation if no update has happened.
+        if (_lastTextPosition != null && _lastBoundedOffset != null) {
+          _floatingCursorResetController!.value = 0.0;
+          _floatingCursorResetController!.animateTo(1.0,
+              // zmtzawqlp
+              duration: _EditableTextState._floatingCursorResetTime,
+              curve: Curves.decelerate);
+        }
+        break;
+    }
   }
 }
 
@@ -637,7 +850,10 @@ class _ExtendedEditable extends _Editable {
     super.promptRectRange,
     super.promptRectColor,
     required super.clipBehavior,
+    this.supportSpecialText = false,
   });
+
+  final bool supportSpecialText;
 
   @override
   ExtendedRenderEditable createRenderObject(BuildContext context) {
@@ -681,6 +897,15 @@ class _ExtendedEditable extends _Editable {
       promptRectRange: promptRectRange,
       promptRectColor: promptRectColor,
       clipBehavior: clipBehavior,
+      supportSpecialText: supportSpecialText,
     );
+  }
+
+  // zmtzawqlp
+  @override
+  void updateRenderObject(BuildContext context, _RenderEditable renderObject) {
+    super.updateRenderObject(context, renderObject);
+    (renderObject as ExtendedRenderEditable).supportSpecialText =
+        supportSpecialText;
   }
 }
