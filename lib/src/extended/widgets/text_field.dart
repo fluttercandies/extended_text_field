@@ -1,14 +1,26 @@
-import 'package:extended_text_field/extended_text_field.dart';
-import 'package:extended_text_field/src/extended/widgets/editable_text.dart';
+import 'dart:async';
+import 'dart:collection';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+
+import 'package:extended_text_field/src/extended/cupertino/spell_check_suggestions_toolbar.dart';
+import 'package:extended_text_field/src/extended/material/spell_check_suggestions_toolbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-
+import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+part 'package:extended_text_field/src/extended/rendering/editable.dart';
+part 'package:extended_text_field/src/extended/widgets/editable_text.dart';
+part 'package:extended_text_field/src/extended/widgets/spell_check.dart';
+part 'package:extended_text_field/src/official/rendering/editable.dart';
+part 'package:extended_text_field/src/official/widgets/editable_text.dart';
 part 'package:extended_text_field/src/official/widgets/text_field.dart';
+part 'package:extended_text_field/src/official/widgets/text_selection.dart';
+part 'package:extended_text_field/src/official/widgets/spell_check.dart';
 
 class ExtendedTextField1 extends _TextField {
   const ExtendedTextField1({
@@ -74,14 +86,172 @@ class ExtendedTextField1 extends _TextField {
     super.restorationId,
     super.scribbleEnabled = true,
     super.enableIMEPersonalizedLearning = true,
-    super.contextMenuBuilder = _defaultContextMenuBuilder,
+    // zmtzawqlp
+    // TODO
+    // super.contextMenuBuilder = _defaultContextMenuBuilder,
+    this.extendedContextMenuBuilder,
     super.canRequestFocus = true,
-    super.spellCheckConfiguration,
+    // zmtzawqlp
+    // super.spellCheckConfiguration,
+    this.extendedSpellCheckConfiguration,
   });
 
   static Widget _defaultContextMenuBuilder(
       BuildContext context, EditableTextState editableTextState) {
     return AdaptiveTextSelectionToolbar.editableText(
+      editableTextState: editableTextState,
+    );
+  }
+
+  /// {@template flutter.widgets.EditableText.contextMenuBuilder}
+  /// Builds the text selection toolbar when requested by the user.
+  ///
+  /// `primaryAnchor` is the desired anchor position for the context menu, while
+  /// `secondaryAnchor` is the fallback location if the menu doesn't fit.
+  ///
+  /// `buttonItems` represents the buttons that would be built by default for
+  /// this widget.
+  ///
+  /// {@tool dartpad}
+  /// This example shows how to customize the menu, in this case by keeping the
+  /// default buttons for the platform but modifying their appearance.
+  ///
+  /// ** See code in examples/api/lib/material/context_menu/editable_text_toolbar_builder.0.dart **
+  /// {@end-tool}
+  ///
+  /// {@tool dartpad}
+  /// This example shows how to show a custom button only when an email address
+  /// is currently selected.
+  ///
+  /// ** See code in examples/api/lib/material/context_menu/editable_text_toolbar_builder.1.dart **
+  /// {@end-tool}
+  ///
+  /// See also:
+  ///   * [AdaptiveTextSelectionToolbar], which builds the default text selection
+  ///     toolbar for the current platform, but allows customization of the
+  ///     buttons.
+  ///   * [AdaptiveTextSelectionToolbar.getAdaptiveButtons], which builds the
+  ///     button Widgets for the current platform given
+  ///     [ContextMenuButtonItem]s.
+  ///   * [BrowserContextMenu], which allows the browser's context menu on web
+  ///     to be disabled and Flutter-rendered context menus to appear.
+  /// {@endtemplate}
+  ///
+  /// If not provided, no context menu will be shown.
+  final ExtendedEditableTextContextMenuBuilder? extendedContextMenuBuilder;
+
+  /// {@template flutter.widgets.EditableText.spellCheckConfiguration}
+  /// Configuration that details how spell check should be performed.
+  ///
+  /// Specifies the [SpellCheckService] used to spell check text input and the
+  /// [TextStyle] used to style text with misspelled words.
+  ///
+  /// If the [SpellCheckService] is left null, spell check is disabled by
+  /// default unless the [DefaultSpellCheckService] is supported, in which case
+  /// it is used. It is currently supported only on Android and iOS.
+  ///
+  /// If this configuration is left null, then spell check is disabled by default.
+  /// {@endtemplate}
+  final ExtendedSpellCheckConfiguration? extendedSpellCheckConfiguration;
+
+  /// Returns a new [SpellCheckConfiguration] where the given configuration has
+  /// had any missing values replaced with their defaults for the Android
+  /// platform.
+  static ExtendedSpellCheckConfiguration inferAndroidSpellCheckConfiguration(
+    ExtendedSpellCheckConfiguration? configuration,
+  ) {
+    if (configuration == null ||
+        configuration == const ExtendedSpellCheckConfiguration.disabled()) {
+      return const ExtendedSpellCheckConfiguration.disabled();
+    }
+    return configuration.copyWith(
+      misspelledTextStyle: configuration.misspelledTextStyle ??
+          TextField.materialMisspelledTextStyle,
+      extendedSpellCheckSuggestionsToolbarBuilder:
+          configuration.extendedSpellCheckSuggestionsToolbarBuilder ??
+              ExtendedTextField1.defaultSpellCheckSuggestionsToolbarBuilder,
+      // spellCheckSuggestionsToolbarBuilder:
+      //     configuration.spellCheckSuggestionsToolbarBuilder ??
+      //         TextField.defaultSpellCheckSuggestionsToolbarBuilder,
+    ) as ExtendedSpellCheckConfiguration;
+  }
+
+  /// Default builder for [TextField]'s spell check suggestions toolbar.
+  ///
+  /// On Apple platforms, builds an iOS-style toolbar. Everywhere else, builds
+  /// an Android-style toolbar.
+  ///
+  /// See also:
+  ///  * [spellCheckConfiguration], where this is typically specified for
+  ///    [TextField].
+  ///  * [SpellCheckConfiguration.spellCheckSuggestionsToolbarBuilder], the
+  ///    parameter for which this is the default value for [TextField].
+  ///  * [CupertinoTextField.defaultSpellCheckSuggestionsToolbarBuilder], which
+  ///    is like this but specifies the default for [CupertinoTextField].
+  /// [TextField.defaultSpellCheckSuggestionsToolbarBuilder]
+  @visibleForTesting
+  static Widget defaultSpellCheckSuggestionsToolbarBuilder(
+    BuildContext context,
+    ExtendedEditableTextState editableTextState,
+  ) {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return ExtendedCupertinoSpellCheckSuggestionsToolbar.editableText(
+          editableTextState: editableTextState,
+        );
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return ExtendedSpellCheckSuggestionsToolbar.editableText(
+          editableTextState: editableTextState,
+        );
+    }
+  }
+
+  /// Returns a new [SpellCheckConfiguration] where the given configuration has
+  /// had any missing values replaced with their defaults for the iOS platform.
+  static ExtendedSpellCheckConfiguration inferIOSSpellCheckConfiguration(
+    ExtendedSpellCheckConfiguration? configuration,
+  ) {
+    if (configuration == null ||
+        configuration == const ExtendedSpellCheckConfiguration.disabled()) {
+      return const ExtendedSpellCheckConfiguration.disabled();
+    }
+
+    return configuration.copyWith(
+      misspelledTextStyle: configuration.misspelledTextStyle ??
+          CupertinoTextField.cupertinoMisspelledTextStyle,
+      misspelledSelectionColor: configuration.misspelledSelectionColor ??
+          // ignore: invalid_use_of_visible_for_testing_member
+          CupertinoTextField.kMisspelledSelectionColor,
+      extendedSpellCheckSuggestionsToolbarBuilder:
+          configuration.extendedSpellCheckSuggestionsToolbarBuilder ??
+              defaultIosSpellCheckSuggestionsToolbarBuilder,
+      // spellCheckSuggestionsToolbarBuilder:
+      //   configuration.spellCheckSuggestionsToolbarBuilder
+      //     ?? CupertinoTextField.defaultSpellCheckSuggestionsToolbarBuilder,
+    ) as ExtendedSpellCheckConfiguration;
+  }
+
+  /// Default builder for the spell check suggestions toolbar in the Cupertino
+  /// style.
+  ///
+  /// See also:
+  ///  * [spellCheckConfiguration], where this is typically specified for
+  ///    [CupertinoTextField].
+  ///  * [SpellCheckConfiguration.spellCheckSuggestionsToolbarBuilder], the
+  ///    parameter for which this is the default value for [CupertinoTextField].
+  ///  * [TextField.defaultSpellCheckSuggestionsToolbarBuilder], which is like
+  ///    this but specifies the default for [CupertinoTextField].
+  /// [CupertinoTextField.defaultSpellCheckSuggestionsToolbarBuilder]
+  @visibleForTesting
+  static Widget defaultIosSpellCheckSuggestionsToolbarBuilder(
+    BuildContext context,
+    ExtendedEditableTextState editableTextState,
+  ) {
+    return ExtendedCupertinoSpellCheckSuggestionsToolbar.editableText(
       editableTextState: editableTextState,
     );
   }
@@ -94,9 +264,6 @@ class ExtendedTextField1 extends _TextField {
 
 class _ExtendedTextFieldState extends _TextFieldState {
   ExtendedTextField1 get extenedTextField => widget as ExtendedTextField1;
-  // @override
-  // final GlobalKey<ExtendedEditableTextState> editableTextKey =
-  //     GlobalKey<ExtendedEditableTextState>();
 
   @override
   Widget build(BuildContext context) {
@@ -134,21 +301,25 @@ class _ExtendedTextFieldState extends _TextFieldState {
     // Set configuration as disabled if not otherwise specified. If specified,
     // ensure that configuration uses the correct style for misspelled words for
     // the current platform, unless a custom style is specified.
-    final SpellCheckConfiguration spellCheckConfiguration;
+    // zmtzawqlp
+    final ExtendedSpellCheckConfiguration spellCheckConfiguration;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
+        // zmtzawqlp
         spellCheckConfiguration =
-            CupertinoTextField.inferIOSSpellCheckConfiguration(
-          widget.spellCheckConfiguration,
+            ExtendedTextField1.inferIOSSpellCheckConfiguration(
+          extenedTextField.extendedSpellCheckConfiguration,
         );
         break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
-        spellCheckConfiguration = TextField.inferAndroidSpellCheckConfiguration(
-          widget.spellCheckConfiguration,
+        // zmtzawqlp
+        spellCheckConfiguration =
+            ExtendedTextField1.inferAndroidSpellCheckConfiguration(
+          extenedTextField.extendedSpellCheckConfiguration,
         );
         break;
     }
@@ -321,8 +492,11 @@ class _ExtendedTextFieldState extends _TextFieldState {
           scribbleEnabled: widget.scribbleEnabled,
           enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
           contentInsertionConfiguration: widget.contentInsertionConfiguration,
-          contextMenuBuilder: widget.contextMenuBuilder,
-          spellCheckConfiguration: spellCheckConfiguration,
+          // contextMenuBuilder: widget.contextMenuBuilder,
+          // spellCheckConfiguration: spellCheckConfiguration,
+          extendedContextMenuBuilder:
+              extenedTextField.extendedContextMenuBuilder,
+          extendedSpellCheckConfiguration: spellCheckConfiguration,
           magnifierConfiguration: widget.magnifierConfiguration ??
               TextMagnifier.adaptiveMagnifierConfiguration,
         ),

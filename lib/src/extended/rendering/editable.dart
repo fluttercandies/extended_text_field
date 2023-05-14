@@ -1,4 +1,4 @@
-part of 'package:extended_text_field/src/extended/widgets/editable_text.dart';
+part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
 /// [RenderEditable]
 class ExtendedRenderEditable extends _RenderEditable {
@@ -47,9 +47,4 @@ class ExtendedRenderEditable extends _RenderEditable {
     super.foregroundPainter,
     super.children,
   });
-
-  @override
-  void adoptChild(covariant RenderObject child) {
-    super.adoptChild(child);
-  }
 }

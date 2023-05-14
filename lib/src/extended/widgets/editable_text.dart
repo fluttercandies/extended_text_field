@@ -1,17 +1,4 @@
-import 'dart:async';
-import 'dart:collection';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-import 'dart:ui' as ui;
-import 'dart:math' as math;
-
-part 'package:extended_text_field/src/official/widgets/editable_text.dart';
-part 'package:extended_text_field/src/official/rendering/editable.dart';
-part 'package:extended_text_field/src/extended/rendering/editable.dart';
+part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
 /// Signature for a widget builder that builds a context menu for the given
 /// [EditableTextState].
@@ -27,7 +14,7 @@ typedef ExtendedEditableTextContextMenuBuilder = Widget Function(
 
 /// [EditableText]
 ///
-class ExtendedEditableText extends EditableText {
+class ExtendedEditableText extends _EditableText {
   ExtendedEditableText({
     super.key,
     required super.controller,
@@ -99,12 +86,64 @@ class ExtendedEditableText extends EditableText {
     super.scribbleEnabled = true,
     super.enableIMEPersonalizedLearning = true,
     super.contentInsertionConfiguration,
-    super.contextMenuBuilder,
-    super.spellCheckConfiguration,
+    // super.contextMenuBuilder,
+    // super.spellCheckConfiguration,
+    this.extendedContextMenuBuilder,
+    this.extendedSpellCheckConfiguration,
     super.magnifierConfiguration = TextMagnifierConfiguration.disabled,
     super.undoController,
   });
 
+  /// {@template flutter.widgets.EditableText.contextMenuBuilder}
+  /// Builds the text selection toolbar when requested by the user.
+  ///
+  /// `primaryAnchor` is the desired anchor position for the context menu, while
+  /// `secondaryAnchor` is the fallback location if the menu doesn't fit.
+  ///
+  /// `buttonItems` represents the buttons that would be built by default for
+  /// this widget.
+  ///
+  /// {@tool dartpad}
+  /// This example shows how to customize the menu, in this case by keeping the
+  /// default buttons for the platform but modifying their appearance.
+  ///
+  /// ** See code in examples/api/lib/material/context_menu/editable_text_toolbar_builder.0.dart **
+  /// {@end-tool}
+  ///
+  /// {@tool dartpad}
+  /// This example shows how to show a custom button only when an email address
+  /// is currently selected.
+  ///
+  /// ** See code in examples/api/lib/material/context_menu/editable_text_toolbar_builder.1.dart **
+  /// {@end-tool}
+  ///
+  /// See also:
+  ///   * [AdaptiveTextSelectionToolbar], which builds the default text selection
+  ///     toolbar for the current platform, but allows customization of the
+  ///     buttons.
+  ///   * [AdaptiveTextSelectionToolbar.getAdaptiveButtons], which builds the
+  ///     button Widgets for the current platform given
+  ///     [ContextMenuButtonItem]s.
+  ///   * [BrowserContextMenu], which allows the browser's context menu on web
+  ///     to be disabled and Flutter-rendered context menus to appear.
+  /// {@endtemplate}
+  ///
+  /// If not provided, no context menu will be shown.
+  final ExtendedEditableTextContextMenuBuilder? extendedContextMenuBuilder;
+
+  /// {@template flutter.widgets.EditableText.spellCheckConfiguration}
+  /// Configuration that details how spell check should be performed.
+  ///
+  /// Specifies the [SpellCheckService] used to spell check text input and the
+  /// [TextStyle] used to style text with misspelled words.
+  ///
+  /// If the [SpellCheckService] is left null, spell check is disabled by
+  /// default unless the [DefaultSpellCheckService] is supported, in which case
+  /// it is used. It is currently supported only on Android and iOS.
+  ///
+  /// If this configuration is left null, then spell check is disabled by default.
+  /// {@endtemplate}
+  final ExtendedSpellCheckConfiguration? extendedSpellCheckConfiguration;
   @override
   _EditableTextState createState() {
     return ExtendedEditableTextState();
@@ -112,6 +151,64 @@ class ExtendedEditableText extends EditableText {
 }
 
 class ExtendedEditableTextState extends _EditableTextState {
+  ExtendedEditableText get extendedEditableText =>
+      widget as ExtendedEditableText;
+  ExtendedSpellCheckConfiguration get extendedSpellCheckConfiguration =>
+      _spellCheckConfiguration as ExtendedSpellCheckConfiguration;
+
+  // State lifecycle:
+
+  @override
+  void initState() {
+    super.initState();
+    _spellCheckConfiguration = _inferSpellCheckConfiguration(
+        extendedEditableText.extendedSpellCheckConfiguration);
+  }
+
+  /// Infers the [_SpellCheckConfiguration] used to perform spell check.
+  ///
+  /// If spell check is enabled, this will try to infer a value for
+  /// the [SpellCheckService] if left unspecified.
+  static _SpellCheckConfiguration _inferSpellCheckConfiguration(
+      ExtendedSpellCheckConfiguration? configuration) {
+    final SpellCheckService? spellCheckService =
+        configuration?.spellCheckService;
+    final bool spellCheckAutomaticallyDisabled = configuration == null ||
+        configuration == const ExtendedSpellCheckConfiguration.disabled();
+    final bool spellCheckServiceIsConfigured = spellCheckService != null ||
+        spellCheckService == null &&
+            WidgetsBinding
+                .instance.platformDispatcher.nativeSpellCheckServiceDefined;
+    if (spellCheckAutomaticallyDisabled || !spellCheckServiceIsConfigured) {
+      // Only enable spell check if a non-disabled configuration is provided
+      // and if that configuration does not specify a spell check service,
+      // a native spell checker must be supported.
+      assert(() {
+        if (!spellCheckAutomaticallyDisabled &&
+            !spellCheckServiceIsConfigured) {
+          FlutterError.reportError(
+            FlutterErrorDetails(
+              exception: FlutterError(
+                'Spell check was enabled with spellCheckConfiguration, but the '
+                'current platform does not have a supported spell check '
+                'service, and none was provided. Consider disabling spell '
+                'check for this platform or passing a SpellCheckConfiguration '
+                'with a specified spell check service.',
+              ),
+              library: 'widget library',
+              stack: StackTrace.current,
+            ),
+          );
+        }
+        return true;
+      }());
+      return const ExtendedSpellCheckConfiguration.disabled();
+    }
+
+    return configuration.copyWith(
+        spellCheckService: spellCheckService ?? DefaultSpellCheckService());
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -249,7 +346,8 @@ class ExtendedEditableTextState extends _EditableTextState {
                             selectionHeightStyle: widget.selectionHeightStyle,
                             selectionWidthStyle: widget.selectionWidthStyle,
                             paintCursorAboveText: widget.paintCursorAboveText,
-                            enableInteractiveSelection: _userSelectionEnabled,
+                            enableInteractiveSelection:
+                                widget._userSelectionEnabled,
                             textSelectionDelegate: this,
                             devicePixelRatio: _devicePixelRatio,
                             promptRectRange: _currentPromptRectRange,
@@ -267,6 +365,80 @@ class ExtendedEditableTextState extends _EditableTextState {
         ),
       ),
     );
+  }
+
+  /// Shows toolbar with spell check suggestions of misspelled words that are
+  /// available for click-and-replace.
+  @override
+  bool showSpellCheckSuggestionsToolbar() {
+    // Spell check suggestions toolbars are intended to be shown on non-web
+    // platforms. Additionally, the Cupertino style toolbar can't be drawn on
+    // the web with the HTML renderer due to
+    // https://github.com/flutter/flutter/issues/123560.
+    final bool platformNotSupported = kIsWeb && BrowserContextMenu.enabled;
+    if (!spellCheckEnabled ||
+        platformNotSupported ||
+        widget.readOnly ||
+        _selectionOverlay == null ||
+        !_spellCheckResultsReceived ||
+        findSuggestionSpanAtCursorIndex(
+                textEditingValue.selection.extentOffset) ==
+            null) {
+      // Only attempt to show the spell check suggestions toolbar if there
+      // is a toolbar specified and spell check suggestions available to show.
+      return false;
+    }
+
+    assert(
+      _spellCheckConfiguration.spellCheckSuggestionsToolbarBuilder != null,
+      'spellCheckSuggestionsToolbarBuilder must be defined in '
+      'SpellCheckConfiguration to show a toolbar with spell check '
+      'suggestions',
+    );
+
+    // zmtzawqlp
+    _selectionOverlay!.showSpellCheckSuggestionsToolbar(
+      (BuildContext context) {
+        // zmtzawqlp
+        return extendedSpellCheckConfiguration
+            .extendedSpellCheckSuggestionsToolbarBuilder!(
+          context,
+          this,
+        );
+      },
+    );
+    return true;
+  }
+
+  @override
+  _TextSelectionOverlay _createSelectionOverlay() {
+    final _TextSelectionOverlay selectionOverlay = _TextSelectionOverlay(
+      clipboardStatus: clipboardStatus,
+      context: context,
+      value: _value,
+      debugRequiredFor: widget,
+      toolbarLayerLink: _toolbarLayerLink,
+      startHandleLayerLink: _startHandleLayerLink,
+      endHandleLayerLink: _endHandleLayerLink,
+      renderObject: renderEditable,
+      selectionControls: widget.selectionControls,
+      selectionDelegate: this,
+      dragStartBehavior: widget.dragStartBehavior,
+      onSelectionHandleTapped: widget.onSelectionHandleTapped,
+      // zmtzawqlp
+      contextMenuBuilder:
+          extendedEditableText.extendedContextMenuBuilder == null
+              ? null
+              : (BuildContext context) {
+                  return extendedEditableText.extendedContextMenuBuilder!(
+                    context,
+                    this,
+                  );
+                },
+      magnifierConfiguration: widget.magnifierConfiguration,
+    );
+
+    return selectionOverlay;
   }
 }
 

@@ -1,4 +1,4 @@
-part of 'package:extended_text_field/src/extended/widgets/editable_text.dart';
+part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
 const double _kCaretGap = 1.0; // pixels
 const double _kCaretHeightOffset = 2.0; // pixels

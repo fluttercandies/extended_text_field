@@ -2,7 +2,7 @@ part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
 /// [_TextField]
 class _TextFieldSelectionGestureDetectorBuilder
-    extends TextSelectionGestureDetectorBuilder {
+    extends _TextSelectionGestureDetectorBuilder {
   _TextFieldSelectionGestureDetectorBuilder({
     required _TextFieldState state,
   })  : _state = state,
@@ -748,14 +748,14 @@ class _TextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.EditableText.spellCheckConfiguration}
   ///
-  /// If [SpellCheckConfiguration.misspelledTextStyle] is not specified in this
+  /// If [_SpellCheckConfiguration.misspelledTextStyle] is not specified in this
   /// configuration, then [materialMisspelledTextStyle] is used by default.
   final SpellCheckConfiguration? spellCheckConfiguration;
 
   /// The [TextStyle] used to indicate misspelled words in the Material style.
   ///
   /// See also:
-  ///  * [SpellCheckConfiguration.misspelledTextStyle], the style configured to
+  ///  * [_SpellCheckConfiguration.misspelledTextStyle], the style configured to
   ///    mark misspelled words with.
   ///  * [CupertinoTextField.cupertinoMisspelledTextStyle], the style configured
   ///    to mark misspelled words with in the Cupertino style.
@@ -773,7 +773,7 @@ class _TextField extends StatefulWidget {
   /// See also:
   ///  * [spellCheckConfiguration], where this is typically specified for
   ///    [_TextField].
-  ///  * [SpellCheckConfiguration.spellCheckSuggestionsToolbarBuilder], the
+  ///  * [_SpellCheckConfiguration.spellCheckSuggestionsToolbarBuilder], the
   ///    parameter for which this is the default value for [_TextField].
   ///  * [CupertinoTextField.defaultSpellCheckSuggestionsToolbarBuilder], which
   ///    is like this but specifies the default for [CupertinoTextField].
@@ -798,15 +798,15 @@ class _TextField extends StatefulWidget {
     }
   }
 
-  /// Returns a new [SpellCheckConfiguration] where the given configuration has
+  /// Returns a new [_SpellCheckConfiguration] where the given configuration has
   /// had any missing values replaced with their defaults for the Android
   /// platform.
-  static SpellCheckConfiguration inferAndroidSpellCheckConfiguration(
-    SpellCheckConfiguration? configuration,
+  static _SpellCheckConfiguration inferAndroidSpellCheckConfiguration(
+    _SpellCheckConfiguration? configuration,
   ) {
     if (configuration == null ||
-        configuration == const SpellCheckConfiguration.disabled()) {
-      return const SpellCheckConfiguration.disabled();
+        configuration == const _SpellCheckConfiguration.disabled()) {
+      return const _SpellCheckConfiguration.disabled();
     }
     return configuration.copyWith(
       misspelledTextStyle: configuration.misspelledTextStyle ??
@@ -932,7 +932,7 @@ class _TextField extends StatefulWidget {
 
 class _TextFieldState extends State<_TextField>
     with RestorationMixin
-    implements TextSelectionGestureDetectorBuilderDelegate, AutofillClient {
+    implements _TextSelectionGestureDetectorBuilderDelegate, AutofillClient {
   RestorableTextEditingController? _controller;
   TextEditingController get _effectiveController =>
       widget.controller ?? _controller!.value;
@@ -962,9 +962,10 @@ class _TextFieldState extends State<_TextField>
   @override
   late bool forcePressEnabled;
 
+  // zmtzawqlp
   @override
-  final GlobalKey<EditableTextState> editableTextKey =
-      GlobalKey<EditableTextState>();
+  final GlobalKey<_EditableTextState> editableTextKey =
+      GlobalKey<_EditableTextState>();
 
   @override
   bool get selectionEnabled => widget.selectionEnabled;
@@ -1152,7 +1153,7 @@ class _TextFieldState extends State<_TextField>
     super.dispose();
   }
 
-  EditableTextState? get _editableText => editableTextKey.currentState;
+  _EditableTextState? get _editableText => editableTextKey.currentState;
 
   void _requestKeyboard() {
     _editableText?.requestKeyboard();
@@ -1342,8 +1343,7 @@ class _TextFieldState extends State<_TextField>
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
-        spellCheckConfiguration =
-            _TextField.inferAndroidSpellCheckConfiguration(
+        spellCheckConfiguration = TextField.inferAndroidSpellCheckConfiguration(
           widget.spellCheckConfiguration,
         );
         break;

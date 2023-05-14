@@ -1,4 +1,4 @@
-part of 'package:extended_text_field/src/extended/widgets/editable_text.dart';
+part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
 // Signature for a function that determines the target location of the given
 // [TextPosition] after applying the given [TextBoundary].
@@ -461,7 +461,7 @@ class _EditableText extends StatefulWidget {
         assert(
           spellCheckConfiguration == null ||
               spellCheckConfiguration ==
-                  const SpellCheckConfiguration.disabled() ||
+                  const _SpellCheckConfiguration.disabled() ||
               spellCheckConfiguration.misspelledTextStyle != null,
           'spellCheckConfiguration must specify a misspelledTextStyle if spell check behavior is desired',
         ),
@@ -1417,7 +1417,7 @@ class _EditableText extends StatefulWidget {
   ///
   /// If this configuration is left null, then spell check is disabled by default.
   /// {@endtemplate}
-  final SpellCheckConfiguration? spellCheckConfiguration;
+  final _SpellCheckConfiguration? spellCheckConfiguration;
 
   /// {@macro flutter.widgets.magnifier.TextMagnifierConfiguration.intro}
   ///
@@ -1705,7 +1705,7 @@ class _EditableText extends StatefulWidget {
     properties.add(DiagnosticsProperty<UndoHistoryController>(
         'undoController', undoController,
         defaultValue: null));
-    properties.add(DiagnosticsProperty<SpellCheckConfiguration>(
+    properties.add(DiagnosticsProperty<_SpellCheckConfiguration>(
         'spellCheckConfiguration', spellCheckConfiguration,
         defaultValue: null));
     properties.add(DiagnosticsProperty<List<String>>('contentCommitMimeTypes',
@@ -1718,19 +1718,14 @@ class _EditableText extends StatefulWidget {
 
 /// State for a [_EditableText].
 /// zmtzawqlp
-class _EditableTextState extends EditableTextState
-// with
-//     AutomaticKeepAliveClientMixin<_EditableText>,
-//     WidgetsBindingObserver,
-//     TickerProviderStateMixin<_EditableText>,
-//     TextSelectionDelegate,
-//     TextInputClient
-// implements AutofillClient
-{
-  // zmtzawqlp
-  bool get _userSelectionEnabled =>
-      widget.enableInteractiveSelection &&
-      (!widget.readOnly || !widget.obscureText);
+class _EditableTextState extends State<_EditableText>
+    with
+        AutomaticKeepAliveClientMixin<_EditableText>,
+        WidgetsBindingObserver,
+        TickerProviderStateMixin<_EditableText>,
+        TextSelectionDelegate,
+        TextInputClient
+    implements AutofillClient {
   Timer? _cursorTimer;
   AnimationController get _cursorBlinkOpacityController {
     return _backingCursorBlinkOpacityController ??= AnimationController(
@@ -1752,7 +1747,7 @@ class _EditableTextState extends EditableTextState
   TextInputConnection? _textInputConnection;
   bool get _hasInputConnection => _textInputConnection?.attached ?? false;
 
-  TextSelectionOverlay? _selectionOverlay;
+  _TextSelectionOverlay? _selectionOverlay;
 
   final GlobalKey _scrollableKey = GlobalKey();
   ScrollController? _internalScrollController;
@@ -1772,7 +1767,7 @@ class _EditableTextState extends EditableTextState
 
   AutofillClient get _effectiveAutofillClient => widget.autofillClient ?? this;
 
-  late SpellCheckConfiguration _spellCheckConfiguration;
+  late _SpellCheckConfiguration _spellCheckConfiguration;
   late TextStyle _style;
 
   /// Configuration that determines how spell check will be performed.
@@ -1783,12 +1778,12 @@ class _EditableTextState extends EditableTextState
   /// See also:
   ///  * [DefaultSpellCheckService], the spell check service used by default.
   @visibleForTesting
-  SpellCheckConfiguration get spellCheckConfiguration =>
+  _SpellCheckConfiguration get spellCheckConfiguration =>
       _spellCheckConfiguration;
 
   /// Whether or not spell check is enabled.
   ///
-  /// Spell check is enabled when a [SpellCheckConfiguration] has been specified
+  /// Spell check is enabled when a [_SpellCheckConfiguration] has been specified
   /// for the widget.
   bool get spellCheckEnabled => _spellCheckConfiguration.spellCheckEnabled;
 
@@ -2086,16 +2081,16 @@ class _EditableTextState extends EditableTextState
     return null;
   }
 
-  /// Infers the [SpellCheckConfiguration] used to perform spell check.
+  /// Infers the [_SpellCheckConfiguration] used to perform spell check.
   ///
   /// If spell check is enabled, this will try to infer a value for
   /// the [SpellCheckService] if left unspecified.
-  static SpellCheckConfiguration _inferSpellCheckConfiguration(
-      SpellCheckConfiguration? configuration) {
+  static _SpellCheckConfiguration _inferSpellCheckConfiguration(
+      _SpellCheckConfiguration? configuration) {
     final SpellCheckService? spellCheckService =
         configuration?.spellCheckService;
     final bool spellCheckAutomaticallyDisabled = configuration == null ||
-        configuration == const SpellCheckConfiguration.disabled();
+        configuration == const _SpellCheckConfiguration.disabled();
     final bool spellCheckServiceIsConfigured = spellCheckService != null ||
         spellCheckService == null &&
             WidgetsBinding
@@ -2123,7 +2118,7 @@ class _EditableTextState extends EditableTextState
         }
         return true;
       }());
-      return const SpellCheckConfiguration.disabled();
+      return const _SpellCheckConfiguration.disabled();
     }
 
     return configuration.copyWith(
@@ -2288,8 +2283,9 @@ class _EditableTextState extends EditableTextState
     widget.focusNode.addListener(_handleFocusChanged);
     _scrollController.addListener(_onEditableScroll);
     _cursorVisibilityNotifier.value = widget.showCursor;
-    _spellCheckConfiguration =
-        _inferSpellCheckConfiguration(widget.spellCheckConfiguration);
+    // zmtzawqlp
+    // _spellCheckConfiguration =
+    //     _inferSpellCheckConfiguration(widget.spellCheckConfiguration);
   }
 
   // Whether `TickerMode.of(context)` is true and animations (like blinking the
@@ -2357,7 +2353,7 @@ class _EditableTextState extends EditableTextState
   }
 
   @override
-  void didUpdateWidget(EditableText oldWidget) {
+  void didUpdateWidget(_EditableText oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
       oldWidget.controller.removeListener(_didChangeTextEditingValue);
@@ -3058,8 +3054,8 @@ class _EditableTextState extends EditableTextState
     _scribbleCacheKey = null;
   }
 
-  TextSelectionOverlay _createSelectionOverlay() {
-    final TextSelectionOverlay selectionOverlay = TextSelectionOverlay(
+  _TextSelectionOverlay _createSelectionOverlay() {
+    final _TextSelectionOverlay selectionOverlay = _TextSelectionOverlay(
       clipboardStatus: clipboardStatus,
       context: context,
       value: _value,
@@ -3072,14 +3068,15 @@ class _EditableTextState extends EditableTextState
       selectionDelegate: this,
       dragStartBehavior: widget.dragStartBehavior,
       onSelectionHandleTapped: widget.onSelectionHandleTapped,
-      contextMenuBuilder: widget.contextMenuBuilder == null
-          ? null
-          : (BuildContext context) {
-              return widget.contextMenuBuilder!(
-                context,
-                this,
-              );
-            },
+      // zmtzawqlp
+      // contextMenuBuilder: widget.contextMenuBuilder == null
+      //     ? null
+      //     : (BuildContext context) {
+      //         return widget.contextMenuBuilder!(
+      //           context,
+      //           this,
+      //         );
+      //       },
       magnifierConfiguration: widget.magnifierConfiguration,
     );
 
@@ -3417,8 +3414,10 @@ class _EditableTextState extends EditableTextState
   Duration get cursorBlinkInterval => _kCursorBlinkHalfPeriod;
 
   /// The current status of the text selection handles.
-  @visibleForTesting
-  TextSelectionOverlay? get selectionOverlay => _selectionOverlay;
+  // @override
+  // @visibleForTesting
+  // zmtzawqlp
+  // TextSelectionOverlay? get selectionOverlay => _selectionOverlay;
 
   int _obscureShowCharTicksPending = 0;
   int? _obscureLatestCharIndex;
@@ -3687,11 +3686,11 @@ class _EditableTextState extends EditableTextState
   ///
   /// This property is typically used to notify the renderer of input gestures
   /// when [RenderEditable.ignorePointer] is true.
-  // late final RenderEditable renderEditable =
-  //     _editableKey.currentContext!.findRenderObject()! as RenderEditable;
-  // zmtzawqlp
-  late final _RenderEditable _renderEditable =
+  late final _RenderEditable renderEditable =
       _editableKey.currentContext!.findRenderObject()! as _RenderEditable;
+  // // zmtzawqlp
+  // late final _RenderEditable _renderEditable =
+  //     _editableKey.currentContext!.findRenderObject()! as _RenderEditable;
 
   @override
   TextEditingValue get textEditingValue => _value;
@@ -3769,7 +3768,7 @@ class _EditableTextState extends EditableTextState
 
   /// Toggles the visibility of the toolbar.
   void toggleToolbar([bool hideHandles = true]) {
-    final TextSelectionOverlay selectionOverlay =
+    final _TextSelectionOverlay selectionOverlay =
         _selectionOverlay ??= _createSelectionOverlay();
 
     if (selectionOverlay.toolbarIsVisible) {
@@ -3807,14 +3806,15 @@ class _EditableTextState extends EditableTextState
       'suggestions',
     );
 
-    _selectionOverlay!.showSpellCheckSuggestionsToolbar(
-      (BuildContext context) {
-        return _spellCheckConfiguration.spellCheckSuggestionsToolbarBuilder!(
-          context,
-          this,
-        );
-      },
-    );
+    // TODO
+    // _selectionOverlay!.showSpellCheckSuggestionsToolbar(
+    //   (BuildContext context) {
+    //     return _spellCheckConfiguration.spellCheckSuggestionsToolbarBuilder!(
+    //       context,
+    //       this,
+    //     );
+    //   },
+    // );
     return true;
   }
 
@@ -3918,7 +3918,7 @@ class _EditableTextState extends EditableTextState
       smartDashesType: widget.smartDashesType,
       smartQuotesType: widget.smartQuotesType,
       enableSuggestions: widget.enableSuggestions,
-      enableInteractiveSelection: _userSelectionEnabled,
+      enableInteractiveSelection: widget._userSelectionEnabled,
       inputAction: widget.textInputAction ??
           (widget.keyboardType == TextInputType.multiline
               ? TextInputAction.newline
@@ -4520,7 +4520,8 @@ class _EditableTextState extends EditableTextState
                             selectionHeightStyle: widget.selectionHeightStyle,
                             selectionWidthStyle: widget.selectionWidthStyle,
                             paintCursorAboveText: widget.paintCursorAboveText,
-                            enableInteractiveSelection: _userSelectionEnabled,
+                            enableInteractiveSelection:
+                                widget._userSelectionEnabled,
                             textSelectionDelegate: this,
                             devicePixelRatio: _devicePixelRatio,
                             promptRectRange: _currentPromptRectRange,
@@ -5225,8 +5226,7 @@ class _UpdateTextSelectionVerticallyAction<
     }
 
     final VerticalCaretMovementRun currentRun = _verticalMovementRun ??
-        // zmtzawqlp
-        state._renderEditable
+        state.renderEditable
             .startVerticalCaretMovement(state.renderEditable.selection!.extent);
 
     final bool shouldMove = intent
