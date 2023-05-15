@@ -1,5 +1,6 @@
 part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
+/// [SpellCheckConfiguration]
 class ExtendedSpellCheckConfiguration extends _SpellCheckConfiguration {
   /// Creates a configuration that specifies the service and suggestions handler
   /// for spell check.

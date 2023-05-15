@@ -1276,7 +1276,7 @@ class _RenderEditable extends RenderBox
     if (_semanticsInfo!.any(
             (InlineSpanSemanticsInformation info) => info.recognizer != null) &&
         defaultTargetPlatform != TargetPlatform.macOS) {
-      // TODO zmtzawqlp
+      // TODO(zmtzawqlp): we support custom text span, so assert is not need here.
       // assert(readOnly && !obscureText);
       // For Selectable rich text with recognizer, we need to create a semantics
       // node for each text fragment.

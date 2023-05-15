@@ -18,11 +18,13 @@ part 'package:extended_text_field/src/extended/rendering/editable.dart';
 part 'package:extended_text_field/src/extended/widgets/editable_text.dart';
 part 'package:extended_text_field/src/extended/widgets/spell_check.dart';
 part 'package:extended_text_field/src/extended/widgets/text_selection.dart';
+part 'package:extended_text_field/src/extended/material/selectable_text.dart';
 part 'package:extended_text_field/src/official/rendering/editable.dart';
 part 'package:extended_text_field/src/official/widgets/editable_text.dart';
 part 'package:extended_text_field/src/official/widgets/text_field.dart';
 part 'package:extended_text_field/src/official/widgets/text_selection.dart';
 part 'package:extended_text_field/src/official/widgets/spell_check.dart';
+part 'package:extended_text_field/src/official/material/selectable_text.dart';
 
 class ExtendedTextField extends _TextField {
   const ExtendedTextField({
@@ -88,8 +90,7 @@ class ExtendedTextField extends _TextField {
     super.restorationId,
     super.scribbleEnabled = true,
     super.enableIMEPersonalizedLearning = true,
-    // zmtzawqlp
-    // TODO
+    // zmtzwqlp
     // super.contextMenuBuilder = _defaultContextMenuBuilder,
     this.extendedContextMenuBuilder = _defaultContextMenuBuilder,
     super.canRequestFocus = true,

@@ -423,8 +423,8 @@ class ExtendedEditableTextState extends _EditableTextState {
 
   @override
   _TextSelectionOverlay _createSelectionOverlay() {
-    final ExtendedTextFieldTextSelectionOverlay selectionOverlay =
-        ExtendedTextFieldTextSelectionOverlay(
+    final ExtendedTextSelectionOverlay selectionOverlay =
+        ExtendedTextSelectionOverlay(
       clipboardStatus: clipboardStatus,
       context: context,
       value: _value,

@@ -4,6 +4,7 @@
 * Refactoring codes and sync codes from 3.10.0
 * Breaking change: 
   Remove [ExtendedText.textSelectionGestureDetectorBuilder],[ExtendedText.shouldShowSelectionHandles]
+* Add ExtendedSelectableText   
 
 # 11.0.1
 

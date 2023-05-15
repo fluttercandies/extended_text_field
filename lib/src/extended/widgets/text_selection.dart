@@ -1,8 +1,8 @@
 part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
 /// [TextSelectionOverlay ]
-class ExtendedTextFieldTextSelectionOverlay extends _TextSelectionOverlay {
-  ExtendedTextFieldTextSelectionOverlay({
+class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
+  ExtendedTextSelectionOverlay({
     required super.value,
     required super.context,
     super.debugRequiredFor,
