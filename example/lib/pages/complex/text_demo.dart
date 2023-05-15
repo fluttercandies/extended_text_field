@@ -441,7 +441,7 @@ class _TextDemoState extends State<TextDemo> {
 
     final TextSpan oldTextSpan = _mySpecialTextSpanBuilder.build(_value.text);
 
-    value = handleSpecialTextSpanDelete(value, _value, oldTextSpan, null);
+    value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(value, _value, oldTextSpan, null);
 
     _textEditingController.value = value;
   }

@@ -48,8 +48,14 @@ class TextInputBinaryMessenger extends BinaryMessenger {
   final TextInputBindingMixin textInputBindingMixin;
   @override
   Future<void> handlePlatformMessage(String channel, ByteData? data,
-      PlatformMessageResponseCallback? callback) {
-    return origin.handlePlatformMessage(channel, data, callback);
+      PlatformMessageResponseCallback? callback) async {
+    ServicesBinding.instance.channelBuffers.push(
+      channel,
+      data,
+      (ByteData? data) {
+        callback?.call(data);
+      },
+    );
   }
 
   @override
