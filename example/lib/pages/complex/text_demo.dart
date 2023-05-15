@@ -158,7 +158,8 @@ class _TextDemoState extends State<TextDemo> {
               ),
               controller: _textEditingController,
               selectionControls: _myExtendedMaterialTextSelectionControls,
-
+              extendedContextMenuBuilder:
+                  MyTextSelectionControls.defaultContextMenuBuilder,
               focusNode: _focusNode,
               decoration: InputDecoration(
                   suffixIcon: GestureDetector(

@@ -47,6 +47,8 @@ class _CustomToolBarState extends State<CustomToolBar> {
           child: ExtendedTextField(
             selectionControls: _myExtendedMaterialTextSelectionControls,
             specialTextSpanBuilder: _mySpecialTextSpanBuilder,
+            extendedContextMenuBuilder:
+                MyTextSelectionControls.defaultContextMenuBuilder,
             controller: controller,
             maxLines: null,
             // StrutStyle get strutStyle {
