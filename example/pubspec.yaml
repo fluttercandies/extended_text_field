@@ -25,7 +25,10 @@ dependencies:
   cupertino_icons: ^1.0.4
 
   ff_annotation_route_library: ^3.0.0
-  extended_text: ^11.0.0-dev
+  extended_text: ^11.0.0-dev.1
+  # extended_text:  
+  #   version: ^11.0.0-dev.1
+  #   hosted: "https://pub.dev"  
   flutter:
     sdk: flutter
   html: ^0.15.0
@@ -39,6 +42,9 @@ dev_dependencies:
 dependency_overrides:
   extended_text_field:
     path: ../
+  # extended_text_library:  
+  #   version: ^11.0.0-dev.1
+  #   hosted: "https://pub.dev"    
   # extended_text:
   #   # git: 
   #   #   url: https://github.com/fluttercandies/extended_text.git
