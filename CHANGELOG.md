@@ -1,4 +1,4 @@
-# 12.0.0
+## 12.0.0
 
 * Migrate to Flutter 3.10.0
 * Refactoring codes and sync codes from 3.10.0
@@ -6,43 +6,43 @@
   Remove [ExtendedText.textSelectionGestureDetectorBuilder],[ExtendedText.shouldShowSelectionHandles]
 * Add ExtendedSelectableText   
 
-# 11.0.1
+## 11.0.1
 
 * fix issue on ios after flutter version 3.7.0. #191 #198
 
-# 11.0.0
+## 11.0.0
 
 * Migrate to 3.7.0
 
-# 10.2.0
+## 10.2.0
 
 * Add TextInputBindingMixin to prevent system keyboard show.
 * Add No SystemKeyboard demo
 
-# 10.1.1
+## 10.1.1
 
 * Fix issue selection not right #172
 
-# 10.1.0
+## 10.1.0
 
 * Migrate to 3.0.0
 * Support Scribble Handwriting for iPads
 
-# 10.0.1
+## 10.0.1
 
 * Public ExtendedTextFieldState and add bringIntoView method to support jump to caret when insert text with TextEditingController
 
-# 10.0.0
+## 10.0.0
 
 * Migrate to 2.10.0.
 * Add shouldShowSelectionHandles and textSelectionGestureDetectorBuilder call back to define the behavior of handles and toolbar.
 * Shortcut support for web and desktop.
 
-# 9.0.3
+## 9.0.3
 
 * Fix hittest is not right #131
 
-# 9.0.2
+## 9.0.2
 
 * Fix selectionWidthStyle and selectionHeightStyle are not working.
 
