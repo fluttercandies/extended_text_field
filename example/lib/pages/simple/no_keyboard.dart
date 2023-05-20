@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
@@ -38,9 +37,9 @@ class NoSystemKeyboardDemo extends StatelessWidget {
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
         },
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(children: const <Widget>[
+        child: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Column(children: <Widget>[
             Text('ExtendedTextField'),
             ExtendedTextFieldCase(),
             Text('CustomTextField'),
@@ -135,6 +134,7 @@ mixin CustomKeyboardShowStateMixin<T extends StatefulWidget> on State<T> {
           // set false, if don't want to drag to close custom keyboard
           enableDrag: true,
           builder: (BuildContext b) {
+            final MediaQueryData mediaQueryData = MediaQuery.of(b);
             return Material(
               //shadowColor: Colors.grey,
               color: Colors.grey.withOpacity(0.3),
@@ -144,8 +144,8 @@ mixin CustomKeyboardShowStateMixin<T extends StatefulWidget> on State<T> {
                   left: 10,
                   right: 10,
                   top: 20,
-                  bottom:
-                      ui.window.viewPadding.bottom / ui.window.devicePixelRatio,
+                  bottom: mediaQueryData.viewPadding.bottom /
+                      mediaQueryData.devicePixelRatio,
                 ),
                 child: IntrinsicHeight(
                   child: Row(

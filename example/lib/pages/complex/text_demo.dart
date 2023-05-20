@@ -158,7 +158,8 @@ class _TextDemoState extends State<TextDemo> {
               ),
               controller: _textEditingController,
               selectionControls: _myExtendedMaterialTextSelectionControls,
-
+              extendedContextMenuBuilder:
+                  MyTextSelectionControls.defaultContextMenuBuilder,
               focusNode: _focusNode,
               decoration: InputDecoration(
                   suffixIcon: GestureDetector(
@@ -440,7 +441,7 @@ class _TextDemoState extends State<TextDemo> {
 
     final TextSpan oldTextSpan = _mySpecialTextSpanBuilder.build(_value.text);
 
-    value = handleSpecialTextSpanDelete(value, _value, oldTextSpan, null);
+    value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(value, _value, oldTextSpan, null);
 
     _textEditingController.value = value;
   }

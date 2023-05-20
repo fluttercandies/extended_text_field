@@ -14,9 +14,8 @@ class EmojiText extends SpecialText {
     if (EmojiUitl.instance.emojiMap.containsKey(key)) {
       double size = 18;
 
-      final TextStyle ts = textStyle!;
-      if (ts.fontSize != null) {
-        size = ts.fontSize! * 1.15;
+      if (textStyle?.fontSize != null) {
+        size = textStyle!.fontSize! * 1.15;
       }
 
       return ImageSpan(
