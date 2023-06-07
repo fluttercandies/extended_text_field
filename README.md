@@ -8,6 +8,16 @@ Extended official text field to build special text like inline image, @somebody,
 
 [Web demo for ExtendedTextField](https://fluttercandies.github.io/extended_text_field/)
 
+ExtendedTextField is a third-party extension library for Flutter's official TextField component. The main extended features are as follows:
+
+| Feature                                | ExtendedTextField                                     | TextField                                          |
+|---------------------------------------|------------------------------------------------------|----------------------------------------------------|
+| Inline images and text mixture         | Supported, allows displaying inline images and mixed text   | Only supports displaying text, but have issues with text selection |
+| Copying the actual value               | Supported, enables copying the actual value of the text | Not supported                                       |
+| Quick construction of rich text        | Supported, enables quick construction of rich text based on text format | Not supported                                       |
+
+Please note that the translation provided above is based on the information you provided in the original text.
+
 - [extended\_text\_field](#extended_text_field)
   - [Limitation](#limitation)
   - [Special Text](#special-text)
