@@ -10,6 +10,5 @@ ios/Flutter/Generated.xcconfig
 ios/Runner/GeneratedPluginRegistrant.*
 example/ios/Flutter/flutter_export_environment.sh
 .vscode/settings.json
-pubspec.lock
-example/pubspec.lock
+/pubspec.lock
 example/.flutter-plugins-dependencies

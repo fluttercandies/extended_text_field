@@ -50,11 +50,11 @@ dependency_overrides:
   #   #   url: https://github.com/fluttercandies/extended_text.git
   #   #   ref: refactor
   #   path: ../../extended_text
-  # extended_text_library:
+  #extended_text_library:
   #   # git: 
   #   #   url: https://github.com/fluttercandies/extended_text_library.git
   #   #   ref: refactor
-  #   path: ../../extended_text_library
+     #path: ../../extended_text_library
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 

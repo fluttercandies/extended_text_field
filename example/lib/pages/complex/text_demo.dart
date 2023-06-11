@@ -297,6 +297,9 @@ class _TextDemoState extends State<TextDemo> {
 
     if (active) {
       activeDollarGrid = activeEmojiGird = activeAtGrid = false;
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        _keyboardHeight = 300;
+      }
     }
 
     activeOne();
@@ -441,7 +444,12 @@ class _TextDemoState extends State<TextDemo> {
 
     final TextSpan oldTextSpan = _mySpecialTextSpanBuilder.build(_value.text);
 
-    value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(value, _value, oldTextSpan, null);
+    value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(
+      value,
+      _value,
+      oldTextSpan,
+      null,
+    );
 
     _textEditingController.value = value;
   }

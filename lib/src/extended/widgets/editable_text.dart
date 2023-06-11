@@ -615,15 +615,28 @@ class ExtendedEditableTextState extends _EditableTextState {
             .specialTextSpanBuilder!
             .build(_value.text, textStyle: widget.style);
         value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(
-            value, _value, oldTextSpan, _textInputConnection!);
+            value, _value, oldTextSpan, _textInputConnection);
 
         final String text = newTextSpan.toPlainText();
         //correct caret Offset
         //make sure caret is not in text when caretIn is false
         if (text != value.text || selectionChanged) {
           value = ExtendedTextLibraryUtils.correctCaretOffset(
-              value, newTextSpan, _textInputConnection!);
+            value,
+            newTextSpan,
+            _textInputConnection,
+          );
         }
+      } else if (selectionChanged) {
+        final InlineSpan inlineSpan =
+            (_editableKey.currentWidget as _ExtendedEditable).inlineSpan;
+
+        value = ExtendedTextLibraryUtils.correctCaretOffset(
+          value,
+          inlineSpan,
+          _textInputConnection,
+          oldValue: _value,
+        );
       }
     }
 
