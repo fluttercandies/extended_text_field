@@ -420,6 +420,28 @@ class _TextDemoState extends State<TextDemo> {
     });
   }
 
+
+  // Is then code (a 16-bit unsigned integer) a UTF-16 lead surrogate.
+  bool _isLeadSurrogate(int code) => (code & 0xFC00) == 0xD800;
+
+  // Is then code (a 16-bit unsigned integer) a UTF-16 trail surrogate.
+  bool _isTrailSurrogate(int code) => (code & 0xFC00) == 0xDC00;
+
+
+  bool checkIsUTF16(String content, int index) {
+    if(content.isEmpty || index < 0) {
+      return false;
+    }
+    final int code = content.codeUnitAt(index);
+    if (_isTrailSurrogate(code) && content.length > 1 && index >= 1) {
+      final int previousCode = content.codeUnitAt(index - 1);
+      if (_isLeadSurrogate(previousCode)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   void manualDelete() {
     //delete by code
     final TextEditingValue _value = _textEditingController.value;
@@ -433,9 +455,13 @@ class _TextDemoState extends State<TextDemo> {
     if (selection.isCollapsed && selection.start == 0) {
       return;
     }
-    final int start =
+    int start =
         selection.isCollapsed ? selection.start - 1 : selection.start;
     final int end = selection.end;
+
+    if(checkIsUTF16(actualText, end - 1)){
+      start--;
+    }
 
     value = TextEditingValue(
       text: actualText.replaceRange(start, end, ''),
