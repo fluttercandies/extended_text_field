@@ -433,13 +433,18 @@ class _TextDemoState extends State<TextDemo> {
     if (selection.isCollapsed && selection.start == 0) {
       return;
     }
+
     final int start =
         selection.isCollapsed ? selection.start - 1 : selection.start;
     final int end = selection.end;
-
+    // improve the case of emoji
+    // https://github.com/dart-lang/sdk/issues/35798
+    final CharacterRange characterRange =
+        CharacterRange.at(actualText, start, end);
     value = TextEditingValue(
-      text: actualText.replaceRange(start, end, ''),
-      selection: TextSelection.collapsed(offset: start),
+      text: characterRange.stringBefore + characterRange.stringAfter,
+      selection:
+          TextSelection.collapsed(offset: characterRange.stringBefore.length),
     );
 
     final TextSpan oldTextSpan = _mySpecialTextSpanBuilder.build(_value.text);
