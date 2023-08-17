@@ -346,7 +346,6 @@ class ExtendedEditableTextState extends _EditableTextState {
                             obscuringCharacter: widget.obscuringCharacter,
                             obscureText: widget.obscureText,
                             offset: offset,
-                            onCaretChanged: _handleCaretChanged,
                             rendererIgnoresPointer:
                                 widget.rendererIgnoresPointer,
                             cursorWidth: widget.cursorWidth,
@@ -848,7 +847,6 @@ class _ExtendedEditable extends _Editable {
     required super.obscuringCharacter,
     required super.obscureText,
     required super.offset,
-    super.onCaretChanged,
     super.rendererIgnoresPointer = false,
     required super.cursorWidth,
     super.cursorHeight,
@@ -891,7 +889,6 @@ class _ExtendedEditable extends _Editable {
       locale: locale ?? Localizations.maybeLocaleOf(context),
       selection: value.selection,
       offset: offset,
-      onCaretChanged: onCaretChanged,
       ignorePointer: rendererIgnoresPointer,
       obscuringCharacter: obscuringCharacter,
       obscureText: obscureText,

@@ -40,7 +40,6 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
           ExtendedTextLibraryUtils.convertTextPainterPostionToTextInputPostion(
               renderObject.text!, position)!;
     }
-
     if (_selection.isCollapsed) {
       _selectionOverlay.updateMagnifier(_buildMagnifier(
         currentTextPosition: position,
@@ -66,7 +65,6 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
         if (newSelection.extentOffset >= _selection.end) {
           return; // Don't allow order swapping.
         }
-        break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
@@ -106,13 +104,12 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
 
     TextPosition position = renderObject.getPositionForPoint(adjustedOffset);
 
-    /// zmtzawqlp
+    // zmtzawqlp
     if ((renderObject as ExtendedRenderEditable).hasSpecialInlineSpanBase) {
       position =
           ExtendedTextLibraryUtils.convertTextPainterPostionToTextInputPostion(
               renderObject.text!, position)!;
     }
-
     if (_selection.isCollapsed) {
       _selectionOverlay.updateMagnifier(_buildMagnifier(
         currentTextPosition: position,
@@ -138,7 +135,6 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
         if (position.offset <= _selection.start) {
           return; // Don't allow order swapping.
         }
-        break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:

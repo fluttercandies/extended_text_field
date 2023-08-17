@@ -84,7 +84,6 @@ class _SelectableTextSelectionGestureDetectorBuilder
         case TargetPlatform.iOS:
         case TargetPlatform.macOS:
           renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
-          break;
         case TargetPlatform.android:
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
@@ -106,7 +105,7 @@ class _SelectableTextSelectionGestureDetectorBuilder
 
 /// A run of selectable text with a single style.
 ///
-/// The [_SelectableText] widget displays a string of text with a single style.
+/// The [SelectableText] widget displays a string of text with a single style.
 /// The string might break across multiple lines or might all be displayed on
 /// the same line depending on the layout constraints.
 ///
@@ -132,7 +131,7 @@ class _SelectableTextSelectionGestureDetectorBuilder
 /// ```
 /// {@end-tool}
 ///
-/// Using the [SelectableText.rich] constructor, the [_SelectableText] widget can
+/// Using the [SelectableText.rich] constructor, the [SelectableText] widget can
 /// display a paragraph with differently styled [TextSpan]s. The sample
 /// that follows displays "Hello beautiful world" with different styles
 /// for each word.
@@ -154,7 +153,7 @@ class _SelectableTextSelectionGestureDetectorBuilder
 ///
 /// ## Interactivity
 ///
-/// To make [_SelectableText] react to touch events, use callback [onTap] to achieve
+/// To make [SelectableText] react to touch events, use callback [onTap] to achieve
 /// the desired behavior.
 ///
 /// See also:

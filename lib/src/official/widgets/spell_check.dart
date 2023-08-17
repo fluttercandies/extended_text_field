@@ -1,5 +1,6 @@
 part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
+/// [SpellCheckConfiguration]
 /// Controls how spell check is performed for text input.
 ///
 /// This configuration determines the [SpellCheckService] used to fetch the

@@ -20,7 +20,6 @@ class ExtendedRenderEditable extends _RenderEditable {
     super.textScaleFactor = 1.0,
     super.selection,
     required super.offset,
-    super.onCaretChanged,
     super.ignorePointer = false,
     super.readOnly = false,
     super.forceLine = true,
@@ -47,31 +46,38 @@ class ExtendedRenderEditable extends _RenderEditable {
     super.foregroundPainter,
     super.children,
     this.supportSpecialText = false,
-  });
+  }) {
+    _findSpecialInlineSpanBase(text);
+  }
 
-  bool _hasSpecialInlineSpanBase = false;
   bool supportSpecialText = false;
-
+  bool _hasSpecialInlineSpanBase = false;
   bool get hasSpecialInlineSpanBase =>
       supportSpecialText && _hasSpecialInlineSpanBase;
+
+  void _findSpecialInlineSpanBase(InlineSpan? span) {
+    _hasSpecialInlineSpanBase = false;
+    span?.visitChildren((InlineSpan span) {
+      if (span is SpecialInlineSpanBase) {
+        _hasSpecialInlineSpanBase = true;
+        return false;
+      }
+      return true;
+    });
+  }
+
+  @override
+  set text(InlineSpan? value) {
+    if (_textPainter.text == value) {
+      return;
+    }
+    _findSpecialInlineSpanBase(value);
+    super.text = value;
+  }
 
   @override
   String get plainText {
     return ExtendedTextLibraryUtils.textSpanToActualText(_textPainter.text!);
-  }
-
-  @override
-  void _extractPlaceholderSpans(InlineSpan? span) {
-    _placeholderSpans = <PlaceholderSpan>[];
-    span?.visitChildren((InlineSpan span) {
-      if (span is PlaceholderSpan) {
-        _placeholderSpans.add(span);
-      }
-      if (span is SpecialInlineSpanBase) {
-        _hasSpecialInlineSpanBase = true;
-      }
-      return true;
-    });
   }
 
   @override
@@ -131,8 +137,8 @@ class ExtendedRenderEditable extends _RenderEditable {
   }
 
   @override
-  TextSelection _getWordAtOffset(TextPosition position) {
-    final TextSelection selection = super._getWordAtOffset(position);
+  TextSelection getWordAtOffset(TextPosition position) {
+    final TextSelection selection = super.getWordAtOffset(position);
 
     /// zmt
     return hasSpecialInlineSpanBase
@@ -144,63 +150,13 @@ class ExtendedRenderEditable extends _RenderEditable {
 
   @override
   List<TextSelectionPoint> getEndpointsForSelection(TextSelection selection) {
-    _computeTextMetricsIfNeeded();
-
-    final Offset paintOffset = _paintOffset;
-
     // zmtzawqlp
     if (hasSpecialInlineSpanBase) {
       selection = ExtendedTextLibraryUtils
           .convertTextInputSelectionToTextPainterSelection(text!, selection);
     }
 
-    final List<ui.TextBox> boxes = selection.isCollapsed
-        ? <ui.TextBox>[]
-        : _textPainter.getBoxesForSelection(selection,
-            boxHeightStyle: selectionHeightStyle,
-            boxWidthStyle: selectionWidthStyle);
-    if (boxes.isEmpty) {
-      // TODO(mpcomplete): This doesn't work well at an RTL/LTR boundary.
-
-      final Offset caretOffset =
-          _textPainter.getOffsetForCaret(selection.extent, _caretPrototype);
-      final Offset start =
-          Offset(0.0, preferredLineHeight) + caretOffset + paintOffset;
-
-      // zmtzawqlp
-      // double? caretHeight;
-      // final ValueChanged<double> caretHeightCallBack = (double value) {
-      //   caretHeight = value;
-      // };
-
-      // final Offset caretOffset = ExtendedTextLibraryUtils.getCaretOffset(
-      //   TextPosition(
-      //       offset: selection.extentOffset,
-      //       affinity: selection.extent.affinity),
-      //   _textPainter,
-      //   _placeholderSpans.isNotEmpty,
-      //   caretHeightCallBack: caretHeightCallBack,
-      //   effectiveOffset: _paintOffset,
-      //   caretPrototype: _caretPrototype,
-      // );
-
-      // final Offset start =
-      //     Offset(0.0, caretHeight ?? preferredLineHeight) + caretOffset;
-      return <TextSelectionPoint>[TextSelectionPoint(start, null)];
-    } else {
-      final Offset start = Offset(
-              clampDouble(boxes.first.start, 0, _textPainter.size.width),
-              boxes.first.bottom) +
-          paintOffset;
-      final Offset end = Offset(
-              clampDouble(boxes.last.end, 0, _textPainter.size.width),
-              boxes.last.bottom) +
-          paintOffset;
-      return <TextSelectionPoint>[
-        TextSelectionPoint(start, boxes.first.direction),
-        TextSelectionPoint(end, boxes.last.direction),
-      ];
-    }
+    return super.getEndpointsForSelection(selection);
   }
 
   @override

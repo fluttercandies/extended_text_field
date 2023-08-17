@@ -1,6 +1,6 @@
 part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
-/// [_TextField]
+/// [TextField]
 class _TextFieldSelectionGestureDetectorBuilder
     extends _TextSelectionGestureDetectorBuilder {
   _TextFieldSelectionGestureDetectorBuilder({
@@ -73,7 +73,7 @@ class _TextFieldSelectionGestureDetectorBuilder
 /// If [decoration] is non-null (which is the default), the text field requires
 /// one of its ancestors to be a [Material] widget.
 ///
-/// To integrate the [_TextField] into a [Form] with other [FormField] widgets,
+/// To integrate the [TextField] into a [Form] with other [FormField] widgets,
 /// consider using [TextFormField].
 ///
 /// {@template flutter.material.textfield.wantKeepAlive}
@@ -90,7 +90,7 @@ class _TextFieldSelectionGestureDetectorBuilder
 /// ## Obscured Input
 ///
 /// {@tool dartpad}
-/// This example shows how to create a [_TextField] that will obscure input. The
+/// This example shows how to create a [TextField] that will obscure input. The
 /// [InputDecoration] surrounds the field in a border using [OutlineInputBorder]
 /// and adds a label.
 ///
@@ -142,7 +142,7 @@ class _TextFieldSelectionGestureDetectorBuilder
 ///  * [InputDecorator], which shows the labels and other visual elements that
 ///    surround the actual text editing widget.
 ///  * [EditableText], which is the raw text editing control at the heart of a
-///    [_TextField]. The [EditableText] widget is rarely used directly unless
+///    [TextField]. The [EditableText] widget is rarely used directly unless
 ///    you are implementing an entirely different design language, such as
 ///    Cupertino.
 ///  * <https://material.io/design/components/text-fields.html>
@@ -170,7 +170,7 @@ class _TextField extends StatefulWidget {
   /// field showing how many characters have been entered. If the value is
   /// set to a positive integer it will also display the maximum allowed
   /// number of characters to be entered. If the value is set to
-  /// [_TextField.noMaxLength] then only the current length is displayed.
+  /// [TextField.noMaxLength] then only the current length is displayed.
   ///
   /// After [maxLength] characters have been input, additional input
   /// is ignored, unless [maxLengthEnforcement] is set to
@@ -463,7 +463,7 @@ class _TextField extends StatefulWidget {
   /// If set, a character counter will be displayed below the
   /// field showing how many characters have been entered. If set to a number
   /// greater than 0, it will also display the maximum number allowed. If set
-  /// to [_TextField.noMaxLength] then only the current character count is displayed.
+  /// to [TextField.noMaxLength] then only the current character count is displayed.
   ///
   /// After [maxLength] characters have been input, additional input
   /// is ignored, unless [maxLengthEnforcement] is set to
@@ -472,9 +472,9 @@ class _TextField extends StatefulWidget {
   /// The text field enforces the length with a [LengthLimitingTextInputFormatter],
   /// which is evaluated after the supplied [inputFormatters], if any.
   ///
-  /// This value must be either null, [_TextField.noMaxLength], or greater than 0.
+  /// This value must be either null, [TextField.noMaxLength], or greater than 0.
   /// If null (the default) then there is no limit to the number of characters
-  /// that can be entered. If set to [_TextField.noMaxLength], then no limit will
+  /// that can be entered. If set to [TextField.noMaxLength], then no limit will
   /// be enforced, but the number of characters entered will still be displayed.
   ///
   /// Whitespace characters (e.g. newline, space, tab) are included in the
@@ -612,7 +612,7 @@ class _TextField extends StatefulWidget {
   ///
   /// {@tool dartpad}
   /// This example shows how to use a `TextFieldTapRegion` to wrap a set of
-  /// "spinner" buttons that increment and decrement a value in the [_TextField]
+  /// "spinner" buttons that increment and decrement a value in the [TextField]
   /// without causing the text field to lose keyboard focus.
   ///
   /// This example includes a generic `SpinnerField<T>` class that you can copy
@@ -639,7 +639,7 @@ class _TextField extends StatefulWidget {
   ///
   /// If this property is null, [MaterialStateMouseCursor.textable] will be used.
   ///
-  /// The [mouseCursor] is the only property of [_TextField] that controls the
+  /// The [mouseCursor] is the only property of [TextField] that controls the
   /// appearance of the mouse pointer. All other properties related to "cursor"
   /// stand for the text cursor, which is usually a blinking vertical line at
   /// the editing position.
@@ -748,7 +748,7 @@ class _TextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.EditableText.spellCheckConfiguration}
   ///
-  /// If [_SpellCheckConfiguration.misspelledTextStyle] is not specified in this
+  /// If [SpellCheckConfiguration.misspelledTextStyle] is not specified in this
   /// configuration, then [materialMisspelledTextStyle] is used by default.
   final SpellCheckConfiguration? spellCheckConfiguration;
 
@@ -759,22 +759,23 @@ class _TextField extends StatefulWidget {
   ///    mark misspelled words with.
   ///  * [CupertinoTextField.cupertinoMisspelledTextStyle], the style configured
   ///    to mark misspelled words with in the Cupertino style.
+  // ignore: unused_field
   static const TextStyle materialMisspelledTextStyle = TextStyle(
     decoration: TextDecoration.underline,
     decorationColor: Colors.red,
     decorationStyle: TextDecorationStyle.wavy,
   );
 
-  /// Default builder for [_TextField]'s spell check suggestions toolbar.
+  /// Default builder for [TextField]'s spell check suggestions toolbar.
   ///
   /// On Apple platforms, builds an iOS-style toolbar. Everywhere else, builds
   /// an Android-style toolbar.
   ///
   /// See also:
   ///  * [spellCheckConfiguration], where this is typically specified for
-  ///    [_TextField].
-  ///  * [_SpellCheckConfiguration.spellCheckSuggestionsToolbarBuilder], the
-  ///    parameter for which this is the default value for [_TextField].
+  ///    [TextField].
+  ///  * [SpellCheckConfiguration.spellCheckSuggestionsToolbarBuilder], the
+  ///    parameter for which this is the default value for [TextField].
   ///  * [CupertinoTextField.defaultSpellCheckSuggestionsToolbarBuilder], which
   ///    is like this but specifies the default for [CupertinoTextField].
   @visibleForTesting
@@ -798,7 +799,7 @@ class _TextField extends StatefulWidget {
     }
   }
 
-  /// Returns a new [_SpellCheckConfiguration] where the given configuration has
+  /// Returns a new [SpellCheckConfiguration] where the given configuration has
   /// had any missing values replaced with their defaults for the Android
   /// platform.
   static _SpellCheckConfiguration inferAndroidSpellCheckConfiguration(
@@ -1153,6 +1154,7 @@ class _TextFieldState extends State<_TextField>
     super.dispose();
   }
 
+  /// zmtzawqlp
   _EditableTextState? get _editableText => editableTextKey.currentState;
 
   void _requestKeyboard() {
@@ -1338,7 +1340,6 @@ class _TextFieldState extends State<_TextField>
             CupertinoTextField.inferIOSSpellCheckConfiguration(
           widget.spellCheckConfiguration,
         );
-        break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
@@ -1346,7 +1347,6 @@ class _TextFieldState extends State<_TextField>
         spellCheckConfiguration = TextField.inferAndroidSpellCheckConfiguration(
           widget.spellCheckConfiguration,
         );
-        break;
     }
 
     TextSelectionControls? textSelectionControls = widget.selectionControls;
@@ -1401,7 +1401,7 @@ class _TextFieldState extends State<_TextField>
             _effectiveFocusNode.requestFocus();
           }
         };
-        break;
+
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
@@ -1415,7 +1415,7 @@ class _TextFieldState extends State<_TextField>
                 theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-        break;
+
       case TargetPlatform.linux:
         forcePressEnabled = false;
         textSelectionControls ??= desktopTextSelectionHandleControls;
@@ -1428,7 +1428,7 @@ class _TextFieldState extends State<_TextField>
                 theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-        break;
+
       case TargetPlatform.windows:
         forcePressEnabled = false;
         textSelectionControls ??= desktopTextSelectionHandleControls;
@@ -1448,7 +1448,6 @@ class _TextFieldState extends State<_TextField>
             _effectiveFocusNode.requestFocus();
           }
         };
-        break;
     }
 
     Widget child = RepaintBoundary(
@@ -1617,8 +1616,6 @@ TextStyle _m2CounterErrorStyle(BuildContext context) => Theme.of(context)
 // "END GENERATED" comments are generated from data in the Material
 // Design token database by the script:
 //   dev/tools/gen_defaults/bin/gen_defaults.dart.
-
-// Token database version: v0_162
 
 TextStyle? _m3StateInputStyle(BuildContext context) =>
     MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
