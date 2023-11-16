@@ -10,14 +10,14 @@ class ExtendedSelectableText extends _SelectableText {
     super.strutStyle,
     super.textAlign,
     super.textDirection,
-    super.textScaleFactor,
+    super.textScaler,
     super.showCursor = false,
     super.autofocus = false,
     @Deprecated(
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.minLines,
     super.maxLines,
     super.cursorWidth = 2.0,
@@ -57,7 +57,7 @@ class ExtendedSelectableText extends _SelectableText {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.minLines,
     super.maxLines,
     super.cursorWidth = 2.0,
@@ -239,7 +239,7 @@ class _ExtendedSelectableTextState extends _SelectableTextState {
         textAlign:
             widget.textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start,
         textDirection: widget.textDirection,
-        textScaleFactor: widget.textScaleFactor,
+        textScaler: widget.textScaler,
         autofocus: widget.autofocus,
         forceLine: false,
         minLines: widget.minLines,

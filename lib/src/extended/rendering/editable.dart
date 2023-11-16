@@ -17,7 +17,7 @@ class ExtendedRenderEditable extends _RenderEditable {
     super.expands = false,
     super.strutStyle,
     super.selectionColor,
-    super.textScaleFactor = 1.0,
+    super.textScaler = TextScaler.noScaling,
     super.selection,
     required super.offset,
     super.ignorePointer = false,

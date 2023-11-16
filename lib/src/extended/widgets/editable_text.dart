@@ -33,7 +33,7 @@ class ExtendedEditableText extends _EditableText {
     super.textAlign = TextAlign.start,
     super.textDirection,
     super.locale,
-    super.textScaleFactor,
+    super.textScaler,
     super.maxLines = 1,
     super.minLines,
     super.expands = false,
@@ -77,7 +77,7 @@ class ExtendedEditableText extends _EditableText {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        ToolbarOptions? toolbarOptions,
+    ToolbarOptions? toolbarOptions,
     super.autofillHints = const <String>[],
     super.autofillClient,
     super.clipBehavior = Clip.hardEdge,
@@ -335,8 +335,8 @@ class ExtendedEditableTextState extends _EditableTextState {
                                             .misspelledSelectionColor ??
                                         widget.selectionColor
                                     : widget.selectionColor,
-                            textScaleFactor: widget.textScaleFactor ??
-                                MediaQuery.textScaleFactorOf(context),
+                            textScaler:
+                                widget.textScaler ?? TextScaler.noScaling,
                             textAlign: widget.textAlign,
                             textDirection: _textDirection,
                             locale: widget.locale,
@@ -840,7 +840,7 @@ class _ExtendedEditable extends _Editable {
     required super.expands,
     super.strutStyle,
     super.selectionColor,
-    required super.textScaleFactor,
+    required super.textScaler,
     required super.textAlign,
     required super.textDirection,
     super.locale,
@@ -883,7 +883,7 @@ class _ExtendedEditable extends _Editable {
       expands: expands,
       strutStyle: strutStyle,
       selectionColor: selectionColor,
-      textScaleFactor: textScaleFactor,
+      textScaler: textScaler,
       textAlign: textAlign,
       textDirection: textDirection,
       locale: locale ?? Localizations.maybeLocaleOf(context),
