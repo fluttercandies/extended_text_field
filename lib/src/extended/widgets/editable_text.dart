@@ -818,6 +818,113 @@ class ExtendedEditableTextState extends _EditableTextState {
         break;
     }
   }
+
+  @override
+  void _scheduleShowCaretOnScreen({required bool withAnimation}) {
+    if (_showCaretOnScreenScheduled) {
+      return;
+    }
+    _showCaretOnScreenScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+      _showCaretOnScreenScheduled = false;
+      // Since we are in a post frame callback, check currentContext in case
+      // RenderEditable has been disposed (in which case it will be null).
+      final _RenderEditable? renderEditable =
+          _editableKey.currentContext?.findRenderObject() as _RenderEditable?;
+      if (renderEditable == null ||
+          !(renderEditable.selection?.isValid ?? false) ||
+          !_scrollController.hasClients) {
+        return;
+      }
+
+      final double lineHeight = renderEditable.preferredLineHeight;
+
+      // Enlarge the target rect by scrollPadding to ensure that caret is not
+      // positioned directly at the edge after scrolling.
+      double bottomSpacing = widget.scrollPadding.bottom;
+      if (_selectionOverlay?.selectionControls != null) {
+        final double handleHeight = _selectionOverlay!.selectionControls!
+            .getHandleSize(lineHeight)
+            .height;
+        final double interactiveHandleHeight = math.max(
+          handleHeight,
+          kMinInteractiveDimension,
+        );
+        final Offset anchor =
+            _selectionOverlay!.selectionControls!.getHandleAnchor(
+          TextSelectionHandleType.collapsed,
+          lineHeight,
+        );
+        final double handleCenter = handleHeight / 2 - anchor.dy;
+        bottomSpacing = math.max(
+          handleCenter + interactiveHandleHeight / 2,
+          bottomSpacing,
+        );
+      }
+
+      final EdgeInsets caretPadding =
+          widget.scrollPadding.copyWith(bottom: bottomSpacing);
+
+      final Rect caretRect = renderEditable.getLocalRectForCaret(
+        // renderEditable.selection
+        // zmtzawqlp
+        (renderEditable as ExtendedRenderEditable).getActualSelection()!.extent,
+      );
+      final RevealedOffset targetOffset = _getOffsetToRevealCaret(caretRect);
+
+      final Rect rectToReveal;
+      final TextSelection selection = textEditingValue.selection;
+      if (selection.isCollapsed) {
+        rectToReveal = targetOffset.rect;
+      } else {
+        final List<TextBox> selectionBoxes =
+            renderEditable.getBoxesForSelection(selection);
+        // selectionBoxes may be empty if, for example, the selection does not
+        // encompass a full character, like if it only contained part of an
+        // extended grapheme cluster.
+        if (selectionBoxes.isEmpty) {
+          rectToReveal = targetOffset.rect;
+        } else {
+          rectToReveal = selection.baseOffset < selection.extentOffset
+              ? selectionBoxes.last.toRect()
+              : selectionBoxes.first.toRect();
+        }
+      }
+
+      if (withAnimation) {
+        _scrollController.animateTo(
+          targetOffset.offset,
+          duration: _EditableTextState._caretAnimationDuration,
+          curve: _EditableTextState._caretAnimationCurve,
+        );
+        renderEditable.showOnScreen(
+          rect: caretPadding.inflateRect(rectToReveal),
+          duration: _EditableTextState._caretAnimationDuration,
+          curve: _EditableTextState._caretAnimationCurve,
+        );
+      } else {
+        _scrollController.jumpTo(targetOffset.offset);
+        renderEditable.showOnScreen(
+          rect: caretPadding.inflateRect(rectToReveal),
+        );
+      }
+    });
+  }
+
+  @override
+  void _updateCaretRectIfNeeded() {
+    // zmtzawqlp
+    final TextSelection? selection = // renderEditable.selection;
+        (renderEditable as ExtendedRenderEditable).getActualSelection();
+    if (selection == null || !selection.isValid || !selection.isCollapsed) {
+      return;
+    }
+    final TextPosition currentTextPosition =
+        TextPosition(offset: selection.baseOffset);
+    final Rect caretRect =
+        renderEditable.getLocalRectForCaret(currentTextPosition);
+    _textInputConnection!.setCaretRect(caretRect);
+  }
 }
 
 class _ExtendedEditable extends _Editable {

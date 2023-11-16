@@ -1,3 +1,7 @@
+## 12.1.1
+
+Fix wrong caret position (#224,#226)
+
 ## 12.1.0
 
 * Migrate to Flutter 3.13.0
