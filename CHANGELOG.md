@@ -1,6 +1,7 @@
 ## 13.0.0
 
-* Migrate to Flutter 3.16.0
+* Migrate to Flutter 3.16.0 (#229)
+* Fix wrong caret position (#224,#226)
 
 ## 12.1.0
 
