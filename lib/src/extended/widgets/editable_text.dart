@@ -33,7 +33,7 @@ class ExtendedEditableText extends _EditableText {
     super.textAlign = TextAlign.start,
     super.textDirection,
     super.locale,
-    super.textScaleFactor,
+    super.textScaler,
     super.maxLines = 1,
     super.minLines,
     super.expands = false,
@@ -77,7 +77,7 @@ class ExtendedEditableText extends _EditableText {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        ToolbarOptions? toolbarOptions,
+    ToolbarOptions? toolbarOptions,
     super.autofillHints = const <String>[],
     super.autofillClient,
     super.clipBehavior = Clip.hardEdge,
@@ -221,7 +221,8 @@ class ExtendedEditableTextState extends _EditableTextState {
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    assert(debugCheckHasMediaQuery(context));
+    super.build(context); // See AutomaticKeepAliveClientMixin.
 
     final TextSelectionControls? controls = widget.selectionControls;
     return _CompositionCallback(
@@ -260,7 +261,6 @@ class ExtendedEditableTextState extends _EditableTextState {
                     if (!widget.controller.value.composing.isCollapsed) {
                       return false;
                     }
-                    break;
                   case TargetPlatform.android:
                     // Gboard on Android puts non-CJK words in composing regions. Coalesce
                     // composing text in order to allow the saving of partial words in that
@@ -318,9 +318,7 @@ class ExtendedEditableTextState extends _EditableTextState {
                             value: _value,
                             cursorColor: _cursorColor,
                             backgroundCursorColor: widget.backgroundCursorColor,
-                            showCursor: _EditableText.debugDeterministicCursor
-                                ? ValueNotifier<bool>(widget.showCursor)
-                                : _cursorVisibilityNotifier,
+                            showCursor: _cursorVisibilityNotifier,
                             forceLine: widget.forceLine,
                             readOnly: widget.readOnly,
                             hasFocus: _hasFocus,
@@ -335,8 +333,8 @@ class ExtendedEditableTextState extends _EditableTextState {
                                             .misspelledSelectionColor ??
                                         widget.selectionColor
                                     : widget.selectionColor,
-                            textScaleFactor: widget.textScaleFactor ??
-                                MediaQuery.textScaleFactorOf(context),
+                            textScaler: widget.textScaler ??
+                                MediaQuery.textScalerOf(context),
                             textAlign: widget.textAlign,
                             textDirection: _textDirection,
                             locale: widget.locale,
@@ -840,7 +838,7 @@ class _ExtendedEditable extends _Editable {
     required super.expands,
     super.strutStyle,
     super.selectionColor,
-    required super.textScaleFactor,
+    required super.textScaler,
     required super.textAlign,
     required super.textDirection,
     super.locale,
@@ -883,7 +881,7 @@ class _ExtendedEditable extends _Editable {
       expands: expands,
       strutStyle: strutStyle,
       selectionColor: selectionColor,
-      textScaleFactor: textScaleFactor,
+      textScaler: textScaler,
       textAlign: textAlign,
       textDirection: textDirection,
       locale: locale ?? Localizations.maybeLocaleOf(context),

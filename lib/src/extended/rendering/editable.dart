@@ -17,7 +17,7 @@ class ExtendedRenderEditable extends _RenderEditable {
     super.expands = false,
     super.strutStyle,
     super.selectionColor,
-    super.textScaleFactor = 1.0,
+    super.textScaler = TextScaler.noScaling,
     super.selection,
     required super.offset,
     super.ignorePointer = false,
@@ -80,6 +80,9 @@ class ExtendedRenderEditable extends _RenderEditable {
     return ExtendedTextLibraryUtils.textSpanToActualText(_textPainter.text!);
   }
 
+  /// Move the selection to the beginning or end of a word.
+  ///
+  /// {@macro flutter.rendering.RenderEditable.selectPosition}
   @override
   void selectWordEdge({required SelectionChangedCause cause}) {
     _computeTextMetricsIfNeeded();
@@ -105,6 +108,11 @@ class ExtendedRenderEditable extends _RenderEditable {
   }
 
   @override
+
+  /// Select text between the global positions [from] and [to].
+  ///
+  /// [from] corresponds to the [TextSelection.baseOffset], and [to] corresponds
+  /// to the [TextSelection.extentOffset].
   void selectPositionAt(
       {required Offset from,
       Offset? to,
@@ -115,7 +123,7 @@ class ExtendedRenderEditable extends _RenderEditable {
     TextPosition? toPosition = to == null
         ? null
         : _textPainter.getPositionForOffset(globalToLocal(to - _paintOffset));
-    //zmt
+    // zmtzawqlp
     if (hasSpecialInlineSpanBase) {
       fromPosition =
           ExtendedTextLibraryUtils.convertTextPainterPostionToTextInputPostion(

@@ -10,14 +10,14 @@ class ExtendedSelectableText extends _SelectableText {
     super.strutStyle,
     super.textAlign,
     super.textDirection,
-    super.textScaleFactor,
+    super.textScaler,
     super.showCursor = false,
     super.autofocus = false,
     @Deprecated(
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.minLines,
     super.maxLines,
     super.cursorWidth = 2.0,
@@ -50,14 +50,14 @@ class ExtendedSelectableText extends _SelectableText {
     super.strutStyle,
     super.textAlign,
     super.textDirection,
-    super.textScaleFactor,
+    super.textScaler,
     super.showCursor = false,
     super.autofocus = false,
     @Deprecated(
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.minLines,
     super.maxLines,
     super.cursorWidth = 2.0,
@@ -174,7 +174,7 @@ class _ExtendedSelectableTextState extends _SelectableTextState {
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
-        break;
+
       case TargetPlatform.macOS:
         final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = false;
@@ -189,7 +189,7 @@ class _ExtendedSelectableTextState extends _SelectableTextState {
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
-        break;
+
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
@@ -201,7 +201,7 @@ class _ExtendedSelectableTextState extends _SelectableTextState {
             theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-        break;
+
       case TargetPlatform.linux:
       case TargetPlatform.windows:
         forcePressEnabled = false;
@@ -222,6 +222,7 @@ class _ExtendedSelectableTextState extends _SelectableTextState {
           .merge(widget.style ?? _controller._textSpan.style);
     }
     final Widget child = RepaintBoundary(
+      // zmtzawqlp
       child: ExtendedEditableText(
         key: editableTextKey,
         style: effectiveTextStyle,
@@ -239,7 +240,7 @@ class _ExtendedSelectableTextState extends _SelectableTextState {
         textAlign:
             widget.textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start,
         textDirection: widget.textDirection,
-        textScaleFactor: widget.textScaleFactor,
+        textScaler: widget.textScaler,
         autofocus: widget.autofocus,
         forceLine: false,
         minLines: widget.minLines,

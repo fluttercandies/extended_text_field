@@ -167,9 +167,9 @@ class _SelectableText extends StatefulWidget {
   /// closest enclosing [DefaultTextStyle].
   ///
 
-  /// The [showCursor], [autofocus], [dragStartBehavior], [selectionHeightStyle],
-  /// [selectionWidthStyle] and [data] parameters must not be null. If specified,
-  /// the [maxLines] argument must be greater than zero.
+  /// If the [showCursor], [autofocus], [dragStartBehavior],
+  /// [selectionHeightStyle], [selectionWidthStyle] and [data] arguments are
+  /// specified, the [maxLines] argument must be greater than zero.
   const _SelectableText(
     String this.data, {
     super.key,
@@ -178,14 +178,14 @@ class _SelectableText extends StatefulWidget {
     this.strutStyle,
     this.textAlign,
     this.textDirection,
-    this.textScaleFactor,
+    this.textScaler,
     this.showCursor = false,
     this.autofocus = false,
     @Deprecated(
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        this.toolbarOptions,
+    this.toolbarOptions,
     this.minLines,
     this.maxLines,
     this.cursorWidth = 2.0,
@@ -215,10 +215,8 @@ class _SelectableText extends StatefulWidget {
 
   /// Creates a selectable text widget with a [TextSpan].
   ///
-  /// The [textSpan] parameter must not be null and only contain [TextSpan] in
-  /// [textSpan].children. Other type of [InlineSpan] is not allowed.
-  ///
-  /// The [autofocus] and [dragStartBehavior] arguments must not be null.
+  /// The [TextSpan.children] attribute of the [textSpan] parameter must only
+  /// contain [TextSpan]s. Other types of [InlineSpan] are not allowed.
   const _SelectableText.rich(
     TextSpan this.textSpan, {
     super.key,
@@ -227,14 +225,14 @@ class _SelectableText extends StatefulWidget {
     this.strutStyle,
     this.textAlign,
     this.textDirection,
-    this.textScaleFactor,
+    this.textScaler,
     this.showCursor = false,
     this.autofocus = false,
     @Deprecated(
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        this.toolbarOptions,
+    this.toolbarOptions,
     this.minLines,
     this.maxLines,
     this.cursorWidth = 2.0,
@@ -314,8 +312,8 @@ class _SelectableText extends StatefulWidget {
   /// {@macro flutter.widgets.editableText.textDirection}
   final TextDirection? textDirection;
 
-  /// {@macro flutter.widgets.editableText.textScaleFactor}
-  final double? textScaleFactor;
+  /// {@macro flutter.painting.textPainter.textScaler}
+  final TextScaler? textScaler;
 
   /// {@macro flutter.widgets.editableText.autofocus}
   final bool autofocus;
@@ -458,8 +456,8 @@ class _SelectableText extends StatefulWidget {
         EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null));
     properties.add(EnumProperty<TextDirection>('textDirection', textDirection,
         defaultValue: null));
-    properties.add(
-        DoubleProperty('textScaleFactor', textScaleFactor, defaultValue: null));
+    properties.add(DiagnosticsProperty<TextScaler>('textScaler', textScaler,
+        defaultValue: null));
     properties
         .add(DoubleProperty('cursorWidth', cursorWidth, defaultValue: 2.0));
     properties
@@ -668,7 +666,7 @@ class _SelectableTextState extends State<_SelectableText>
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
-        break;
+
       case TargetPlatform.macOS:
         final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = false;
@@ -683,7 +681,7 @@ class _SelectableTextState extends State<_SelectableText>
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
-        break;
+
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
@@ -695,7 +693,7 @@ class _SelectableTextState extends State<_SelectableText>
             theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-        break;
+
       case TargetPlatform.linux:
       case TargetPlatform.windows:
         forcePressEnabled = false;
@@ -734,7 +732,7 @@ class _SelectableTextState extends State<_SelectableText>
         textAlign:
             widget.textAlign ?? defaultTextStyle.textAlign ?? TextAlign.start,
         textDirection: widget.textDirection,
-        textScaleFactor: widget.textScaleFactor,
+        textScaler: widget.textScaler,
         autofocus: widget.autofocus,
         forceLine: false,
         minLines: widget.minLines,

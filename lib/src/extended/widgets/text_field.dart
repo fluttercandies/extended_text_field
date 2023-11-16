@@ -46,7 +46,7 @@ class ExtendedTextField extends _TextField {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.showCursor,
     super.autofocus = false,
     super.obscuringCharacter = '•',
@@ -324,7 +324,6 @@ class ExtendedTextFieldState extends _TextFieldState {
             ExtendedTextField.inferIOSSpellCheckConfiguration(
           extenedTextField.extendedSpellCheckConfiguration,
         );
-        break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
@@ -334,7 +333,6 @@ class ExtendedTextFieldState extends _TextFieldState {
             ExtendedTextField.inferAndroidSpellCheckConfiguration(
           extenedTextField.extendedSpellCheckConfiguration,
         );
-        break;
     }
 
     TextSelectionControls? textSelectionControls = widget.selectionControls;
@@ -346,6 +344,7 @@ class ExtendedTextFieldState extends _TextFieldState {
     Color? autocorrectionTextRectColor;
     Radius? cursorRadius = widget.cursorRadius;
     VoidCallback? handleDidGainAccessibilityFocus;
+    VoidCallback? handleDidLoseAccessibilityFocus;
 
     switch (theme.platform) {
       case TargetPlatform.iOS:
@@ -365,7 +364,7 @@ class ExtendedTextFieldState extends _TextFieldState {
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
         autocorrectionTextRectColor = selectionColor;
-        break;
+
       case TargetPlatform.macOS:
         final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = false;
@@ -389,7 +388,10 @@ class ExtendedTextFieldState extends _TextFieldState {
             _effectiveFocusNode.requestFocus();
           }
         };
-        break;
+        handleDidLoseAccessibilityFocus = () {
+          _effectiveFocusNode.unfocus();
+        };
+
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
@@ -403,7 +405,7 @@ class ExtendedTextFieldState extends _TextFieldState {
                 theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-        break;
+
       case TargetPlatform.linux:
         forcePressEnabled = false;
         textSelectionControls ??= desktopTextSelectionHandleControls;
@@ -416,7 +418,17 @@ class ExtendedTextFieldState extends _TextFieldState {
                 theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-        break;
+        handleDidGainAccessibilityFocus = () {
+          // Automatically activate the TextField when it receives accessibility focus.
+          if (!_effectiveFocusNode.hasFocus &&
+              _effectiveFocusNode.canRequestFocus) {
+            _effectiveFocusNode.requestFocus();
+          }
+        };
+        handleDidLoseAccessibilityFocus = () {
+          _effectiveFocusNode.unfocus();
+        };
+
       case TargetPlatform.windows:
         forcePressEnabled = false;
         textSelectionControls ??= desktopTextSelectionHandleControls;
@@ -436,7 +448,9 @@ class ExtendedTextFieldState extends _TextFieldState {
             _effectiveFocusNode.requestFocus();
           }
         };
-        break;
+        handleDidLoseAccessibilityFocus = () {
+          _effectiveFocusNode.unfocus();
+        };
     }
 
     Widget child = RepaintBoundary(
@@ -576,6 +590,7 @@ class ExtendedTextFieldState extends _TextFieldState {
                         _requestKeyboard();
                       },
                 onDidGainAccessibilityFocus: handleDidGainAccessibilityFocus,
+                onDidLoseAccessibilityFocus: handleDidLoseAccessibilityFocus,
                 child: child,
               );
             },
