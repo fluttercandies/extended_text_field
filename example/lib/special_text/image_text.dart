@@ -6,8 +6,8 @@ import 'package:html/dom.dart' hide Text;
 import 'package:html/parser.dart';
 
 class ImageText extends SpecialText {
-  ImageText(TextStyle textStyle,
-      {this.start, SpecialTextGestureTapCallback onTap})
+  ImageText(TextStyle? textStyle,
+      {this.start, SpecialTextGestureTapCallback? onTap})
       : super(
           ImageText.flag,
           '/>',
@@ -16,9 +16,9 @@ class ImageText extends SpecialText {
         );
 
   static const String flag = '<img';
-  final int start;
-  String _imageUrl;
-  String get imageUrl => _imageUrl;
+  final int? start;
+  String? _imageUrl;
+  String? get imageUrl => _imageUrl;
   @override
   InlineSpan finishText() {
     ///content already has endflag '/'
@@ -34,13 +34,13 @@ class ImageText extends SpecialText {
     final Document html = parse(text);
 
     final Element img = html.getElementsByTagName('img').first;
-    final String url = img.attributes['src'];
+    final String url = img.attributes['src']!;
     _imageUrl = url;
 
     //fontsize id define image height
     //size = 30.0/26.0 * fontSize
-    double width = 60.0;
-    double height = 60.0;
+    double? width = 60.0;
+    double? height = 60.0;
     const BoxFit fit = BoxFit.cover;
     const double num300 = 60.0;
     const double num400 = 80.0;
@@ -49,9 +49,9 @@ class ImageText extends SpecialText {
     width = num400;
     const bool knowImageSize = true;
     if (knowImageSize) {
-      height = double.tryParse(img.attributes['height']);
-      width = double.tryParse(img.attributes['width']);
-      final double n = height / width;
+      height = double.tryParse(img.attributes['height']!);
+      width = double.tryParse(img.attributes['width']!);
+      final double n = height! / width!;
       if (n >= 4 / 3) {
         width = num300;
         height = num400;
@@ -69,7 +69,7 @@ class ImageText extends SpecialText {
     //final double fontSize = 26.0;
 
     return ExtendedWidgetSpan(
-        start: start,
+        start: start!,
         actualText: text,
         child: GestureDetector(
             onTap: () {

@@ -1,36 +1,34 @@
 import 'package:extended_text_library/extended_text_library.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 ///emoji/image text
 class EmojiText extends SpecialText {
-  EmojiText(TextStyle textStyle, {this.start})
+  EmojiText(TextStyle? textStyle, {this.start})
       : super(EmojiText.flag, ']', textStyle);
   static const String flag = '[';
-  final int start;
+  final int? start;
   @override
   InlineSpan finishText() {
     final String key = toString();
 
-    ///https://github.com/flutter/flutter/issues/42086
-    /// widget span is not working on web
-    if (EmojiUitl.instance.emojiMap.containsKey(key) && !kIsWeb) {
-      //fontsize id define image height
-      //size = 30.0/26.0 * fontSize
-      const double size = 20.0;
+    if (EmojiUitl.instance.emojiMap.containsKey(key)) {
+      double size = 18;
 
-      ///fontSize 26 and text height =30.0
-      //final double fontSize = 26.0;
+      final TextStyle ts = textStyle!;
+      if (ts.fontSize != null) {
+        size = ts.fontSize! * 1.15;
+      }
+
       return ImageSpan(
           AssetImage(
-            EmojiUitl.instance.emojiMap[key],
+            EmojiUitl.instance.emojiMap[key]!,
           ),
           actualText: key,
           imageWidth: size,
           imageHeight: size,
-          start: start,
-          fit: BoxFit.fill,
-          margin: const EdgeInsets.only(left: 2.0, top: 2.0, right: 2.0));
+          start: start!,
+          //fit: BoxFit.fill,
+          margin: const EdgeInsets.all(2));
     }
 
     return TextSpan(text: toString(), style: textStyle);
@@ -50,6 +48,6 @@ class EmojiUitl {
 
   final String _emojiFilePath = 'assets';
 
-  static EmojiUitl _instance;
+  static EmojiUitl? _instance;
   static EmojiUitl get instance => _instance ??= EmojiUitl._();
 }

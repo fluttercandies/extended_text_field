@@ -1,8 +1,8 @@
 import 'package:example/special_text/email_span_builder.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_text_field/extended_text_field.dart';
+import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
-import 'package:ff_annotation_route/ff_annotation_route.dart';
 
 ///
 ///  create by zmtzawqlp on 2019/8/4
@@ -29,7 +29,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
         '[33]Extended text field help you to build rich text quickly. any special text you will have with extended text field. this is demo to show how to create special text with widget span.'
             '\n\nIt\'s my pleasure to invite you to join \$FlutterCandies\$ if you want to improve flutter .[36]'
             '\n\nif you meet any problem, please let me konw @zmtzawqlp .[44]';
-  EmailSpanBuilder _emailSpanBuilder;
+  EmailSpanBuilder? _emailSpanBuilder;
   @override
   void initState() {
     _emailSpanBuilder = EmailSpanBuilder(controller, context);
@@ -64,6 +64,14 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                   controller: controller,
                   specialTextSpanBuilder: _emailSpanBuilder,
                   maxLines: null,
+                  // StrutStyle get strutStyle {
+                  //   if (_strutStyle == null) {
+                  //     return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
+                  //   }
+                  //   return _strutStyle!.inheritFromTextStyle(style);
+                  // }
+                  // default strutStyle is not good for WidgetSpan
+                  strutStyle: const StrutStyle(),
                   decoration: InputDecoration(
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.add),
@@ -85,7 +93,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                                         padding: const EdgeInsets.all(10.0),
                                         child: Column(
                                           children: <Widget>[
-                                            FlatButton(
+                                            TextButton(
                                                 onPressed: () {
                                                   insertEmail(
                                                       'zmtzawqlp@live.com ',
@@ -94,7 +102,7 @@ class _WidgetSpanDemoState extends State<WidgetSpanDemo> {
                                                 },
                                                 child: const Text(
                                                     'zmtzawqlp@live.com')),
-                                            FlatButton(
+                                            TextButton(
                                                 onPressed: () {
                                                   insertEmail(
                                                       '410496936@qq.com ',
