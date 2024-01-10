@@ -1,3 +1,7 @@
+# 11.0.1-ohos
+
+* support HarmonyOS
+
 # 11.0.1
 
 * fix issue on ios after flutter version 3.7.0. #191 #198

@@ -1115,6 +1115,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
       case TargetPlatform.windows:
       case TargetPlatform.fuchsia:
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
         if (cause == SelectionChangedCause.drag) {
           _editableText?.bringIntoView(selection.extent);
         }
@@ -1247,6 +1248,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         break;
 
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
         textSelectionControls ??= materialTextSelectionControls;

@@ -1675,6 +1675,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
             Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight + 2);
         break;
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
@@ -2294,6 +2295,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
           );
           break;
         case TargetPlatform.android:
+        case TargetPlatform.ohos:
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
         case TargetPlatform.windows:
