@@ -16,6 +16,14 @@ ExtendedTextField is a third-party extension library for Flutter's official Text
 | Copying the actual value               | Supported, enables copying the actual value of the text | Not supported                                       |
 | Quick construction of rich text        | Supported, enables quick construction of rich text based on text format | Not supported                                       |
 
+> `HarmonyOS` is supported. Please use the latest version which contains `ohos` tag. You can check it in `Versions` tab.
+
+```yaml
+dependencies:
+  extended_text_field: 11.0.1-ohos
+```
+
+
 Please note that the translation provided above is based on the information you provided in the original text.
 
 - [extended\_text\_field](#extended_text_field)
