@@ -98,6 +98,7 @@ class ExtendedTextField extends _TextField {
     // super.spellCheckConfiguration,
     this.extendedSpellCheckConfiguration,
     this.specialTextSpanBuilder,
+    super.magnifierConfiguration,
   });
 
   /// build your ccustom text span

@@ -1,3 +1,7 @@
+## 13.1.0
+
+* Fix wrong postion of Magnifier
+
 ## 13.0.1
 
 * Update readme about HarmonyOS
