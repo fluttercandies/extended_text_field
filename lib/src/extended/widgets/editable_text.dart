@@ -77,7 +77,7 @@ class ExtendedEditableText extends _EditableText {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        ToolbarOptions? toolbarOptions,
+    ToolbarOptions? toolbarOptions,
     super.autofillHints = const <String>[],
     super.autofillClient,
     super.clipBehavior = Clip.hardEdge,

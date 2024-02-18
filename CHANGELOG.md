@@ -1,3 +1,8 @@
+## 12.0.2
+
+* Fix wrong postion of Magnifier
+
+
 ## 12.0.1
 
 * Fix issue that wrong cursor position on macos. (https://github.com/fluttercandies/extended_text_field/issues/210)

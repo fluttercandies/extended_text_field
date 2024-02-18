@@ -680,7 +680,7 @@ class _SelectionOverlay {
       'Use `contextMenuBuilder` in `showToolbar` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        required this.selectionDelegate,
+    required this.selectionDelegate,
     required this.clipboardStatus,
     required this.startHandleLayerLink,
     required this.endHandleLayerLink,
@@ -691,7 +691,7 @@ class _SelectionOverlay {
       'Use `contextMenuBuilder` in `showToolbar` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        Offset? toolbarLocation,
+    Offset? toolbarLocation,
     this.magnifierConfiguration = TextMagnifierConfiguration.disabled,
   })  : _startHandleType = startHandleType,
         _lineHeightAtStart = lineHeightAtStart,

@@ -220,7 +220,7 @@ class _TextField extends StatefulWidget {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        this.toolbarOptions,
+    this.toolbarOptions,
     this.showCursor,
     this.autofocus = false,
     this.obscuringCharacter = '•',

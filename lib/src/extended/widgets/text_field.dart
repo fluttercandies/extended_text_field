@@ -46,7 +46,7 @@ class ExtendedTextField extends _TextField {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.showCursor,
     super.autofocus = false,
     super.obscuringCharacter = '•',
@@ -98,6 +98,7 @@ class ExtendedTextField extends _TextField {
     // super.spellCheckConfiguration,
     this.extendedSpellCheckConfiguration,
     this.specialTextSpanBuilder,
+    super.magnifierConfiguration,
   });
 
   /// build your ccustom text span

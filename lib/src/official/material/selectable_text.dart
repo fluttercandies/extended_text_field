@@ -186,7 +186,7 @@ class _SelectableText extends StatefulWidget {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        this.toolbarOptions,
+    this.toolbarOptions,
     this.minLines,
     this.maxLines,
     this.cursorWidth = 2.0,
@@ -235,7 +235,7 @@ class _SelectableText extends StatefulWidget {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        this.toolbarOptions,
+    this.toolbarOptions,
     this.minLines,
     this.maxLines,
     this.cursorWidth = 2.0,

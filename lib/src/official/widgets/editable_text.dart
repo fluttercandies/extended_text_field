@@ -400,7 +400,7 @@ class _EditableText extends StatefulWidget {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        ToolbarOptions? toolbarOptions,
+    ToolbarOptions? toolbarOptions,
     this.autofillHints = const <String>[],
     this.autofillClient,
     this.clipBehavior = Clip.hardEdge,

@@ -17,7 +17,7 @@ class ExtendedSelectableText extends _SelectableText {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.minLines,
     super.maxLines,
     super.cursorWidth = 2.0,
@@ -57,7 +57,7 @@ class ExtendedSelectableText extends _SelectableText {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        super.toolbarOptions,
+    super.toolbarOptions,
     super.minLines,
     super.maxLines,
     super.cursorWidth = 2.0,
