@@ -35,7 +35,9 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
     TextPosition position = renderObject.getPositionForPoint(adjustedOffset);
 
     /// zmtzawqlp
-    if ((renderObject as ExtendedRenderEditable).hasSpecialInlineSpanBase) {
+    final bool hasSpecialInlineSpanBase =
+        (renderObject as ExtendedRenderEditable).hasSpecialInlineSpanBase;
+    if (hasSpecialInlineSpanBase) {
       position =
           ExtendedTextLibraryUtils.convertTextPainterPostionToTextInputPostion(
               renderObject.text!, position)!;
@@ -45,6 +47,7 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
         currentTextPosition: position,
         globalGesturePosition: details.globalPosition,
         renderEditable: renderObject,
+        hasSpecialInlineSpanBase: hasSpecialInlineSpanBase,
       ));
 
       final TextSelection currentSelection =
@@ -84,6 +87,7 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
           : newSelection.base,
       globalGesturePosition: details.globalPosition,
       renderEditable: renderObject,
+      hasSpecialInlineSpanBase: hasSpecialInlineSpanBase,
     ));
 
     _handleSelectionHandleChanged(newSelection);
@@ -105,7 +109,9 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
     TextPosition position = renderObject.getPositionForPoint(adjustedOffset);
 
     // zmtzawqlp
-    if ((renderObject as ExtendedRenderEditable).hasSpecialInlineSpanBase) {
+    final bool hasSpecialInlineSpanBase =
+        (renderObject as ExtendedRenderEditable).hasSpecialInlineSpanBase;
+    if (hasSpecialInlineSpanBase) {
       position =
           ExtendedTextLibraryUtils.convertTextPainterPostionToTextInputPostion(
               renderObject.text!, position)!;
@@ -115,6 +121,7 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
         currentTextPosition: position,
         globalGesturePosition: details.globalPosition,
         renderEditable: renderObject,
+        hasSpecialInlineSpanBase: hasSpecialInlineSpanBase,
       ));
 
       final TextSelection currentSelection =
@@ -154,6 +161,37 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
       currentTextPosition: newSelection.extent,
       globalGesturePosition: details.globalPosition,
       renderEditable: renderObject,
+      hasSpecialInlineSpanBase: hasSpecialInlineSpanBase,
     ));
   }
+
+  @override
+  MagnifierInfo _buildMagnifier({
+    required _RenderEditable renderEditable,
+    required ui.Offset globalGesturePosition,
+    required ui.TextPosition currentTextPosition,
+    bool hasSpecialInlineSpanBase = false,
+  }) {
+    // zmtzawqlp
+    if (hasSpecialInlineSpanBase) {
+      currentTextPosition =
+          ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
+              renderObject.text!, currentTextPosition);
+    }
+    return super._buildMagnifier(
+        renderEditable: renderEditable,
+        globalGesturePosition: globalGesturePosition,
+        currentTextPosition: currentTextPosition);
+  }
+
+  // @override
+  // void _handleSelectionHandleChanged(TextSelection newSelection) {
+  //   // zmtzawqlp
+  //   if ((renderObject as ExtendedRenderEditable).hasSpecialInlineSpanBase) {
+  //     newSelection = ExtendedTextLibraryUtils
+  //         .convertTextPainterSelectionToTextInputSelection(
+  //             renderObject.text!, newSelection);
+  //   }
+  //   super._handleSelectionHandleChanged(newSelection);
+  // }
 }
