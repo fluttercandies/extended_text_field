@@ -1,3 +1,8 @@
+## 12.2.0
+
+* Fix wrong postion of Magnifier
+
+
 ## 12.1.1
 
 Fix wrong caret position (#224,#226)
