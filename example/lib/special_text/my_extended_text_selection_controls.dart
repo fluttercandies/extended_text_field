@@ -22,7 +22,7 @@ class MyTextSelectionControls extends TextSelectionControls
           onPressed: () {
             launchUrl(
               Uri.parse(
-                'mailto:zmtzawqlp@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
+                'mailto:xxx@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
               ),
             );
             editableTextState.hideToolbar(true);
