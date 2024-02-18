@@ -14,8 +14,8 @@ publish_to: none
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.16.0"
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.19.0"
 dependencies:
 
   # The following adds the Cupertino Icons font to your application.
@@ -25,7 +25,7 @@ dependencies:
   cupertino_icons: ^1.0.4
 
   ff_annotation_route_library: ^3.0.0
-  extended_text: ^12.0.0
+  extended_text: ^13.0.0
   # extended_text:  
   #   version: ^11.0.0-dev.1
   #   hosted: "https://pub.dev"  

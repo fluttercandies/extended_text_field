@@ -49,6 +49,7 @@ class ExtendedTextField extends _TextField {
     super.toolbarOptions,
     super.showCursor,
     super.autofocus = false,
+    super.statesController,
     super.obscuringCharacter = '•',
     super.obscureText = false,
     super.autocorrect = true,
@@ -71,6 +72,7 @@ class ExtendedTextField extends _TextField {
     super.cursorRadius,
     super.cursorOpacityAnimates,
     super.cursorColor,
+    super.cursorErrorColor,
     super.selectionHeightStyle = ui.BoxHeightStyle.tight,
     super.selectionWidthStyle = ui.BoxWidthStyle.tight,
     super.keyboardAppearance,
@@ -79,6 +81,7 @@ class ExtendedTextField extends _TextField {
     super.enableInteractiveSelection,
     super.selectionControls,
     super.onTap,
+    super.onTapAlwaysCalled = false,
     super.onTapOutside,
     super.mouseCursor,
     super.buildCounter,
@@ -98,6 +101,7 @@ class ExtendedTextField extends _TextField {
     // super.spellCheckConfiguration,
     this.extendedSpellCheckConfiguration,
     this.specialTextSpanBuilder,
+    super.magnifierConfiguration,
   });
 
   /// build your ccustom text span
@@ -554,7 +558,7 @@ class ExtendedTextFieldState extends _TextFieldState {
     final MouseCursor effectiveMouseCursor =
         MaterialStateProperty.resolveAs<MouseCursor>(
       widget.mouseCursor ?? MaterialStateMouseCursor.textable,
-      _materialState,
+      _statesController.value,
     );
 
     final int? semanticsMaxValueLength;

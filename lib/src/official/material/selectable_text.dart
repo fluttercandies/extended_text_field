@@ -632,7 +632,7 @@ class _SelectableTextState extends State<_SelectableText>
     assert(debugCheckHasDirectionality(context));
     assert(
       !(widget.style != null &&
-          widget.style!.inherit == false &&
+          !widget.style!.inherit &&
           (widget.style!.fontSize == null ||
               widget.style!.textBaseline == null)),
       'inherit false style must supply fontSize and textBaseline',

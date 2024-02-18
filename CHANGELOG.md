@@ -1,3 +1,8 @@
+## 14.0.0
+
+* Migrate to Flutter 3.19.0
+* Fix wrong postion of Magnifier
+
 ## 13.0.1
 
 * Update readme about HarmonyOS

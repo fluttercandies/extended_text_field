@@ -148,7 +148,7 @@ class ExtendedSpellCheckSuggestionsToolbar extends StatelessWidget {
         editableTextState
             .bringIntoView(editableTextState.textEditingValue.selection.extent);
       }
-    });
+    }, debugLabel: 'SpellCheckerSuggestionsToolbar.bringIntoView');
     editableTextState.hideToolbar();
   }
 

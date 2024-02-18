@@ -229,7 +229,8 @@ class ExtendedEditableTextState extends _EditableTextState {
       compositeCallback: _compositeCallback,
       enabled: _hasInputConnection,
       child: TextFieldTapRegion(
-        onTapOutside: widget.onTapOutside ?? _defaultOnTapOutside,
+        onTapOutside:
+            _hasFocus ? widget.onTapOutside ?? _defaultOnTapOutside : null,
         debugLabel: kReleaseMode ? null : 'EditableText',
         child: MouseRegion(
           cursor: widget.mouseCursor ?? SystemMouseCursors.text,
@@ -270,6 +271,15 @@ class ExtendedEditableTextState extends _EditableTextState {
 
                 return oldValue.text != newValue.text ||
                     oldValue.composing != newValue.composing;
+              },
+              undoStackModifier: (TextEditingValue value) {
+                // On Android we should discard the composing region when pushing
+                // a new entry to the undo stack. This prevents the TextInputPlugin
+                // from restarting the input on every undo/redo when the composing
+                // region is changed by the framework.
+                return defaultTargetPlatform == TargetPlatform.android
+                    ? value.copyWith(composing: TextRange.empty)
+                    : value;
               },
               focusNode: widget.focusNode,
               controller: widget.undoController,
@@ -764,29 +774,41 @@ class ExtendedEditableTextState extends _EditableTextState {
         // we cache the position.
         _pointOffsetOrigin = point.offset;
 
-        // zmtzawqlp
-        final TextPosition currentTextPosition = supportSpecialText
-            ? ExtendedTextLibraryUtils
-                .convertTextInputPostionToTextPainterPostion(
-                renderEditable.text!,
-                renderEditable.selection!.base,
-              )
-            : TextPosition(
-                offset: renderEditable.selection!.baseOffset,
-                affinity: renderEditable.selection!.affinity);
+        final Offset startCaretCenter;
+        final TextPosition currentTextPosition;
+        final bool shouldResetOrigin;
+        // Only non-null when starting a floating cursor via long press.
+        if (point.startLocation != null) {
+          shouldResetOrigin = false;
+          (startCaretCenter, currentTextPosition) = point.startLocation!;
+        } else {
+          shouldResetOrigin = true;
+          // zmtzawqlp
+          currentTextPosition = supportSpecialText
+              ? ExtendedTextLibraryUtils
+                  .convertTextInputPostionToTextPainterPostion(
+                  renderEditable.text!,
+                  renderEditable.selection!.base,
+                )
+              : TextPosition(
+                  offset: renderEditable.selection!.baseOffset,
+                  affinity: renderEditable.selection!.affinity);
+          startCaretCenter =
+              renderEditable.getLocalRectForCaret(currentTextPosition).center;
+        }
 
-        _startCaretRect =
-            renderEditable.getLocalRectForCaret(currentTextPosition);
-
-        _lastBoundedOffset = _startCaretRect!.center - _floatingCursorOffset;
+        _startCaretCenter = startCaretCenter;
+        _lastBoundedOffset =
+            renderEditable.calculateBoundedFloatingCursorOffset(
+                _startCaretCenter! - _floatingCursorOffset,
+                shouldResetOrigin: shouldResetOrigin);
         _lastTextPosition = currentTextPosition;
         renderEditable.setFloatingCursor(
             point.state, _lastBoundedOffset!, _lastTextPosition!);
-        break;
       case FloatingCursorDragState.Update:
         final Offset centeredPoint = point.offset! - _pointOffsetOrigin!;
         final Offset rawCursorOffset =
-            _startCaretRect!.center + centeredPoint - _floatingCursorOffset;
+            _startCaretCenter! + centeredPoint - _floatingCursorOffset;
 
         _lastBoundedOffset = renderEditable
             .calculateBoundedFloatingCursorOffset(rawCursorOffset);
@@ -801,7 +823,6 @@ class ExtendedEditableTextState extends _EditableTextState {
 
         renderEditable.setFloatingCursor(
             point.state, _lastBoundedOffset!, _lastTextPosition!);
-        break;
       case FloatingCursorDragState.End:
         // Resume cursor blinking.
         _startCursorBlink();
@@ -813,7 +834,6 @@ class ExtendedEditableTextState extends _EditableTextState {
               duration: _EditableTextState._floatingCursorResetTime,
               curve: Curves.decelerate);
         }
-        break;
     }
   }
 

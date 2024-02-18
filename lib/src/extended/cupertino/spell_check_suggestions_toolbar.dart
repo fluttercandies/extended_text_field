@@ -136,7 +136,7 @@ class ExtendedCupertinoSpellCheckSuggestionsToolbar extends StatelessWidget {
         editableTextState
             .bringIntoView(editableTextState.textEditingValue.selection.extent);
       }
-    });
+    }, debugLabel: 'SpellCheckSuggestions.bringIntoView');
     editableTextState.hideToolbar();
   }
 

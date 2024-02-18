@@ -101,7 +101,7 @@ class TextFieldCaseState extends State<TextFieldCase>
 mixin CustomKeyboardShowStateMixin<T extends StatefulWidget> on State<T> {
   final TextInputFocusNode _focusNode = TextInputFocusNode();
   final TextEditingController _controller = TextEditingController();
-  PersistentBottomSheetController<void>? _bottomSheetController;
+  PersistentBottomSheetController? _bottomSheetController;
 
   final List<TextInputFormatter> _inputFormatters = <TextInputFormatter>[
     // digit or decimal
@@ -129,12 +129,13 @@ mixin CustomKeyboardShowStateMixin<T extends StatefulWidget> on State<T> {
   void _handleFocusChanged() {
     if (_focusNode.hasFocus) {
       // just demo, you can define your custom keyboard as you want
-      _bottomSheetController = showBottomSheet<void>(
+      _bottomSheetController = showBottomSheet(
           context: FocusManager.instance.primaryFocus!.context!,
           // set false, if don't want to drag to close custom keyboard
           enableDrag: true,
           builder: (BuildContext b) {
             final MediaQueryData mediaQueryData = MediaQuery.of(b);
+
             return Material(
               //shadowColor: Colors.grey,
               color: Colors.grey.withOpacity(0.3),
