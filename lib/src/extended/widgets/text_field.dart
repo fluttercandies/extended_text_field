@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:extended_text_field/src/extended/cupertino/spell_check_suggestions_toolbar.dart';
 import 'package:extended_text_field/src/extended/material/spell_check_suggestions_toolbar.dart';
+import 'package:extended_text_field/src/extended/utils.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -289,7 +290,7 @@ class ExtendedTextFieldState extends _TextFieldState {
     assert(debugCheckHasDirectionality(context));
     assert(
       !(widget.style != null &&
-          widget.style!.inherit == false &&
+          !widget.style!.inherit &&
           (widget.style!.fontSize == null ||
               widget.style!.textBaseline == null)),
       'inherit false style must supply fontSize and textBaseline',
@@ -298,10 +299,12 @@ class ExtendedTextFieldState extends _TextFieldState {
     final ThemeData theme = Theme.of(context);
     final DefaultSelectionStyle selectionStyle =
         DefaultSelectionStyle.of(context);
+    final TextStyle? providedStyle =
+        MaterialStateProperty.resolveAs(widget.style, _statesController.value);
     final TextStyle style = _getInputStyleForState(theme.useMaterial3
             ? _m3InputStyle(context)
             : theme.textTheme.titleMedium!)
-        .merge(widget.style);
+        .merge(providedStyle);
     final Brightness keyboardAppearance =
         widget.keyboardAppearance ?? theme.brightness;
     final TextEditingController controller = _effectiveController;
@@ -576,11 +579,12 @@ class ExtendedTextFieldState extends _TextFieldState {
       onExit: (PointerExitEvent event) => _handleHover(false),
       child: TextFieldTapRegion(
         child: IgnorePointer(
-          ignoring: !_isEnabled,
+          ignoring: widget.ignorePointers ?? !_isEnabled,
           child: AnimatedBuilder(
             animation: controller, // changes the _currentLength
             builder: (BuildContext context, Widget? child) {
               return Semantics(
+                enabled: _isEnabled,
                 maxValueLength: semanticsMaxValueLength,
                 currentValueLength: _currentLength,
                 onTap: widget.readOnly

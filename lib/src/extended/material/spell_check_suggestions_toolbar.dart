@@ -17,7 +17,7 @@ const double _kDefaultToolbarHeight = 193.0;
 /// The maximum number of suggestions in the toolbar is 3, plus a delete button.
 const int _kMaxSuggestions = 3;
 
-/// The default spell check suggestions toolbar for Android.
+/// The default spell check suggestions toolbar for Android. [SpellCheckSuggestionsToolbar]
 ///
 /// Tries to position itself below the [anchor], but if it doesn't fit, then it
 /// readjusts to fit above bottom view insets.
