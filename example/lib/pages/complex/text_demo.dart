@@ -265,10 +265,14 @@ class _TextDemoState extends State<TextDemo> {
               stream: _gridBuilderController.stream,
               builder: (BuildContext b, AsyncSnapshot<void> d) {
                 return SizedBox(
-                    height: showCustomKeyBoard
-                        ? _keyboardHeight -
-                            (Platform.isIOS ? mediaQueryData.padding.bottom : 0)
-                        : 0,
+                    height: max(
+                        showCustomKeyBoard
+                            ? _keyboardHeight -
+                                (Platform.isIOS
+                                    ? mediaQueryData.padding.bottom
+                                    : 0)
+                            : 0,
+                        0),
                     child: buildCustomKeyBoard());
               },
             ),

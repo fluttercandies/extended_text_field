@@ -25,7 +25,7 @@ dependencies:
   cupertino_icons: ^1.0.4
 
   ff_annotation_route_library: ^3.0.0
-  extended_text: ^13.0.0
+  extended_text: ^14.0.1
   # extended_text:  
   #   version: ^11.0.0-dev.1
   #   hosted: "https://pub.dev"  

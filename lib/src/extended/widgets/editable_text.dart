@@ -54,6 +54,7 @@ class ExtendedEditableText extends _EditableText {
     super.onAppPrivateCommand,
     super.onSelectionChanged,
     super.onSelectionHandleTapped,
+    super.groupId = ExtendedEditableText,
     super.onTapOutside,
     super.inputFormatters,
     super.mouseCursor,
@@ -240,9 +241,10 @@ class ExtendedEditableTextState extends _EditableTextState {
       compositeCallback: _compositeCallback,
       enabled: _hasInputConnection,
       child: TextFieldTapRegion(
+        groupId: widget.groupId,
         onTapOutside:
             _hasFocus ? widget.onTapOutside ?? _defaultOnTapOutside : null,
-        debugLabel: kReleaseMode ? null : 'EditableText',
+        debugLabel: kReleaseMode ? null : 'ExtendedEditableText',
         child: MouseRegion(
           cursor: widget.mouseCursor ?? SystemMouseCursors.text,
           child: Actions(

@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 
 import 'package:extended_text_field/src/extended/cupertino/spell_check_suggestions_toolbar.dart';
 import 'package:extended_text_field/src/extended/material/spell_check_suggestions_toolbar.dart';
-import 'package:extended_text_field/src/extended/utils.dart';
 import 'package:extended_text_library/extended_text_library.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -30,6 +29,7 @@ part 'package:extended_text_field/src/official/material/selectable_text.dart';
 class ExtendedTextField extends _TextField {
   const ExtendedTextField({
     super.key,
+    super.groupId = ExtendedEditableText,
     super.controller,
     super.focusNode,
     super.undoController,
@@ -498,6 +498,7 @@ class ExtendedTextFieldState extends _TextFieldState {
           onEditingComplete: widget.onEditingComplete,
           onSubmitted: widget.onSubmitted,
           onAppPrivateCommand: widget.onAppPrivateCommand,
+          groupId: widget.groupId,
           onSelectionHandleTapped: _handleSelectionHandleTapped,
           onTapOutside: widget.onTapOutside,
           inputFormatters: formatters,
@@ -599,6 +600,35 @@ class ExtendedTextFieldState extends _TextFieldState {
                       },
                 onDidGainAccessibilityFocus: handleDidGainAccessibilityFocus,
                 onDidLoseAccessibilityFocus: handleDidLoseAccessibilityFocus,
+                onFocus: _isEnabled
+                    ? () {
+                        assert(
+                            _effectiveFocusNode.canRequestFocus,
+                            'Received SemanticsAction.focus from the engine. However, the FocusNode '
+                            'of this text field cannot gain focus. This likely indicates a bug. '
+                            'If this text field cannot be focused (e.g. because it is not '
+                            'enabled), then its corresponding semantics node must be configured '
+                            'such that the assistive technology cannot request focus on it.');
+
+                        if (_effectiveFocusNode.canRequestFocus &&
+                            !_effectiveFocusNode.hasFocus) {
+                          _effectiveFocusNode.requestFocus();
+                        } else if (!widget.readOnly) {
+                          // If the platform requested focus, that means that previously the
+                          // platform believed that the text field did not have focus (even
+                          // though Flutter's widget system believed otherwise). This likely
+                          // means that the on-screen keyboard is hidden, or more generally,
+                          // there is no current editing session in this field. To correct
+                          // that, keyboard must be requested.
+                          //
+                          // A concrete scenario where this can happen is when the user
+                          // dismisses the keyboard on the web. The editing session is
+                          // closed by the engine, but the text field widget stays focused
+                          // in the framework.
+                          _requestKeyboard();
+                        }
+                      }
+                    : null,
                 child: child,
               );
             },

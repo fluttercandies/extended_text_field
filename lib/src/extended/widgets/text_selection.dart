@@ -26,13 +26,25 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
       return;
     }
 
-    _startHandleDragPosition =
-        _getHandleDy(details.globalPosition.dy, _startHandleDragPosition);
-    final Offset adjustedOffset = Offset(
-      details.globalPosition.dx,
-      _startHandleDragPosition + _startHandleDragPositionToCenterOfLine,
+    // This is NOT the same as details.localPosition. That is relative to the
+    // selection handle, whereas this is relative to the RenderEditable.
+    final Offset localPosition =
+        renderObject.globalToLocal(details.globalPosition);
+    final double nextStartHandleDragPositionLocal = _getHandleDy(
+      localPosition.dy,
+      renderObject.globalToLocal(Offset(0.0, _startHandleDragPosition)).dy,
     );
-    TextPosition position = renderObject.getPositionForPoint(adjustedOffset);
+    _startHandleDragPosition = renderObject
+        .localToGlobal(
+          Offset(0.0, nextStartHandleDragPositionLocal),
+        )
+        .dy;
+    final Offset handleTargetGlobal = Offset(
+      details.globalPosition.dx,
+      _startHandleDragPosition + _startHandleDragTarget,
+    );
+    TextPosition position =
+        renderObject.getPositionForPoint(handleTargetGlobal);
 
     /// zmtzawqlp
     final bool hasSpecialInlineSpanBase =
@@ -99,15 +111,28 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
       return;
     }
 
-    _endHandleDragPosition =
-        _getHandleDy(details.globalPosition.dy, _endHandleDragPosition);
-    final Offset adjustedOffset = Offset(
+    // This is NOT the same as details.localPosition. That is relative to the
+    // selection handle, whereas this is relative to the RenderEditable.
+    final Offset localPosition =
+        renderObject.globalToLocal(details.globalPosition);
+
+    final double nextEndHandleDragPositionLocal = _getHandleDy(
+      localPosition.dy,
+      renderObject.globalToLocal(Offset(0.0, _endHandleDragPosition)).dy,
+    );
+    _endHandleDragPosition = renderObject
+        .localToGlobal(
+          Offset(0.0, nextEndHandleDragPositionLocal),
+        )
+        .dy;
+
+    final Offset handleTargetGlobal = Offset(
       details.globalPosition.dx,
-      _endHandleDragPosition + _endHandleDragPositionToCenterOfLine,
+      _endHandleDragPosition + _endHandleDragTarget,
     );
 
-    TextPosition position = renderObject.getPositionForPoint(adjustedOffset);
-
+    TextPosition position =
+        renderObject.getPositionForPoint(handleTargetGlobal);
     // zmtzawqlp
     final bool hasSpecialInlineSpanBase =
         (renderObject as ExtendedRenderEditable).hasSpecialInlineSpanBase;

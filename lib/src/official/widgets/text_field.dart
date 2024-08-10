@@ -84,9 +84,14 @@ class _TextFieldSelectionGestureDetectorBuilder
 /// disposed.
 /// {@endtemplate}
 ///
-/// Remember to call [TextEditingController.dispose] of the [TextEditingController]
+/// Remember to call [TextEditingController.dispose] on the [TextEditingController]
 /// when it is no longer needed. This will ensure we discard any resources used
 /// by the object.
+///
+/// If this field is part of a scrolling container that lazily constructs its
+/// children, like a [ListView] or a [CustomScrollView], then a [controller]
+/// should be specified. The controller's lifetime should be managed by a
+/// stateful widget ancestor of the scrolling container.
 ///
 /// ## Obscured Input
 ///
@@ -162,10 +167,10 @@ class _TextFieldSelectionGestureDetectorBuilder
 ///    you are implementing an entirely different design language, such as
 ///    Cupertino.
 ///  * <https://material.io/design/components/text-fields.html>
-///  * Cookbook: [Create and style a text field](https://flutter.dev/docs/cookbook/forms/text-input)
-///  * Cookbook: [Handle changes to a text field](https://flutter.dev/docs/cookbook/forms/text-field-changes)
-///  * Cookbook: [Retrieve the value of a text field](https://flutter.dev/docs/cookbook/forms/retrieve-input)
-///  * Cookbook: [Focus and text fields](https://flutter.dev/docs/cookbook/forms/focus)
+///  * Cookbook: [Create and style a text field](https://docs.flutter.dev/cookbook/forms/text-input)
+///  * Cookbook: [Handle changes to a text field](https://docs.flutter.dev/cookbook/forms/text-field-changes)
+///  * Cookbook: [Retrieve the value of a text field](https://docs.flutter.dev/cookbook/forms/retrieve-input)
+///  * Cookbook: [Focus and text fields](https://docs.flutter.dev/cookbook/forms/focus)
 class _TextField extends StatefulWidget {
   /// Creates a Material Design text field.
   ///
@@ -213,6 +218,7 @@ class _TextField extends StatefulWidget {
   ///    characters" and how it may differ from the intuitive meaning.
   const _TextField({
     super.key,
+    this.groupId = EditableText,
     this.controller,
     this.focusNode,
     this.undoController,
@@ -328,6 +334,9 @@ class _TextField extends StatefulWidget {
   /// ** See code in examples/api/lib/widgets/text_magnifier/text_magnifier.0.dart **
   /// {@end-tool}
   final TextMagnifierConfiguration? magnifierConfiguration;
+
+  /// {@macro flutter.widgets.editableText.groupId}
+  final Object groupId;
 
   /// Controls the text being edited.
   ///
@@ -1610,6 +1619,7 @@ class _TextFieldState extends State<_TextField>
           onEditingComplete: widget.onEditingComplete,
           onSubmitted: widget.onSubmitted,
           onAppPrivateCommand: widget.onAppPrivateCommand,
+          groupId: widget.groupId,
           onSelectionHandleTapped: _handleSelectionHandleTapped,
           onTapOutside: widget.onTapOutside,
           inputFormatters: formatters,
@@ -1706,6 +1716,35 @@ class _TextFieldState extends State<_TextField>
                       },
                 onDidGainAccessibilityFocus: handleDidGainAccessibilityFocus,
                 onDidLoseAccessibilityFocus: handleDidLoseAccessibilityFocus,
+                onFocus: _isEnabled
+                    ? () {
+                        assert(
+                            _effectiveFocusNode.canRequestFocus,
+                            'Received SemanticsAction.focus from the engine. However, the FocusNode '
+                            'of this text field cannot gain focus. This likely indicates a bug. '
+                            'If this text field cannot be focused (e.g. because it is not '
+                            'enabled), then its corresponding semantics node must be configured '
+                            'such that the assistive technology cannot request focus on it.');
+
+                        if (_effectiveFocusNode.canRequestFocus &&
+                            !_effectiveFocusNode.hasFocus) {
+                          _effectiveFocusNode.requestFocus();
+                        } else if (!widget.readOnly) {
+                          // If the platform requested focus, that means that previously the
+                          // platform believed that the text field did not have focus (even
+                          // though Flutter's widget system believed otherwise). This likely
+                          // means that the on-screen keyboard is hidden, or more generally,
+                          // there is no current editing session in this field. To correct
+                          // that, keyboard must be requested.
+                          //
+                          // A concrete scenario where this can happen is when the user
+                          // dismisses the keyboard on the web. The editing session is
+                          // closed by the engine, but the text field widget stays focused
+                          // in the framework.
+                          _requestKeyboard();
+                        }
+                      }
+                    : null,
                 child: child,
               );
             },

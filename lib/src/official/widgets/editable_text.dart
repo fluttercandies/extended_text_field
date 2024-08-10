@@ -433,6 +433,7 @@ class _EditableText extends StatefulWidget {
     this.onAppPrivateCommand,
     this.onSelectionChanged,
     this.onSelectionHandleTapped,
+    this.groupId = EditableText,
     this.onTapOutside,
     List<TextInputFormatter>? inputFormatters,
     this.mouseCursor,
@@ -517,6 +518,7 @@ class _EditableText extends StatefulWidget {
         assert(
           spellCheckConfiguration == null ||
               spellCheckConfiguration ==
+                  // zmtzawqlp
                   const _SpellCheckConfiguration.disabled() ||
               spellCheckConfiguration.misspelledTextStyle != null,
           'spellCheckConfiguration must specify a misspelledTextStyle if spell check behavior is desired',
@@ -1064,6 +1066,19 @@ class _EditableText extends StatefulWidget {
 
   /// {@macro flutter.widgets.SelectionOverlay.onSelectionHandleTapped}
   final VoidCallback? onSelectionHandleTapped;
+
+  /// {@template flutter.widgets.editableText.groupId}
+  /// The group identifier for the [TextFieldTapRegion] of this text field.
+  ///
+  /// Text fields with the same group identifier share the same tap region.
+  /// Defaults to the type of [EditableText].
+  ///
+  /// See also:
+  ///
+  ///  * [TextFieldTapRegion], to give a [groupId] to a widget that is to be
+  ///    included in a [EditableText]'s tap region that has [groupId] set.
+  /// {@endtemplate}
+  final Object groupId;
 
   /// {@template flutter.widgets.editableText.onTapOutside}
   /// Called for each tap that occurs outside of the[TextFieldTapRegion] group
@@ -2486,7 +2501,12 @@ class _EditableTextState extends State<_EditableText>
 
   /// Gets the line heights at the start and end of the selection for the given
   /// [_EditableTextState].
-  _GlyphHeights _getGlyphHeights() {
+  ///
+  /// See also:
+  ///
+  /// * [TextSelectionToolbarAnchors.getSelectionRect], which depends on this
+  ///   information.
+  ({double startGlyphHeight, double endGlyphHeight}) getGlyphHeights() {
     final TextSelection selection = textEditingValue.selection;
 
     // Only calculate handle rects if the text in the previous frame
@@ -2500,9 +2520,9 @@ class _EditableTextState extends State<_EditableText>
     final String prevText = span.toPlainText();
     final String currText = textEditingValue.text;
     if (prevText != currText || !selection.isValid || selection.isCollapsed) {
-      return _GlyphHeights(
-        start: renderEditable.preferredLineHeight,
-        end: renderEditable.preferredLineHeight,
+      return (
+        startGlyphHeight: renderEditable.preferredLineHeight,
+        endGlyphHeight: renderEditable.preferredLineHeight,
       );
     }
 
@@ -2521,9 +2541,11 @@ class _EditableTextState extends State<_EditableText>
       start: selection.end - lastSelectedGraphemeExtent,
       end: selection.end,
     ));
-    return _GlyphHeights(
-      start: startCharacterRect?.height ?? renderEditable.preferredLineHeight,
-      end: endCharacterRect?.height ?? renderEditable.preferredLineHeight,
+    return (
+      startGlyphHeight:
+          startCharacterRect?.height ?? renderEditable.preferredLineHeight,
+      endGlyphHeight:
+          endCharacterRect?.height ?? renderEditable.preferredLineHeight,
     );
   }
 
@@ -2542,14 +2564,17 @@ class _EditableTextState extends State<_EditableText>
       );
     }
 
-    final _GlyphHeights glyphHeights = _getGlyphHeights();
+    final (
+      startGlyphHeight: double startGlyphHeight,
+      endGlyphHeight: double endGlyphHeight
+    ) = getGlyphHeights();
     final TextSelection selection = textEditingValue.selection;
     final List<TextSelectionPoint> points =
         renderEditable.getEndpointsForSelection(selection);
     return TextSelectionToolbarAnchors.fromSelection(
       renderBox: renderEditable,
-      startGlyphHeight: glyphHeights.start,
-      endGlyphHeight: glyphHeights.end,
+      startGlyphHeight: startGlyphHeight,
+      endGlyphHeight: endGlyphHeight,
       selectionEndpoints: points,
     );
   }
@@ -3549,27 +3574,19 @@ class _EditableTextState extends State<_EditableText>
         notification is! ScrollEndNotification) {
       return;
     }
-    if (notification is ScrollStartNotification &&
-        _dataWhenToolbarShowScheduled != null) {
-      return;
+    switch (notification) {
+      case ScrollStartNotification() when _dataWhenToolbarShowScheduled != null:
+      case ScrollEndNotification() when _dataWhenToolbarShowScheduled == null:
+        break;
+      case ScrollEndNotification()
+          when _dataWhenToolbarShowScheduled!.value != _value:
+        _dataWhenToolbarShowScheduled = null;
+        _disposeScrollNotificationObserver();
+      case ScrollNotification(:final BuildContext? context)
+          when !_isInternalScrollableNotification(context) &&
+              _scrollableNotificationIsFromSameSubtree(context):
+        _handleContextMenuOnScroll(notification);
     }
-    if (notification is ScrollEndNotification &&
-        _dataWhenToolbarShowScheduled == null) {
-      return;
-    }
-    if (notification is ScrollEndNotification &&
-        _dataWhenToolbarShowScheduled!.value != _value) {
-      _dataWhenToolbarShowScheduled = null;
-      _disposeScrollNotificationObserver();
-      return;
-    }
-    if (_isInternalScrollableNotification(notification.context)) {
-      return;
-    }
-    if (!_scrollableNotificationIsFromSameSubtree(notification.context)) {
-      return;
-    }
-    _handleContextMenuOnScroll(notification);
   }
 
   Rect _calculateDeviceRect() {
@@ -3684,6 +3701,7 @@ class _EditableTextState extends State<_EditableText>
     return true;
   }
 
+  // zmtzawqlp
   _TextSelectionOverlay _createSelectionOverlay() {
     // final EditableTextContextMenuBuilder? contextMenuBuilder =
     //     widget.contextMenuBuilder;
@@ -3721,7 +3739,8 @@ class _EditableTextState extends State<_EditableText>
     // We return early if the selection is not valid. This can happen when the
     // text of [EditableText] is updated at the same time as the selection is
     // changed by a gesture event.
-    if (!widget.controller.isSelectionWithinTextBounds(selection)) {
+    final String text = widget.controller.value.text;
+    if (text.length < selection.end || text.length < selection.start) {
       return;
     }
 
@@ -3796,6 +3815,7 @@ class _EditableTextState extends State<_EditableText>
       _showCaretOnScreenScheduled = false;
       // Since we are in a post frame callback, check currentContext in case
       // RenderEditable has been disposed (in which case it will be null).
+      // zmtzawqlp
       final _RenderEditable? renderEditable =
           _editableKey.currentContext?.findRenderObject() as _RenderEditable?;
       if (renderEditable == null ||
@@ -4329,7 +4349,6 @@ class _EditableTextState extends State<_EditableText>
         renderEditable.getRectForComposingRange(composingRange);
     // Send the caret location instead if there's no marked text yet.
     if (composingRect == null) {
-      assert(!composingRange.isValid || composingRange.isCollapsed);
       final int offset = composingRange.isValid ? composingRange.start : 0;
       composingRect =
           renderEditable.getLocalRectForCaret(TextPosition(offset: offset));
@@ -4463,7 +4482,6 @@ class _EditableTextState extends State<_EditableText>
   void toggleToolbar([bool hideHandles = true]) {
     final _TextSelectionOverlay selectionOverlay =
         _selectionOverlay ??= _createSelectionOverlay();
-
     if (selectionOverlay.toolbarIsVisible) {
       hideToolbar(hideHandles);
     } else {
@@ -5101,6 +5119,7 @@ class _EditableTextState extends State<_EditableText>
   //     compositeCallback: _compositeCallback,
   //     enabled: _hasInputConnection,
   //     child: TextFieldTapRegion(
+  //       groupId: widget.groupId,
   //       onTapOutside:
   //           _hasFocus ? widget.onTapOutside ?? _defaultOnTapOutside : null,
   //       debugLabel: kReleaseMode ? null : 'EditableText',
@@ -6058,21 +6077,6 @@ class _CopySelectionAction extends ContextAction<CopySelectionTextIntent> {
   @override
   bool get isActionEnabled =>
       state._value.selection.isValid && !state._value.selection.isCollapsed;
-}
-
-/// The start and end glyph heights of some range of text.
-@immutable
-class _GlyphHeights {
-  const _GlyphHeights({
-    required this.start,
-    required this.end,
-  });
-
-  /// The glyph height of the first line.
-  final double start;
-
-  /// The glyph height of the last line.
-  final double end;
 }
 
 /// A [ClipboardStatusNotifier] whose [value] is hardcoded to
