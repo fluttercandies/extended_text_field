@@ -1752,8 +1752,10 @@ class _RenderEditable extends RenderBox
     if (!_canComputeIntrinsics) {
       return 0.0;
     }
-    final List<PlaceholderDimensions> placeholderDimensions = layoutInlineChildren(double.infinity,
-        (RenderBox child, BoxConstraints constraints) => Size(child.getMinIntrinsicWidth(double.infinity), 0.0));
+    final List<PlaceholderDimensions> placeholderDimensions = layoutInlineChildren(
+        double.infinity,
+        (RenderBox child, BoxConstraints constraints) => Size(child.getMinIntrinsicWidth(double.infinity), 0.0),
+        ChildLayoutHelper.getDryBaseline);
     final (double minWidth, double maxWidth) = _adjustConstraints();
     return (_textIntrinsics
           ..setPlaceholderDimensions(placeholderDimensions)
@@ -1771,6 +1773,7 @@ class _RenderEditable extends RenderBox
       // Height and baseline is irrelevant as all text will be laid
       // out in a single line. Therefore, using 0.0 as a dummy for the height.
       (RenderBox child, BoxConstraints constraints) => Size(child.getMaxIntrinsicWidth(double.infinity), 0.0),
+      ChildLayoutHelper.getDryBaseline,
     );
     final (double minWidth, double maxWidth) = _adjustConstraints();
     return (_textIntrinsics
@@ -1852,7 +1855,8 @@ class _RenderEditable extends RenderBox
     if (!_canComputeIntrinsics) {
       return 0.0;
     }
-    _textIntrinsics.setPlaceholderDimensions(layoutInlineChildren(width, ChildLayoutHelper.dryLayoutChild));
+    _textIntrinsics.setPlaceholderDimensions(
+        layoutInlineChildren(width, ChildLayoutHelper.dryLayoutChild, ChildLayoutHelper.getDryBaseline));
     return _preferredHeight(width);
   }
 
@@ -2243,7 +2247,8 @@ class _RenderEditable extends RenderBox
     final (double minWidth, double maxWidth) =
         _adjustConstraints(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     _textIntrinsics
-      ..setPlaceholderDimensions(layoutInlineChildren(constraints.maxWidth, ChildLayoutHelper.dryLayoutChild))
+      ..setPlaceholderDimensions(layoutInlineChildren(
+          constraints.maxWidth, ChildLayoutHelper.dryLayoutChild, ChildLayoutHelper.getDryBaseline))
       ..layout(minWidth: minWidth, maxWidth: maxWidth);
     final double width =
         forceLine ? constraints.maxWidth : constraints.constrainWidth(_textIntrinsics.size.width + _caretMargin);
@@ -2253,7 +2258,8 @@ class _RenderEditable extends RenderBox
   @override
   void performLayout() {
     final BoxConstraints constraints = this.constraints;
-    _placeholderDimensions = layoutInlineChildren(constraints.maxWidth, ChildLayoutHelper.layoutChild);
+    _placeholderDimensions =
+        layoutInlineChildren(constraints.maxWidth, ChildLayoutHelper.layoutChild, ChildLayoutHelper.getBaseline);
     final (double minWidth, double maxWidth) =
         _adjustConstraints(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     _textPainter
