@@ -300,6 +300,10 @@ class ExtendedEditableTextState extends _EditableTextState {
                 focusNode: widget.focusNode,
                 includeSemantics: false,
                 debugLabel: kReleaseMode ? null : 'EditableText',
+                onKeyEvent: extendedEditableText.specialTextSpanBuilder != null
+                    ? extendedEditableText
+                        .specialTextSpanBuilder!.handleKeyEventCallback
+                    : null,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification notification) {
                     _handleContextMenuOnScroll(notification);
