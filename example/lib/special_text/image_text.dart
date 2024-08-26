@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:extended_image/extended_image.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart' hide Element;
 import 'package:html/dom.dart' hide Text;
@@ -69,17 +70,19 @@ class ImageText extends SpecialText {
     //final double fontSize = 26.0;
 
     return ExtendedWidgetSpan(
-        start: start!,
-        actualText: text,
-        child: GestureDetector(
-            onTap: () {
-              onTap?.call(url);
-            },
-            child: Image.network(
-              url,
-              width: width,
-              height: height,
-              fit: fit,
-            )));
+      start: start!,
+      actualText: text,
+      child: GestureDetector(
+        onTap: () {
+          onTap?.call(url);
+        },
+        child: ExtendedImage.network(
+          url,
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      ),
+    );
   }
 }

@@ -1,12 +1,14 @@
 import 'package:example/pages/simple/no_keyboard.dart';
+import 'package:extended_keyboard/extended_keyboard.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 import 'example_route.dart';
 import 'example_routes.dart';
 
-void main() {
+Future<void> main() async {
   CustomKeyboarBinding();
+  await SystemKeyboard().init();
   runApp(MyApp());
 }
 

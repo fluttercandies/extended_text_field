@@ -1,10 +1,11 @@
+import 'package:extended_keyboard/extended_keyboard.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oktoast/oktoast.dart';
 
-class CustomKeyboarBinding extends TextInputBinding {
+class CustomKeyboarBinding extends TextInputBinding with KeyboardBindingMixin {
   @override
   // ignore: unnecessary_overrides
   bool ignoreTextInputShow() {

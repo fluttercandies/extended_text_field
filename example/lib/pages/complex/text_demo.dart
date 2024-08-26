@@ -1,21 +1,29 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:math';
-
 import 'package:example/common/toggle_button.dart';
+import 'package:example/data/tu_chong_repository.dart';
+import 'package:example/data/tu_chong_source.dart';
 import 'package:example/special_text/at_text.dart';
 import 'package:example/special_text/dollar_text.dart';
 import 'package:example/special_text/emoji_text.dart' as emoji;
 import 'package:example/special_text/my_extended_text_selection_controls.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
+import 'package:extended_image/extended_image.dart';
+import 'package:extended_keyboard/extended_keyboard.dart';
 import 'package:extended_list/extended_list.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
+import 'package:loading_more_list/loading_more_list.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+enum KeyboardPanelType {
+  system,
+  emoji,
+  image,
+  at,
+  dollar,
+}
 
 @FFRoute(
   name: 'fluttercandies://TextDemo',
@@ -32,6 +40,7 @@ class TextDemo extends StatefulWidget {
 }
 
 class _TextDemoState extends State<TextDemo> {
+  KeyboardPanelType _keyboardPanelType = KeyboardPanelType.system;
   final TextEditingController _textEditingController = TextEditingController();
   final MyTextSelectionControls _myExtendedMaterialTextSelectionControls =
       MyTextSelectionControls();
@@ -39,17 +48,9 @@ class _TextDemoState extends State<TextDemo> {
       GlobalKey<ExtendedTextFieldState>();
   final MySpecialTextSpanBuilder _mySpecialTextSpanBuilder =
       MySpecialTextSpanBuilder();
-  final StreamController<void> _gridBuilderController =
-      StreamController<void>.broadcast();
-
+  late TuChongRepository imageList = TuChongRepository(maxLength: 100);
   final FocusNode _focusNode = FocusNode();
-  double _keyboardHeight = 0;
-  double _preKeyboardHeight = 0;
-  bool get showCustomKeyBoard =>
-      activeEmojiGird || activeAtGrid || activeDollarGrid;
-  bool activeEmojiGird = false;
-  bool activeAtGrid = false;
-  bool activeDollarGrid = false;
+
   List<String> sessions = <String>[
     '[44] @Dota2 CN dota best dota',
     'yes, you are right [36].',
@@ -59,365 +60,220 @@ class _TextDemoState extends State<TextDemo> {
     'error 0 [45] warning 0',
   ];
 
+  Duration duration = const Duration(milliseconds: 300);
+
+  final ScrollController _controller = ScrollController();
+
+  final CustomKeyboardController _customKeyboardController =
+      CustomKeyboardController(KeyboardType.system);
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    //FocusScope.of(context).autofocus(_focusNode);
-    final MediaQueryData mediaQueryData = MediaQuery.of(context);
-    final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
-    final bool showingKeyboard = keyboardHeight > _preKeyboardHeight;
-    _preKeyboardHeight = keyboardHeight;
-    if ((keyboardHeight > 0 && keyboardHeight >= _keyboardHeight) ||
-        showingKeyboard) {
-      activeEmojiGird = activeAtGrid = activeDollarGrid = false;
-      _gridBuilderController.add(null);
-    }
-
-    _keyboardHeight = max(_keyboardHeight, keyboardHeight);
-
-    return SafeArea(
-      bottom: true,
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: const Text('special text'),
-          actions: <Widget>[
-            TextButton(
-              child: const Icon(
-                Icons.backspace,
-                color: Colors.white,
-              ),
-              onPressed: manualDelete,
-            )
-          ],
-        ),
-        body: Column(
-          children: <Widget>[
-            Expanded(
-                child: ExtendedListView.builder(
-              extendedListDelegate:
-                  const ExtendedListDelegate(closeToTrailing: true),
-              itemBuilder: (BuildContext context, int index) {
-                final bool left = index % 2 == 0;
-                final Image logo = Image.asset(
-                  'assets/flutter_candies_logo.png',
-                  width: 30.0,
-                  height: 30.0,
-                );
-                //print(sessions[index]);
-                final Widget text = ExtendedText(
-                  sessions[index],
-                  textAlign: left ? TextAlign.left : TextAlign.right,
-                  specialTextSpanBuilder: _mySpecialTextSpanBuilder,
-                  onSpecialTextTap: (dynamic value) {
-                    if (value.toString().startsWith('\$')) {
-                      launchUrl(Uri.parse('https://github.com/fluttercandies'));
-                    } else if (value.toString().startsWith('@')) {
-                      launchUrl(Uri.parse('mailto:zmtzawqlp@live.com'));
-                    }
-                  },
-                );
-                List<Widget> list = <Widget>[
-                  logo,
-                  Expanded(child: text),
-                  Container(
-                    width: 30.0,
-                  )
-                ];
-                if (!left) {
-                  list = list.reversed.toList();
-                }
-                return Row(
-                  children: list,
-                );
-              },
-              padding: const EdgeInsets.only(bottom: 10.0),
-              reverse: true,
-              itemCount: sessions.length,
-            )),
-            //  TextField()
-            Container(
-              height: 2.0,
-              color: Colors.blue,
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        title: const Text('special text'),
+        actions: <Widget>[
+          TextButton(
+            child: const Icon(
+              Icons.backspace,
+              color: Colors.white,
             ),
-            //EditableText(controller: controller, focusNode: focusNode, style: style, cursorColor: cursorColor, backgroundCursorColor: backgroundCursorColor)
-            ExtendedTextField(
-              key: _key,
-              minLines: 1,
-              maxLines: 2,
-              // StrutStyle get strutStyle {
-              //   if (_strutStyle == null) {
-              //     return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
-              //   }
-              //   return _strutStyle!.inheritFromTextStyle(style);
-              // }
-              // default strutStyle is not good for WidgetSpan
-              strutStyle: const StrutStyle(),
-              specialTextSpanBuilder: MySpecialTextSpanBuilder(
-                showAtBackground: true,
-              ),
-              controller: _textEditingController,
-              selectionControls: _myExtendedMaterialTextSelectionControls,
-              extendedContextMenuBuilder:
-                  MyTextSelectionControls.defaultContextMenuBuilder,
-              focusNode: _focusNode,
-              decoration: InputDecoration(
-                  suffixIcon: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        sessions.insert(0, _textEditingController.text);
-                        _textEditingController.value =
-                            _textEditingController.value.copyWith(
-                                text: '',
-                                selection:
-                                    const TextSelection.collapsed(offset: 0),
-                                composing: TextRange.empty);
-                      });
-                    },
-                    child: const Icon(Icons.send),
+            onPressed: manualDelete,
+          )
+        ],
+      ),
+      body: SafeArea(
+        bottom: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            _customKeyboardController.unfocus();
+          },
+          child: KeyboardBuilder(
+            controller: _customKeyboardController,
+            resizeToAvoidBottomInset: true,
+            bodyBuilder: (bool readOnly) => Column(
+              children: <Widget>[
+                Expanded(
+                    child: ExtendedListView.builder(
+                  extendedListDelegate: const ExtendedListDelegate(
+                    closeToTrailing: true,
                   ),
-                  contentPadding: const EdgeInsets.all(12.0)),
-              //textDirection: TextDirection.rtl,
-            ),
-            StreamBuilder<void>(
-              stream: _gridBuilderController.stream,
-              builder: (BuildContext b, AsyncSnapshot<void> d) {
-                return Container(
-                  color: Colors.grey.withOpacity(0.3),
+                  controller: _controller,
+                  itemBuilder: (BuildContext context, int index) {
+                    final bool left = index % 2 == 0;
+                    final Image logo = Image.asset(
+                      'assets/flutter_candies_logo.png',
+                      width: 30.0,
+                      height: 30.0,
+                    );
+                    //print(sessions[index]);
+                    final Widget text = ExtendedText(
+                      sessions[index],
+                      textAlign: left ? TextAlign.left : TextAlign.right,
+                      specialTextSpanBuilder: _mySpecialTextSpanBuilder,
+                      onSpecialTextTap: (dynamic value) {
+                        if (value.toString().startsWith('\$')) {
+                          launchUrl(
+                              Uri.parse('https://github.com/fluttercandies'));
+                        } else if (value.toString().startsWith('@')) {
+                          launchUrl(Uri.parse('mailto:zmtzawqlp@live.com'));
+                        }
+                      },
+                    );
+                    List<Widget> list = <Widget>[
+                      logo,
+                      Expanded(child: text),
+                      Container(
+                        width: 30.0,
+                      )
+                    ];
+                    if (!left) {
+                      list = list.reversed.toList();
+                    }
+                    return Row(
+                      children: list,
+                    );
+                  },
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  reverse: true,
+                  itemCount: sessions.length,
+                )),
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.blue,
+                      ),
+                      bottom: BorderSide(
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
                   child: Column(
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          ToggleButton(
-                            activeWidget: const Icon(
-                              Icons.sentiment_very_satisfied,
-                              color: Colors.orange,
-                            ),
-                            unActiveWidget:
-                                const Icon(Icons.sentiment_very_satisfied),
-                            activeChanged: (bool active) {
-                              onToolbarButtonActiveChanged(
-                                  keyboardHeight, active, () {
-                                activeEmojiGird = active;
-                              });
+                      ExtendedTextField(
+                        key: _key,
+                        minLines: 1,
+                        maxLines: 2,
+                        showCursor: true,
+                        readOnly: readOnly,
+
+                        // StrutStyle get strutStyle {
+                        //   if (_strutStyle == null) {
+                        //     return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
+                        //   }
+                        //   return _strutStyle!.inheritFromTextStyle(style);
+                        // }
+                        // default strutStyle is not good for WidgetSpan
+                        strutStyle: const StrutStyle(),
+                        specialTextSpanBuilder: MySpecialTextSpanBuilder(
+                          showAtBackground: true,
+                        ),
+                        controller: _textEditingController,
+                        selectionControls:
+                            _myExtendedMaterialTextSelectionControls,
+                        extendedContextMenuBuilder:
+                            MyTextSelectionControls.defaultContextMenuBuilder,
+                        focusNode: _focusNode,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              sendMessage(_textEditingController.text);
+                              _textEditingController.clear();
                             },
-                            active: activeEmojiGird,
+                            child: const Icon(Icons.send),
                           ),
-                          ToggleButton(
-                              activeWidget: const Padding(
-                                padding: EdgeInsets.only(bottom: 5.0),
-                                child: Text(
-                                  '@',
-                                  style: TextStyle(
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20.0,
-                                  ),
-                                ),
-                              ),
-                              unActiveWidget: const Padding(
-                                padding: EdgeInsets.only(bottom: 5.0),
-                                child: Text(
-                                  '@',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20.0),
-                                ),
-                              ),
-                              activeChanged: (bool active) {
-                                onToolbarButtonActiveChanged(
-                                    keyboardHeight, active, () {
-                                  activeAtGrid = active;
-                                });
-                              },
-                              active: activeAtGrid),
-                          ToggleButton(
-                              activeWidget: const Icon(
-                                Icons.attach_money,
-                                color: Colors.orange,
-                              ),
-                              unActiveWidget: const Icon(Icons.attach_money),
-                              activeChanged: (bool active) {
-                                onToolbarButtonActiveChanged(
-                                    keyboardHeight, active, () {
-                                  activeDollarGrid = active;
-                                });
-                              },
-                              active: activeDollarGrid),
-                          Container(
-                            width: 20.0,
-                          )
-                        ],
-                        mainAxisAlignment: MainAxisAlignment.end,
+                          contentPadding: const EdgeInsets.all(12.0),
+                        ),
+                        onTap: () {
+                          _customKeyboardController.showSystemKeyboard();
+                        },
+                        //textDirection: TextDirection.rtl,
                       ),
-                      Container(),
+                      Container(height: 1, color: Colors.grey.withOpacity(0.3)),
+                      KeyboardTypeBuilder(
+                        builder: (
+                          BuildContext context,
+                          CustomKeyboardController controller,
+                        ) =>
+                            Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            createToolButton(
+                              Icons.sentiment_very_satisfied,
+                              KeyboardPanelType.emoji,
+                              controller,
+                            ),
+                            createToolButton(
+                              Icons.image,
+                              KeyboardPanelType.image,
+                              controller,
+                            ),
+                            createToolButton(
+                              Icons.call_end,
+                              KeyboardPanelType.at,
+                              controller,
+                            ),
+                            createToolButton(
+                              Icons.attach_money,
+                              KeyboardPanelType.dollar,
+                              controller,
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                );
-              },
+                ),
+              ],
             ),
-
-            Container(
-              height: 2.0,
-              color: Colors.blue,
-            ),
-            StreamBuilder<void>(
-              stream: _gridBuilderController.stream,
-              builder: (BuildContext b, AsyncSnapshot<void> d) {
-                return SizedBox(
-                    height: max(
-                        showCustomKeyBoard
-                            ? _keyboardHeight -
-                                (Platform.isIOS
-                                    ? mediaQueryData.padding.bottom
-                                    : 0)
-                            : 0,
-                        0),
-                    child: buildCustomKeyBoard());
-              },
-            ),
-
-            StreamBuilder<void>(
-              stream: _gridBuilderController.stream,
-              builder: (BuildContext b, AsyncSnapshot<void> d) {
-                return Container(
-                  height: showCustomKeyBoard ? 0 : keyboardHeight,
-                );
-              },
-            ),
-          ],
+            builder: (BuildContext context, double? systemKeyboardHeight) {
+              return _buildCustomKeyboard(context, systemKeyboardHeight);
+            },
+          ),
         ),
       ),
     );
   }
 
-  void onToolbarButtonActiveChanged(
-      double keyboardHeight, bool active, Function activeOne) {
-    if (keyboardHeight > 0) {
-      // make sure grid height = keyboardHeight
-      _keyboardHeight = keyboardHeight;
-      SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
-    }
-
-    if (active) {
-      activeDollarGrid = activeEmojiGird = activeAtGrid = false;
-      if (!Platform.isAndroid && !Platform.isIOS) {
-        _keyboardHeight = 300;
-      }
-    }
-
-    activeOne();
-    //activeDollarGrid = active;
-
-    _gridBuilderController.add(null);
-  }
-
-  Widget buildCustomKeyBoard() {
-    if (!showCustomKeyBoard) {
-      return Container();
-    }
-    if (activeEmojiGird) {
-      return buildEmojiGird();
-    }
-    if (activeAtGrid) {
-      return buildAtGrid();
-    }
-    if (activeDollarGrid) {
-      return buildDollarGrid();
-    }
-    return Container();
-  }
-
-  Widget buildEmojiGird() {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 8, crossAxisSpacing: 10.0, mainAxisSpacing: 10.0),
-      itemBuilder: (BuildContext context, int index) {
-        return GestureDetector(
-          child:
-              Image.asset(emoji.EmojiUitl.instance.emojiMap['[${index + 1}]']!),
-          behavior: HitTestBehavior.translucent,
-          onTap: () {
-            insertText('[${index + 1}]');
-          },
-        );
+  Widget createToolButton(
+    IconData icon,
+    KeyboardPanelType keyboardPanelType,
+    CustomKeyboardController controller,
+  ) {
+    return ToggleButton(
+      builder: (bool active) => Icon(
+        icon,
+        color: active ? Colors.orange : null,
+      ),
+      activeChanged: (bool active) {
+        _keyboardPanelType = keyboardPanelType;
+        if (active) {
+          controller.showCustomKeyboard();
+          if (!_focusNode.hasFocus) {
+            SchedulerBinding.instance
+                .addPostFrameCallback((Duration timeStamp) {
+              _focusNode.requestFocus();
+            });
+          }
+        } else {
+          controller.showSystemKeyboard();
+        }
       },
-      itemCount: emoji.EmojiUitl.instance.emojiMap.length,
-      padding: const EdgeInsets.all(5.0),
-    );
-  }
-
-  Widget buildAtGrid() {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, crossAxisSpacing: 10.0, mainAxisSpacing: 10.0),
-      itemBuilder: (BuildContext context, int index) {
-        final String text = atList[index];
-        return GestureDetector(
-          child: Align(
-            child: Text(text),
-          ),
-          behavior: HitTestBehavior.translucent,
-          onTap: () {
-            insertText(text);
-          },
-        );
-      },
-      itemCount: atList.length,
-      padding: const EdgeInsets.all(5.0),
-    );
-  }
-
-  Widget buildDollarGrid() {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, crossAxisSpacing: 10.0, mainAxisSpacing: 10.0),
-      itemBuilder: (BuildContext context, int index) {
-        final String text = dollarList[index];
-        return GestureDetector(
-          child: Align(
-            child: Text(text.replaceAll('\$', '')),
-          ),
-          behavior: HitTestBehavior.translucent,
-          onTap: () {
-            insertText(text);
-          },
-        );
-      },
-      itemCount: dollarList.length,
-      padding: const EdgeInsets.all(5.0),
+      active: controller.isCustom && _keyboardPanelType == keyboardPanelType,
     );
   }
 
   void insertText(String text) {
-    final TextEditingValue value = _textEditingController.value;
-    final int start = value.selection.baseOffset;
-    int end = value.selection.extentOffset;
-    if (value.selection.isValid) {
-      String newText = '';
-      if (value.selection.isCollapsed) {
-        if (end > 0) {
-          newText += value.text.substring(0, end);
-        }
-        newText += text;
-        if (value.text.length > end) {
-          newText += value.text.substring(end, value.text.length);
-        }
-      } else {
-        newText = value.text.replaceRange(start, end, text);
-        end = start;
-      }
-
-      _textEditingController.value = value.copyWith(
-          text: newText,
-          selection: value.selection.copyWith(
-              baseOffset: end + text.length, extentOffset: end + text.length));
-    } else {
-      _textEditingController.value = TextEditingValue(
-          text: text,
-          selection:
-              TextSelection.fromPosition(TextPosition(offset: text.length)));
-    }
+    _textEditingController.insertText(text);
 
     SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
       _key.currentState?.bringIntoView(_textEditingController.selection.base);
@@ -425,41 +281,144 @@ class _TextDemoState extends State<TextDemo> {
   }
 
   void manualDelete() {
-    //delete by code
-    final TextEditingValue _value = _textEditingController.value;
-    final TextSelection selection = _value.selection;
-    if (!selection.isValid) {
-      return;
-    }
+    final TextSpan oldTextSpan =
+        _mySpecialTextSpanBuilder.build(_textEditingController.text);
 
-    TextEditingValue value;
-    final String actualText = _value.text;
-    if (selection.isCollapsed && selection.start == 0) {
-      return;
-    }
-
-    final int start =
-        selection.isCollapsed ? selection.start - 1 : selection.start;
-    final int end = selection.end;
-    // improve the case of emoji
-    // https://github.com/dart-lang/sdk/issues/35798
-    final CharacterRange characterRange =
-        CharacterRange.at(actualText, start, end);
-    value = TextEditingValue(
-      text: characterRange.stringBefore + characterRange.stringAfter,
-      selection:
-          TextSelection.collapsed(offset: characterRange.stringBefore.length),
-    );
-
-    final TextSpan oldTextSpan = _mySpecialTextSpanBuilder.build(_value.text);
-
-    value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(
-      value,
-      _value,
+    final TextEditingValue value =
+        ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(
+      _textEditingController.deleteText(),
+      _textEditingController.value,
       oldTextSpan,
       null,
     );
-
     _textEditingController.value = value;
+  }
+
+  void sendMessage(String text) {
+    if (text.isEmpty) {
+      return;
+    }
+    setState(() {
+      sessions.insert(0, text);
+    });
+    SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
+      _controller.animateTo(
+        _controller.position.minScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  Widget _buildCustomKeyboard(
+    BuildContext context,
+    double? systemKeyboardHeight,
+  ) {
+    systemKeyboardHeight ??= 346;
+
+    switch (_keyboardPanelType) {
+      case KeyboardPanelType.emoji:
+        return SizedBox(
+          height: systemKeyboardHeight,
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 8,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0),
+            itemBuilder: (BuildContext context, int index) {
+              return GestureDetector(
+                child: Image.asset(
+                    emoji.EmojiUitl.instance.emojiMap['[${index + 1}]']!),
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  insertText('[${index + 1}]');
+                },
+              );
+            },
+            itemCount: emoji.EmojiUitl.instance.emojiMap.length,
+            padding: const EdgeInsets.all(5.0),
+          ),
+        );
+      case KeyboardPanelType.image:
+        return SizedBox(
+          height: systemKeyboardHeight,
+          child: LoadingMoreList<TuChongItem>(
+            ListConfig<TuChongItem>(
+              sourceList: imageList,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+              ),
+              itemBuilder: (BuildContext context, TuChongItem item, int index) {
+                final String url = item.imageUrl;
+                return GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    // <img src="http://pic2016.5442.com:82/2016/0513/12/3.jpg!960.jpg"/>
+
+                    sendMessage(
+                        "<img src='$url'  width='${item.imageSize.width}' height='${item.imageSize.height}'/>");
+                  },
+                  child: ExtendedImage.network(
+                    url,
+                  ),
+                );
+              },
+              padding: const EdgeInsets.all(5.0),
+            ),
+          ),
+        );
+      case KeyboardPanelType.at:
+        return SizedBox(
+          height: systemKeyboardHeight,
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0),
+            itemBuilder: (BuildContext context, int index) {
+              final String text = atList[index];
+              return GestureDetector(
+                child: Align(
+                  child: Text(text),
+                ),
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  insertText(text);
+                },
+              );
+            },
+            itemCount: atList.length,
+            padding: const EdgeInsets.all(5.0),
+          ),
+        );
+      case KeyboardPanelType.dollar:
+        return SizedBox(
+          height: systemKeyboardHeight,
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0),
+            itemBuilder: (BuildContext context, int index) {
+              final String text = dollarList[index];
+              return GestureDetector(
+                child: Align(
+                  child: Text(text.replaceAll('\$', '')),
+                ),
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  insertText(text);
+                },
+              );
+            },
+            itemCount: dollarList.length,
+            padding: const EdgeInsets.all(5.0),
+          ),
+        );
+      default:
+        return Container();
+    }
   }
 }
