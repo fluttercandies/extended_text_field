@@ -274,6 +274,7 @@ class ExtendedEditableTextState extends _EditableTextState {
                       return false;
                     }
                   case TargetPlatform.android:
+                  case TargetPlatform.ohos:
                     // Gboard on Android puts non-CJK words in composing regions. Coalesce
                     // composing text in order to allow the saving of partial words in that
                     // case.

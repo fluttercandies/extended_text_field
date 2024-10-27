@@ -43,6 +43,7 @@ class _TextFieldSelectionGestureDetectorBuilder
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
         case TargetPlatform.windows:
+        case TargetPlatform.ohos:
           Feedback.forLongPress(_state.context);
       }
     }
@@ -853,6 +854,7 @@ class _TextField extends StatefulWidget {
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
         return SpellCheckSuggestionsToolbar.editableText(
           editableTextState: editableTextState,
         );
@@ -1303,7 +1305,9 @@ class _TextFieldState extends State<_TextField>
       case TargetPlatform.windows:
       case TargetPlatform.fuchsia:
       case TargetPlatform.android:
-        if (cause == SelectionChangedCause.longPress) {
+      case TargetPlatform.ohos:
+        if (cause == SelectionChangedCause.longPress ||
+            cause == SelectionChangedCause.drag) {
           _editableText?.bringIntoView(selection.extent);
         }
     }
@@ -1312,6 +1316,7 @@ class _TextFieldState extends State<_TextField>
       case TargetPlatform.iOS:
       case TargetPlatform.fuchsia:
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
         break;
       case TargetPlatform.macOS:
       case TargetPlatform.linux:
@@ -1449,6 +1454,7 @@ class _TextFieldState extends State<_TextField>
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
         spellCheckConfiguration = TextField.inferAndroidSpellCheckConfiguration(
           widget.spellCheckConfiguration,
         );
@@ -1513,6 +1519,7 @@ class _TextFieldState extends State<_TextField>
 
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
+      case TargetPlatform.ohos:
         forcePressEnabled = false;
         textSelectionControls ??= materialTextSelectionHandleControls;
         paintCursorAboveText = false;
