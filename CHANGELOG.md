@@ -1,3 +1,7 @@
+## 16.0.1
+
+* Fix issue that context menu click didn't work on desktop(#250) 
+
 ## 16.0.0
 
 * Migrate to Flutter 3.24.0

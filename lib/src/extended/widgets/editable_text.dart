@@ -54,7 +54,7 @@ class ExtendedEditableText extends _EditableText {
     super.onAppPrivateCommand,
     super.onSelectionChanged,
     super.onSelectionHandleTapped,
-    super.groupId = ExtendedEditableText,
+    super.groupId = EditableText,
     super.onTapOutside,
     super.inputFormatters,
     super.mouseCursor,

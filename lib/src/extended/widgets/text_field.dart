@@ -29,7 +29,7 @@ part 'package:extended_text_field/src/official/material/selectable_text.dart';
 class ExtendedTextField extends _TextField {
   const ExtendedTextField({
     super.key,
-    super.groupId = ExtendedEditableText,
+    super.groupId = EditableText,
     super.controller,
     super.focusNode,
     super.undoController,
