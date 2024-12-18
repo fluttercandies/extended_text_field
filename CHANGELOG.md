@@ -1,3 +1,7 @@
+## 16.0.2
+
+* Fix issue that the caret offset is not right after pinyin(composing) is completed on windows desktop(#255) 
+
 ## 16.0.1
 
 * Fix issue that context menu click didn't work on desktop(#250) 
