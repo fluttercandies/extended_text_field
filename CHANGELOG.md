@@ -1,3 +1,7 @@
+## 14.0.1
+
+* Fix issue that the caret offset is not right after pinyin(composing) is completed on windows desktop(#255) 
+  
 ## 14.0.0
 
 * Migrate to Flutter 3.19.0
