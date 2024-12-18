@@ -1,3 +1,7 @@
+## 12.0.3
+
+* Fix issue that the caret offset is not right after pinyin(composing) is completed on windows desktop(#255) 
+
 ## 12.0.2
 
 * Fix wrong postion of Magnifier
