@@ -434,9 +434,9 @@ class ExtendedEditableTextState extends _EditableTextState {
     }
 
     assert(
-      _spellCheckConfiguration.spellCheckSuggestionsToolbarBuilder != null,
-      'spellCheckSuggestionsToolbarBuilder must be defined in '
-      'SpellCheckConfiguration to show a toolbar with spell check '
+    extendedSpellCheckConfiguration.extendedSpellCheckSuggestionsToolbarBuilder != null,
+      'extendedSpellCheckSuggestionsToolbarBuilder must be defined in '
+      'ExtendedSpellCheckConfiguration to show a toolbar with spell check '
       'suggestions',
     );
 
