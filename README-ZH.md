@@ -1,6 +1,6 @@
 # extended_text_field
 
-[![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field) [![GitHub stars](https://img.shields.io/github/stars/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/network)  [![GitHub license](https://img.shields.io/github/license/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/blob/master/LICENSE)  [![GitHub issues](https://img.shields.io/github/issues/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/issues) <a target="_blank" href="https://jq.qq.com/?_wv=1027&k=5bcc0gy"><img border="0" src="https://pub.idqqimg.com/wpa/images/group.png" alt="flutter-candies" title="flutter-candies"></a>
+[![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field) [![GitHub stars](https://img.shields.io/github/stars/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/network)  [![GitHub license](https://img.shields.io/github/license/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/blob/master/LICENSE)  [![GitHub issues](https://img.shields.io/github/issues/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/issues) <a href="https://qm.qq.com/q/ZyJbSVjfSU"><img src="https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffluttercandies%2F.github%2Frefs%2Fheads%2Fmain%2Fdata.yml&query=%24.qq_group_number&style=for-the-badge&label=QQ%E7%BE%A4&logo=qq&color=1DACE8" /></a>
 
 文档语言: [English](README.md) | 中文简体
 
@@ -10,11 +10,11 @@
 
 ExtendedTextField  是 Flutter 官方 TextField  的三方扩展库，主要扩展功能如下:
 
-| 功能                                      | ExtendedTextField                                        |  TextField                                     |
-|-----------------------------------------|---------------------------------------------------------|----------------------------------------------------------|
-| 图文混合                                 | 支持，可以实现图文混合显示                                   | 仅支持显示文本，但在选择文本时会出现问题                     |
-| 支持复制真实值                            | 支持，可以复制出文本的真实值                                 | 不支持                         |
-| 根据文本格式快速构建富文本                   | 支持，可以根据文本格式快速构建富文本                           | 不支持                                                        |
+| 功能                       | ExtendedTextField                    | TextField                                |
+| -------------------------- | ------------------------------------ | ---------------------------------------- |
+| 图文混合                   | 支持，可以实现图文混合显示           | 仅支持显示文本，但在选择文本时会出现问题 |
+| 支持复制真实值             | 支持，可以复制出文本的真实值         | 不支持                                   |
+| 根据文本格式快速构建富文本 | 支持，可以根据文本格式快速构建富文本 | 不支持                                   |
 
 > 已支持 `HarmonyOS`. 请使用最新的带有 `ohos` 标志的版本. 你可以在 `Versions` 签查找.
 
