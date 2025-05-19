@@ -10,11 +10,11 @@
 
 ExtendedTextField  是 Flutter 官方 TextField  的三方扩展库，主要扩展功能如下:
 
-| 功能                                      | ExtendedTextField                                        |  TextField                                     |
-|-----------------------------------------|---------------------------------------------------------|----------------------------------------------------------|
-| 图文混合                                 | 支持，可以实现图文混合显示                                   | 仅支持显示文本，但在选择文本时会出现问题                     |
-| 支持复制真实值                            | 支持，可以复制出文本的真实值                                 | 不支持                         |
-| 根据文本格式快速构建富文本                   | 支持，可以根据文本格式快速构建富文本                           | 不支持                                                        |
+| 功能                       | ExtendedTextField                    | TextField                                |
+| -------------------------- | ------------------------------------ | ---------------------------------------- |
+| 图文混合                   | 支持，可以实现图文混合显示           | 仅支持显示文本，但在选择文本时会出现问题 |
+| 支持复制真实值             | 支持，可以复制出文本的真实值         | 不支持                                   |
+| 根据文本格式快速构建富文本 | 支持，可以根据文本格式快速构建富文本 | 不支持                                   |
 
 > 已支持 `HarmonyOS`. 请使用最新的带有 `ohos` 标志的版本. 你可以在 `Versions` 签查找.
 
@@ -271,7 +271,7 @@ class MyTextSelectionControls extends TextSelectionControls
           onPressed: () {
             launchUrl(
               Uri.parse(
-                'mailto:zmtzawqlp@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
+                'mailto:xxx@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
               ),
             );
             editableTextState.hideToolbar(true);

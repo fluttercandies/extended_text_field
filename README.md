@@ -10,11 +10,11 @@ Extended official text field to build special text like inline image, @somebody,
 
 ExtendedTextField is a third-party extension library for Flutter's official TextField component. The main extended features are as follows:
 
-| Feature                                | ExtendedTextField                                     | TextField                                          |
-|---------------------------------------|------------------------------------------------------|----------------------------------------------------|
-| Inline images and text mixture         | Supported, allows displaying inline images and mixed text   | Only supports displaying text, but have issues with text selection |
-| Copying the actual value               | Supported, enables copying the actual value of the text | Not supported                                       |
-| Quick construction of rich text        | Supported, enables quick construction of rich text based on text format | Not supported                                       |
+| Feature                         | ExtendedTextField                                                       | TextField                                                          |
+| ------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Inline images and text mixture  | Supported, allows displaying inline images and mixed text               | Only supports displaying text, but have issues with text selection |
+| Copying the actual value        | Supported, enables copying the actual value of the text                 | Not supported                                                      |
+| Quick construction of rich text | Supported, enables quick construction of rich text based on text format | Not supported                                                      |
 
 > `HarmonyOS` is supported. Please use the latest version which contains `ohos` tag. You can check it in `Versions` tab.
 
@@ -265,7 +265,7 @@ class MyTextSelectionControls extends TextSelectionControls
           onPressed: () {
             launchUrl(
               Uri.parse(
-                'mailto:zmtzawqlp@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
+                'mailto:xxx@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
               ),
             );
             editableTextState.hideToolbar(true);
