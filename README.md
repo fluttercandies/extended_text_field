@@ -1,6 +1,6 @@
 # extended_text_field
 
-[![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field) [![GitHub stars](https://img.shields.io/github/stars/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/network)  [![GitHub license](https://img.shields.io/github/license/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/blob/master/LICENSE)  [![GitHub issues](https://img.shields.io/github/issues/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/issues) <a target="_blank" href="https://jq.qq.com/?_wv=1027&k=5bcc0gy"><img border="0" src="https://pub.idqqimg.com/wpa/images/group.png" alt="flutter-candies" title="flutter-candies"></a>
+[![pub package](https://img.shields.io/pub/v/extended_text_field.svg)](https://pub.dartlang.org/packages/extended_text_field) [![GitHub stars](https://img.shields.io/github/stars/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/stargazers) [![GitHub forks](https://img.shields.io/github/forks/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/network)  [![GitHub license](https://img.shields.io/github/license/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/blob/master/LICENSE)  [![GitHub issues](https://img.shields.io/github/issues/fluttercandies/extended_text_field)](https://github.com/fluttercandies/extended_text_field/issues) <a href="https://qm.qq.com/q/ZyJbSVjfSU">![FlutterCandies QQ 群](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffluttercandies%2F.github%2Frefs%2Fheads%2Fmain%2Fdata.yml&query=%24.qq_group_number&label=QQ%E7%BE%A4&logo=qq&color=1DACE8)
 
 Language: English | [中文简体](README-ZH.md)
 
@@ -10,11 +10,11 @@ Extended official text field to build special text like inline image, @somebody,
 
 ExtendedTextField is a third-party extension library for Flutter's official TextField component. The main extended features are as follows:
 
-| Feature                                | ExtendedTextField                                     | TextField                                          |
-|---------------------------------------|------------------------------------------------------|----------------------------------------------------|
-| Inline images and text mixture         | Supported, allows displaying inline images and mixed text   | Only supports displaying text, but have issues with text selection |
-| Copying the actual value               | Supported, enables copying the actual value of the text | Not supported                                       |
-| Quick construction of rich text        | Supported, enables quick construction of rich text based on text format | Not supported                                       |
+| Feature                         | ExtendedTextField                                                       | TextField                                                          |
+| ------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Inline images and text mixture  | Supported, allows displaying inline images and mixed text               | Only supports displaying text, but have issues with text selection |
+| Copying the actual value        | Supported, enables copying the actual value of the text                 | Not supported                                                      |
+| Quick construction of rich text | Supported, enables quick construction of rich text based on text format | Not supported                                                      |
 
 > `HarmonyOS` is supported. Please use the latest version which contains `ohos` tag. You can check it in `Versions` tab.
 
@@ -265,7 +265,7 @@ class MyTextSelectionControls extends TextSelectionControls
           onPressed: () {
             launchUrl(
               Uri.parse(
-                'mailto:zmtzawqlp@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
+                'mailto:xxx@live.com?subject=extended_text_share&body=${editableTextState.textEditingValue.text}',
               ),
             );
             editableTextState.hideToolbar(true);
