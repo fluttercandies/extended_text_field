@@ -141,6 +141,7 @@ class _SelectableTextSelectionGestureDetectorBuilder
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
         case TargetPlatform.windows:
+        case TargetPlatform.ohos:
           renderEditable.selectPosition(cause: SelectionChangedCause.tap);
       }
     }
@@ -641,6 +642,7 @@ class _SelectableTextState extends State<_SelectableText>
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
       // Do nothing.
     }
   }
@@ -740,6 +742,7 @@ class _SelectableTextState extends State<_SelectableText>
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
 
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
         textSelectionControls ??= materialTextSelectionHandleControls;

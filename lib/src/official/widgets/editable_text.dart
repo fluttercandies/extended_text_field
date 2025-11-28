@@ -1711,6 +1711,7 @@ class _EditableText extends StatefulWidget {
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
         case TargetPlatform.windows:
+        case TargetPlatform.ohos:
           break;
       }
     }
@@ -2070,6 +2071,7 @@ class _EditableTextState extends State<_EditableText>
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
         return textEditingValue.text.isNotEmpty &&
             !(textEditingValue.selection.start == 0 &&
                 textEditingValue.selection.end == textEditingValue.text.length);
@@ -2114,6 +2116,7 @@ class _EditableTextState extends State<_EditableText>
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
         return false;
     }
   }
@@ -2165,6 +2168,7 @@ class _EditableTextState extends State<_EditableText>
         case TargetPlatform.linux:
         case TargetPlatform.windows:
           break;
+        case TargetPlatform.ohos:
         case TargetPlatform.android:
         case TargetPlatform.fuchsia:
           // Collapse the selection and hide the toolbar and handles.
@@ -2276,6 +2280,7 @@ class _EditableTextState extends State<_EditableText>
         case TargetPlatform.android:
         case TargetPlatform.iOS:
         case TargetPlatform.fuchsia:
+        case TargetPlatform.ohos:
           break;
         case TargetPlatform.macOS:
         case TargetPlatform.linux:
@@ -2287,6 +2292,7 @@ class _EditableTextState extends State<_EditableText>
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
         case TargetPlatform.windows:
+        case TargetPlatform.ohos:
           bringIntoView(textEditingValue.selection.extent);
         case TargetPlatform.macOS:
         case TargetPlatform.iOS:
@@ -3533,7 +3539,8 @@ class _EditableTextState extends State<_EditableText>
     TargetPlatform.fuchsia ||
     TargetPlatform.linux ||
     TargetPlatform.macOS ||
-    TargetPlatform.windows =>
+    TargetPlatform.windows ||
+    TargetPlatform.ohos =>
       false,
   };
 
@@ -4034,6 +4041,7 @@ class _EditableTextState extends State<_EditableText>
       case TargetPlatform.windows:
       case TargetPlatform.fuchsia:
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
         if (cause == SelectionChangedCause.drag) {
           if (oldSelection.baseOffset != newSelection.baseOffset) {
             bringIntoView(newSelection.base);
@@ -4993,6 +5001,7 @@ class _EditableTextState extends State<_EditableText>
       case TargetPlatform.android:
       case TargetPlatform.iOS:
       case TargetPlatform.fuchsia:
+      case TargetPlatform.ohos:
         // On mobile platforms, we don't unfocus on touch events unless they're
         // in the web browser, but we do unfocus for all other kinds of events.
         switch (event.kind) {
