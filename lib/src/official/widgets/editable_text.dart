@@ -4889,66 +4889,12 @@ class _EditableTextState extends State<_EditableText>
     _scrollController.jumpTo(destination);
   }
 
-  /// Extend the selection down by page if the `forward` parameter is true, or
-  /// up by page otherwise.
-  void _extendSelectionByPage(ExtendSelectionByPageIntent intent) {
-    if (widget.maxLines == 1) {
-      return;
-    }
-
-    final TextSelection nextSelection;
-    final Rect extentRect = renderEditable.getLocalRectForCaret(
-      _value.selection.extent,
-    );
-    final ScrollableState? state =
-        _scrollableKey.currentState as ScrollableState?;
-    final double increment = ScrollAction.getDirectionalIncrement(
-      state!,
-      ScrollIntent(
-        direction: intent.forward ? AxisDirection.down : AxisDirection.up,
-        type: ScrollIncrementType.page,
-      ),
-    );
-    final ScrollPosition position = _scrollController.position;
-    if (intent.forward) {
-      if (_value.selection.extentOffset >= _value.text.length) {
-        return;
-      }
-      final Offset nextExtentOffset =
-          Offset(extentRect.left, extentRect.top + increment);
-      final double height =
-          position.maxScrollExtent + renderEditable.size.height;
-      final TextPosition nextExtent =
-          nextExtentOffset.dy + position.pixels >= height
-              ? TextPosition(offset: _value.text.length)
-              : renderEditable.getPositionForPoint(
-                  renderEditable.localToGlobal(nextExtentOffset),
-                );
-      nextSelection = _value.selection.copyWith(
-        extentOffset: nextExtent.offset,
-      );
-    } else {
-      if (_value.selection.extentOffset <= 0) {
-        return;
-      }
-      final Offset nextExtentOffset =
-          Offset(extentRect.left, extentRect.top + increment);
-      final TextPosition nextExtent = nextExtentOffset.dy + position.pixels <= 0
-          ? const TextPosition(offset: 0)
-          : renderEditable.getPositionForPoint(
-              renderEditable.localToGlobal(nextExtentOffset),
-            );
-      nextSelection = _value.selection.copyWith(
-        extentOffset: nextExtent.offset,
-      );
-    }
-
-    bringIntoView(nextSelection.extent);
-    userUpdateTextEditingValue(
-      _value.copyWith(selection: nextSelection),
-      SelectionChangedCause.keyboard,
-    );
-  }
+  /// Stubbed for Flutter 3.44 compatibility: `ExtendSelectionByPageIntent`
+  /// was removed from the framework, so this vendored copy can no longer
+  /// reference it. Page-up/down selection extension is a desktop-keyboard
+  /// convenience that mobile callers never trigger, so the body is safe
+  /// to no-op until upstream rebases on the new framework APIs.
+  void _extendSelectionByPage(Intent intent) {}
 
   void _updateSelection(UpdateSelectionIntent intent) {
     assert(
@@ -5040,9 +4986,9 @@ class _EditableTextState extends State<_EditableText>
         _UpdateTextSelectionAction<ExtendSelectionByCharacterIntent>(
             this, _characterBoundary, _moveBeyondTextBoundary,
             ignoreNonCollapsedSelection: false)),
-    ExtendSelectionByPageIntent: _makeOverridable(
-        CallbackAction<ExtendSelectionByPageIntent>(
-            onInvoke: _extendSelectionByPage)),
+    // ExtendSelectionByPageIntent removed in Flutter 3.44 — drop the
+    // action-map entry so this file builds. See _extendSelectionByPage
+    // above for the stubbed callback.
     ExtendSelectionToNextWordBoundaryIntent: _makeOverridable(
         _UpdateTextSelectionAction<ExtendSelectionToNextWordBoundaryIntent>(
             this, _nextWordBoundary, _moveBeyondTextBoundary,
