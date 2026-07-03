@@ -222,6 +222,7 @@ class ExtendedTextField extends _TextField {
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
         return ExtendedSpellCheckSuggestionsToolbar.editableText(
           editableTextState: editableTextState,
         );
@@ -335,6 +336,7 @@ class ExtendedTextFieldState extends _TextFieldState {
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
         // zmtzawqlp
         spellCheckConfiguration =
             ExtendedTextField.inferAndroidSpellCheckConfiguration(
@@ -401,6 +403,7 @@ class ExtendedTextFieldState extends _TextFieldState {
 
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
+      case TargetPlatform.ohos:
         forcePressEnabled = false;
         textSelectionControls ??= materialTextSelectionHandleControls;
         paintCursorAboveText = false;
