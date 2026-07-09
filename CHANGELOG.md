@@ -1,3 +1,7 @@
+## 16.0.2-ohos
+
+* Support to harmony os
+
 ## 16.0.2
 
 * Fix issue that the caret offset is not right after pinyin(composing) is completed on windows desktop(#255) 
