@@ -1444,6 +1444,7 @@ class _SelectionOverlay {
       offset: -editingRegion.topLeft,
       child: Builder(
         builder: (BuildContext context) {
+          // ignore: deprecated_member_use
           return selectionControls!.buildToolbar(
             context,
             editingRegion,

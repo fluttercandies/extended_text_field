@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field
+// ignore_for_file: deprecated_member_use, unused_element, unused_field
 
 part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 

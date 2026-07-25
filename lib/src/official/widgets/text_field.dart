@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, unused_element
+
 part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 
 /// [TextField]
@@ -257,6 +259,7 @@ class _TextField extends StatefulWidget {
     this.onAppPrivateCommand,
     this.inputFormatters,
     this.enabled,
+    // ignore: unused_element_parameter
     this.ignorePointers,
     this.cursorWidth = 2.0,
     this.cursorHeight,
@@ -284,8 +287,10 @@ class _TextField extends StatefulWidget {
     this.restorationId,
     this.scribbleEnabled = true,
     this.enableIMEPersonalizedLearning = true,
+    // ignore: unused_element_parameter
     this.contextMenuBuilder = _defaultContextMenuBuilder,
     this.canRequestFocus = true,
+    // ignore: unused_element_parameter
     this.spellCheckConfiguration,
     this.magnifierConfiguration,
   })  : assert(obscuringCharacter.length == 1),
