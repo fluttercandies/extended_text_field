@@ -1,3 +1,9 @@
+# CHANGELOG
+
+## 17.0.0
+
+* Migrate to Flutter 3.44.0
+
 ## 16.0.2
 
 * Fix issue that the caret offset is not right after pinyin(composing) is completed on windows desktop(#255) 
