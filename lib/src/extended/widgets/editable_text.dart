@@ -434,7 +434,9 @@ class ExtendedEditableTextState extends _EditableTextState {
     }
 
     assert(
-    extendedSpellCheckConfiguration.extendedSpellCheckSuggestionsToolbarBuilder != null,
+      extendedSpellCheckConfiguration
+              .extendedSpellCheckSuggestionsToolbarBuilder !=
+          null,
       'extendedSpellCheckSuggestionsToolbarBuilder must be defined in '
       'ExtendedSpellCheckConfiguration to show a toolbar with spell check '
       'suggestions',
@@ -516,34 +518,47 @@ class ExtendedEditableTextState extends _EditableTextState {
       return TextSpan(style: _style, text: text);
     }
 
+    final bool hasComposing = _value.isComposingRangeValid && !widget.readOnly;
+    if (supportSpecialText) {
+      final TextSpan? specialTextSpan = extendedEditableText
+          .specialTextSpanBuilder
+          ?.build(_value.text, textStyle: widget.style);
+      if (specialTextSpan != null) {
+        TextSpan decoratedTextSpan = specialTextSpan;
+        if (_spellCheckResultsReceived) {
+          decoratedTextSpan = _mergeSpellCheckStyles(
+            decoratedTextSpan,
+            buildTextSpanWithSpellCheckSuggestions(
+              _value,
+              !hasComposing || !_hasFocus,
+              _style,
+              _spellCheckConfiguration.misspelledTextStyle!,
+              spellCheckResults!,
+            ),
+            _style,
+            _spellCheckConfiguration.misspelledTextStyle!,
+          );
+        }
+        if (hasComposing) {
+          decoratedTextSpan = _decorateSpecialTextSpan(
+            decoratedTextSpan,
+            _TextSpanOffset(),
+            <TextRange>[_value.composing],
+            const TextStyle(decoration: TextDecoration.underline),
+          );
+        }
+        return decoratedTextSpan;
+      }
+    }
+
     // zmtzawqlp
-    if (_value.composing.isValid && !widget.readOnly) {
+    if (hasComposing) {
       final TextStyle composingStyle = widget.style.merge(
         const TextStyle(decoration: TextDecoration.underline),
       );
       final String beforeText = _value.composing.textBefore(_value.text);
       final String insideText = _value.composing.textInside(_value.text);
       final String afterText = _value.composing.textAfter(_value.text);
-
-      if (supportSpecialText) {
-        final TextSpan before = extendedEditableText.specialTextSpanBuilder!
-            .build(beforeText, textStyle: widget.style);
-        final TextSpan after = extendedEditableText.specialTextSpanBuilder!
-            .build(afterText, textStyle: widget.style);
-
-        final List<InlineSpan> children = <InlineSpan>[];
-
-        children.add(before);
-
-        children.add(TextSpan(
-          style: composingStyle,
-          text: insideText,
-        ));
-
-        children.add(after);
-
-        return TextSpan(style: widget.style, children: children);
-      }
 
       return TextSpan(style: widget.style, children: <TextSpan>[
         TextSpan(text: beforeText),
@@ -553,15 +568,6 @@ class ExtendedEditableTextState extends _EditableTextState {
         ),
         TextSpan(text: afterText),
       ]);
-    }
-
-    if (supportSpecialText) {
-      final TextSpan? specialTextSpan = extendedEditableText
-          .specialTextSpanBuilder
-          ?.build(_value.text, textStyle: widget.style);
-      if (specialTextSpan != null) {
-        return specialTextSpan;
-      }
     }
 
     if (_placeholderLocation >= 0 &&
@@ -1084,4 +1090,173 @@ class _ExtendedEditable extends _Editable {
     (renderObject as ExtendedRenderEditable).supportSpecialText =
         supportSpecialText;
   }
+}
+
+TextSpan _mergeSpellCheckStyles(
+  TextSpan specialTextSpan,
+  TextSpan spellCheckedTextSpan,
+  TextStyle? textStyle,
+  TextStyle misspelledTextStyle,
+) {
+  final TextStyle misspelledJointStyle =
+      textStyle?.merge(misspelledTextStyle) ?? misspelledTextStyle;
+  final List<TextRange> misspelledRanges = <TextRange>[];
+  final _TextSpanOffset spellOffset = _TextSpanOffset();
+  _collectMisspelledRanges(
+    spellCheckedTextSpan,
+    misspelledJointStyle,
+    spellOffset,
+    misspelledRanges,
+  );
+  final _TextSpanOffset specialOffset = _TextSpanOffset();
+  return _decorateSpecialTextSpan(
+    specialTextSpan,
+    specialOffset,
+    misspelledRanges,
+    misspelledTextStyle,
+  );
+}
+
+void _collectMisspelledRanges(
+  InlineSpan span,
+  TextStyle misspelledJointStyle,
+  _TextSpanOffset offset,
+  List<TextRange> ranges,
+) {
+  if (span is! TextSpan) {
+    offset.value++;
+    return;
+  }
+  final String? text = span.text;
+  if (text != null) {
+    final int start = offset.value;
+    offset.value += text.length;
+    if (span.style == misspelledJointStyle && text.isNotEmpty) {
+      ranges.add(TextRange(start: start, end: offset.value));
+    }
+  }
+  for (final InlineSpan child in span.children ?? const <InlineSpan>[]) {
+    _collectMisspelledRanges(child, misspelledJointStyle, offset, ranges);
+  }
+}
+
+TextSpan _decorateSpecialTextSpan(
+  TextSpan span,
+  _TextSpanOffset offset,
+  List<TextRange> misspelledRanges,
+  TextStyle misspelledTextStyle,
+) {
+  if (span is SpecialInlineSpanBase) {
+    offset.value += (span as SpecialInlineSpanBase).actualText.length;
+    return span;
+  }
+
+  final String? text = span.text;
+  final List<InlineSpan> children = <InlineSpan>[];
+  String? unsplitText = text;
+  if (text != null && text.isNotEmpty) {
+    final int start = offset.value;
+    offset.value += text.length;
+    final List<TextRange> intersections = misspelledRanges
+        .where(
+          (TextRange range) => range.start < offset.value && range.end > start,
+        )
+        .toList();
+    if (intersections.isNotEmpty) {
+      final bool canSplitSemantics =
+          span.semanticsLabel == null && span.semanticsIdentifier == null;
+      final bool wholeSpanMisspelled = intersections.any(
+        (TextRange range) => range.start <= start && range.end >= offset.value,
+      );
+      if (wholeSpanMisspelled || canSplitSemantics) {
+        unsplitText = null;
+        children.addAll(
+          _splitTextSpan(span, text, start, intersections, misspelledTextStyle),
+        );
+      }
+    }
+  }
+
+  for (final InlineSpan child in span.children ?? const <InlineSpan>[]) {
+    if (child is SpecialInlineSpanBase) {
+      offset.value += (child as SpecialInlineSpanBase).actualText.length;
+      children.add(child);
+    } else if (child is TextSpan) {
+      children.add(
+        _decorateSpecialTextSpan(
+          child,
+          offset,
+          misspelledRanges,
+          misspelledTextStyle,
+        ),
+      );
+    } else {
+      offset.value++;
+      children.add(child);
+    }
+  }
+
+  final bool didSplit = text != null && unsplitText == null;
+  return TextSpan(
+    text: unsplitText,
+    children: children.isEmpty ? null : children,
+    style: span.style,
+    recognizer: didSplit ? null : span.recognizer,
+    mouseCursor: didSplit ? MouseCursor.defer : span.mouseCursor,
+    onEnter: didSplit ? null : span.onEnter,
+    onExit: didSplit ? null : span.onExit,
+    semanticsLabel: didSplit ? null : span.semanticsLabel,
+    semanticsIdentifier: didSplit ? null : span.semanticsIdentifier,
+    locale: span.locale,
+    spellOut: span.spellOut,
+  );
+}
+
+List<TextSpan> _splitTextSpan(
+  TextSpan source,
+  String text,
+  int start,
+  List<TextRange> misspelledRanges,
+  TextStyle misspelledTextStyle,
+) {
+  final Set<int> boundaries = <int>{start, start + text.length};
+  for (final TextRange range in misspelledRanges) {
+    boundaries
+      ..add(range.start.clamp(start, start + text.length).toInt())
+      ..add(range.end.clamp(start, start + text.length).toInt());
+  }
+  final List<int> ordered = boundaries.toList()..sort();
+  final List<TextSpan> spans = <TextSpan>[];
+  for (int index = 0; index < ordered.length - 1; index++) {
+    final int segmentStart = ordered[index];
+    final int segmentEnd = ordered[index + 1];
+    if (segmentStart == segmentEnd) {
+      continue;
+    }
+    final bool isMisspelled = misspelledRanges.any(
+      (TextRange range) => range.start < segmentEnd && range.end > segmentStart,
+    );
+    spans.add(
+      TextSpan(
+        text: text.substring(segmentStart - start, segmentEnd - start),
+        style: isMisspelled
+            ? source.style?.merge(misspelledTextStyle) ?? misspelledTextStyle
+            : source.style,
+        recognizer: source.recognizer,
+        mouseCursor: source.mouseCursor,
+        onEnter: source.onEnter,
+        onExit: source.onExit,
+        semanticsLabel: ordered.length == 2 ? source.semanticsLabel : null,
+        semanticsIdentifier:
+            ordered.length == 2 ? source.semanticsIdentifier : null,
+        locale: source.locale,
+        spellOut: source.spellOut,
+      ),
+    );
+  }
+  return spans;
+}
+
+class _TextSpanOffset {
+  int value = 0;
 }
